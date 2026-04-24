@@ -2,11 +2,18 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { RefreshCw, Wifi, WifiOff, ChevronDown } from 'lucide-react';
 import { CandleChart, useStableCrosshairCallback } from './chart/CandleChart';
 import { IndicatorControls, loadToggles, type IndicatorToggles } from './chart/IndicatorControls';
+import { PatternControls, loadPatternToggles, type PatternToggles } from './chart/PatternControls';
 import {
   fetchCandles, fetchLatestCandles,
   type Instrument, type Granularity, type OHLCVCandle,
 } from '../services/candleService';
 import { computeAllIndicators, type IndicatorData } from '../services/indicators';
+import {
+  detectPatterns, detectSRLevels,
+  type CandlePattern, type SRLevel,
+} from '../services/patternDetection';
+
+// ── Constants ─────────────────────────────────────────────────────────────────
 
 const INSTRUMENTS: { value: Instrument; label: string }[] = [
   { value: 'EUR_USD', label: 'EUR/USD' },
@@ -62,7 +69,7 @@ function OHLCDisplay({ candle, instrument }: { candle: OHLCVCandle | null; instr
   if (!candle) {
     return (
       <div className="flex items-center gap-4 text-xs font-mono text-slate-600 select-none">
-        {['O','H','L','C'].map(l => (
+        {['O', 'H', 'L', 'C'].map(l => (
           <span key={l}><span className="text-slate-500">{l} </span>—</span>
         ))}
       </div>
@@ -90,6 +97,7 @@ function CountdownBar({ resetKey }: { resetKey: number }) {
     }, 100);
     return () => clearInterval(timer);
   }, [resetKey]);
+
   return (
     <div className="h-0.5 bg-slate-800 w-28 rounded-full overflow-hidden">
       <div className="h-full bg-emerald-500/60 rounded-full" style={{ width: `${pct}%` }} />
@@ -100,22 +108,33 @@ function CountdownBar({ resetKey }: { resetKey: number }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export function ChartPage() {
-  const [instrument, setInstrument] = useState<Instrument>('EUR_USD');
-  const [granularity, setGranularity] = useState<Granularity>('M5');
-  const [candles,     setCandles]     = useState<OHLCVCandle[]>([]);
+  const [instrument,    setInstrument]    = useState<Instrument>('EUR_USD');
+  const [granularity,   setGranularity]   = useState<Granularity>('M5');
+  const [candles,       setCandles]       = useState<OHLCVCandle[]>([]);
   const [hoveredCandle, setHoveredCandle] = useState<OHLCVCandle | null>(null);
-  const [toggles, setToggles] = useState<IndicatorToggles>(loadToggles);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState<string | null>(null);
-  const [live,     setLive]     = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [indToggles,    setIndToggles]    = useState<IndicatorToggles>(loadToggles);
+  const [patToggles,    setPatToggles]    = useState<PatternToggles>(loadPatternToggles);
+  const [loading,       setLoading]       = useState(true);
+  const [error,         setError]         = useState<string | null>(null);
+  const [live,          setLive]          = useState(true);
+  const [refreshKey,    setRefreshKey]    = useState(0);
 
   const latestCandleRef = useRef<OHLCVCandle | null>(null);
   const displayCandle   = hoveredCandle ?? latestCandleRef.current;
 
-  // Compute indicators whenever candles change
-  const indicators: IndicatorData = useMemo(
+  // All heavy computations memoised — only run when candles change
+  const indicators = useMemo<IndicatorData>(
     () => (candles.length > 0 ? computeAllIndicators(candles) : EMPTY_INDICATORS),
+    [candles]
+  );
+
+  const patterns = useMemo<CandlePattern[]>(
+    () => (candles.length > 1 ? detectPatterns(candles) : []),
+    [candles]
+  );
+
+  const srLevels = useMemo<SRLevel[]>(
+    () => (candles.length > 11 ? detectSRLevels(candles, 5) : []),
     [candles]
   );
 
@@ -140,7 +159,7 @@ export function ChartPage() {
     return () => { cancelled = true; };
   }, [instrument, granularity]);
 
-  // Auto-refresh
+  // Auto-refresh every 10 s
   useEffect(() => {
     if (!live) return;
     const timer = setInterval(async () => {
@@ -160,7 +179,7 @@ export function ChartPage() {
     return () => clearInterval(timer);
   }, [instrument, granularity, live]);
 
-  const handleCrosshair     = useStableCrosshairCallback(c => setHoveredCandle(c));
+  const handleCrosshair = useStableCrosshairCallback(c => setHoveredCandle(c));
 
   const handleManualRefresh = useCallback(async () => {
     setLoading(true);
@@ -225,9 +244,7 @@ export function ChartPage() {
                 : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300'
             }`}
           >
-            {live
-              ? <Wifi    size={13} className="flex-shrink-0" />
-              : <WifiOff size={13} className="flex-shrink-0" />}
+            {live ? <Wifi size={13} /> : <WifiOff size={13} />}
             <span>{live ? 'Live' : 'Paused'}</span>
           </button>
 
@@ -241,10 +258,10 @@ export function ChartPage() {
         </div>
       </div>
 
-      {/* ── Body: chart + sidebar ── */}
+      {/* ── Body: chart + combined sidebar ── */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* Chart area */}
+        {/* Chart */}
         <div className="flex-1 relative" style={{ minHeight: 500 }}>
           {loading && candles.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-10 gap-3">
@@ -256,10 +273,7 @@ export function ChartPage() {
           {error && candles.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-10 gap-3">
               <p className="text-sm text-red-400">{error}</p>
-              <button
-                onClick={handleManualRefresh}
-                className="text-xs text-emerald-400 hover:text-emerald-300 underline"
-              >
+              <button onClick={handleManualRefresh} className="text-xs text-emerald-400 hover:text-emerald-300 underline">
                 Retry
               </button>
             </div>
@@ -269,7 +283,10 @@ export function ChartPage() {
             <CandleChart
               candles={candles}
               indicators={indicators}
-              toggles={toggles}
+              toggles={indToggles}
+              patterns={patterns}
+              srLevels={srLevels}
+              patternToggles={patToggles}
               onCrosshairMove={handleCrosshair}
             />
           )}
@@ -283,16 +300,25 @@ export function ChartPage() {
             </div>
           )}
 
-          {/* Candle count */}
+          {/* Candle count + pattern count badge */}
           {candles.length > 0 && (
-            <div className="absolute bottom-2 left-3 text-xs text-slate-700 font-mono select-none pointer-events-none">
-              {candles.length} candles
+            <div className="absolute bottom-2 left-3 flex items-center gap-3 pointer-events-none select-none">
+              <span className="text-xs text-slate-700 font-mono">{candles.length} candles</span>
+              {patterns.length > 0 && (
+                <span className="text-xs text-slate-700 font-mono">{patterns.length} patterns</span>
+              )}
             </div>
           )}
         </div>
 
-        {/* Indicator sidebar */}
-        <IndicatorControls toggles={toggles} onChange={setToggles} />
+        {/* ── Combined sidebar ── */}
+        <div className="w-52 flex-shrink-0 bg-slate-900 border-l border-slate-800 flex flex-col overflow-y-auto">
+          {/* Indicator toggles */}
+          <IndicatorControls toggles={indToggles} onChange={setIndToggles} />
+
+          {/* Pattern + S/R toggles */}
+          <PatternControls toggles={patToggles} onChange={setPatToggles} />
+        </div>
       </div>
     </div>
   );

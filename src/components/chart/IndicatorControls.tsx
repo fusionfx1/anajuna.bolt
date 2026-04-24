@@ -93,7 +93,7 @@ export function IndicatorControls({ toggles, onChange }: Props) {
   const panes    = INDICATORS.filter(i => i.group === 'pane');
 
   return (
-    <div className="w-52 flex-shrink-0 bg-slate-900 border-l border-slate-800 flex flex-col overflow-y-auto">
+    <div>
       <div className="flex items-center gap-2 px-3 py-3 border-b border-slate-800">
         <SlidersHorizontal size={14} className="text-emerald-400" />
         <span className="text-xs font-semibold text-slate-300 tracking-wide uppercase">Indicators</span>
@@ -147,15 +147,12 @@ export function IndicatorControls({ toggles, onChange }: Props) {
         </div>
       </div>
 
-      <div className="mt-auto px-3 py-3 border-t border-slate-800">
+      <div className="px-3 py-2 border-t border-slate-800">
         <button
-          onClick={() => {
-            saveToggles(DEFAULTS);
-            onChange({ ...DEFAULTS });
-          }}
+          onClick={() => { saveToggles(DEFAULTS); onChange({ ...DEFAULTS }); }}
           className="w-full text-[10px] text-slate-600 hover:text-slate-400 transition-colors text-center"
         >
-          Reset to defaults
+          Reset indicators
         </button>
       </div>
     </div>
