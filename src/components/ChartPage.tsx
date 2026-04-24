@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { RefreshCw, Wifi, WifiOff, ChevronDown } from 'lucide-react';
 import { CandleChart, useStableCrosshairCallback } from './chart/CandleChart';
+import { IndicatorControls, loadToggles, type IndicatorToggles } from './chart/IndicatorControls';
 import {
   fetchCandles, fetchLatestCandles,
   type Instrument, type Granularity, type OHLCVCandle,
 } from '../services/candleService';
+import { computeAllIndicators, type IndicatorData } from '../services/indicators';
 
 const INSTRUMENTS: { value: Instrument; label: string }[] = [
   { value: 'EUR_USD', label: 'EUR/USD' },
@@ -14,24 +16,30 @@ const INSTRUMENTS: { value: Instrument; label: string }[] = [
 ];
 
 const TIMEFRAMES: { value: Granularity; label: string }[] = [
-  { value: 'M1',  label: 'M1' },
-  { value: 'M5',  label: 'M5' },
+  { value: 'M1',  label: 'M1'  },
+  { value: 'M5',  label: 'M5'  },
   { value: 'M15', label: 'M15' },
-  { value: 'H1',  label: 'H1' },
+  { value: 'H1',  label: 'H1'  },
 ];
 
 const REFRESH_INTERVAL_MS = 10_000;
+
+const EMPTY_INDICATORS: IndicatorData = {
+  ema21: [], ema50: [], ema200: [],
+  rsi: [], macd: [], bollinger: [],
+};
+
+// ── Sub-components ────────────────────────────────────────────────────────────
 
 interface SelectProps<T extends string> {
   value: T;
   options: { value: T; label: string }[];
   onChange: (v: T) => void;
-  className?: string;
 }
 
-function Select<T extends string>({ value, options, onChange, className = '' }: SelectProps<T>) {
+function Select<T extends string>({ value, options, onChange }: SelectProps<T>) {
   return (
-    <div className={`relative ${className}`}>
+    <div className="relative">
       <select
         value={value}
         onChange={e => onChange(e.target.value as T)}
@@ -47,23 +55,21 @@ function Select<T extends string>({ value, options, onChange, className = '' }: 
 }
 
 function OHLCDisplay({ candle, instrument }: { candle: OHLCVCandle | null; instrument: Instrument }) {
-  const isJpy = instrument === 'USD_JPY';
+  const isJpy  = instrument === 'USD_JPY';
   const isGold = instrument === 'XAU_USD';
-  const dp = isJpy ? 3 : isGold ? 2 : 5;
+  const dp     = isJpy ? 3 : isGold ? 2 : 5;
 
   if (!candle) {
     return (
       <div className="flex items-center gap-4 text-xs font-mono text-slate-600 select-none">
-        {['O', 'H', 'L', 'C'].map(l => (
+        {['O','H','L','C'].map(l => (
           <span key={l}><span className="text-slate-500">{l} </span>—</span>
         ))}
       </div>
     );
   }
 
-  const isBullish = candle.close >= candle.open;
-  const color = isBullish ? 'text-emerald-400' : 'text-red-400';
-
+  const color = candle.close >= candle.open ? 'text-emerald-400' : 'text-red-400';
   return (
     <div className={`flex items-center gap-4 text-xs font-mono ${color} select-none`}>
       <span><span className="text-slate-500">O </span>{candle.open.toFixed(dp)}</span>
@@ -76,41 +82,44 @@ function OHLCDisplay({ candle, instrument }: { candle: OHLCVCandle | null; instr
 
 function CountdownBar({ resetKey }: { resetKey: number }) {
   const [pct, setPct] = useState(100);
-
   useEffect(() => {
     setPct(100);
     const start = Date.now();
     const timer = setInterval(() => {
-      const elapsed = Date.now() - start;
-      setPct(Math.max(0, 100 - (elapsed / REFRESH_INTERVAL_MS) * 100));
+      setPct(Math.max(0, 100 - (Date.now() - start) / REFRESH_INTERVAL_MS * 100));
     }, 100);
     return () => clearInterval(timer);
   }, [resetKey]);
-
   return (
     <div className="h-0.5 bg-slate-800 w-28 rounded-full overflow-hidden">
-      <div
-        className="h-full bg-emerald-500/60 transition-none rounded-full"
-        style={{ width: `${pct}%` }}
-      />
+      <div className="h-full bg-emerald-500/60 rounded-full" style={{ width: `${pct}%` }} />
     </div>
   );
 }
 
+// ── Main page ─────────────────────────────────────────────────────────────────
+
 export function ChartPage() {
   const [instrument, setInstrument] = useState<Instrument>('EUR_USD');
   const [granularity, setGranularity] = useState<Granularity>('M5');
-  const [candles, setCandles] = useState<OHLCVCandle[]>([]);
+  const [candles,     setCandles]     = useState<OHLCVCandle[]>([]);
   const [hoveredCandle, setHoveredCandle] = useState<OHLCVCandle | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [live, setLive] = useState(true);
+  const [toggles, setToggles] = useState<IndicatorToggles>(loadToggles);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState<string | null>(null);
+  const [live,     setLive]     = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const latestCandleRef = useRef<OHLCVCandle | null>(null);
-  const displayCandle = hoveredCandle ?? latestCandleRef.current;
+  const displayCandle   = hoveredCandle ?? latestCandleRef.current;
 
-  // Full load whenever instrument or granularity changes
+  // Compute indicators whenever candles change
+  const indicators: IndicatorData = useMemo(
+    () => (candles.length > 0 ? computeAllIndicators(candles) : EMPTY_INDICATORS),
+    [candles]
+  );
+
+  // Full load on instrument / granularity change
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -131,31 +140,27 @@ export function ChartPage() {
     return () => { cancelled = true; };
   }, [instrument, granularity]);
 
-  // Auto-refresh: append latest candles every 10 seconds
+  // Auto-refresh
   useEffect(() => {
     if (!live) return;
-
     const timer = setInterval(async () => {
       try {
         const latest = await fetchLatestCandles(instrument, granularity, 5);
         setCandles(prev => {
           if (prev.length === 0) return prev;
-          const existing = new Map(prev.map(c => [c.time, c]));
-          latest.forEach(c => existing.set(c.time, c));
-          const merged = Array.from(existing.values()).sort((a, b) => a.time - b.time);
+          const map = new Map(prev.map(c => [c.time, c]));
+          latest.forEach(c => map.set(c.time, c));
+          const merged = Array.from(map.values()).sort((a, b) => a.time - b.time);
           latestCandleRef.current = merged[merged.length - 1] ?? null;
           return merged;
         });
         setRefreshKey(k => k + 1);
-      } catch {
-        // Silently ignore transient refresh errors
-      }
+      } catch { /* ignore transient errors */ }
     }, REFRESH_INTERVAL_MS);
-
     return () => clearInterval(timer);
   }, [instrument, granularity, live]);
 
-  const handleCrosshair = useStableCrosshairCallback((c) => setHoveredCandle(c));
+  const handleCrosshair     = useStableCrosshairCallback(c => setHoveredCandle(c));
 
   const handleManualRefresh = useCallback(async () => {
     setLoading(true);
@@ -164,9 +169,7 @@ export function ChartPage() {
       setCandles(data);
       latestCandleRef.current = data[data.length - 1] ?? null;
       setRefreshKey(k => k + 1);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, [instrument, granularity]);
 
   const handleInstrumentChange = useCallback((v: Instrument) => {
@@ -181,9 +184,9 @@ export function ChartPage() {
 
   return (
     <div className="flex flex-col h-full bg-slate-950" style={{ minHeight: 500 }}>
-      {/* Toolbar */}
+
+      {/* ── Toolbar ── */}
       <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex-shrink-0 flex-wrap">
-        {/* Left: selectors */}
         <div className="flex items-center gap-2">
           <Select<Instrument>
             value={instrument}
@@ -207,18 +210,15 @@ export function ChartPage() {
           </div>
         </div>
 
-        {/* Middle: OHLC */}
         <div className="flex-1 min-w-0">
           <OHLCDisplay candle={displayCandle} instrument={instrument} />
         </div>
 
-        {/* Right: controls */}
         <div className="flex items-center gap-3 ml-auto">
           {live && <CountdownBar resetKey={refreshKey} />}
 
           <button
             onClick={() => setLive(v => !v)}
-            title={live ? 'Pause auto-refresh' : 'Resume auto-refresh'}
             className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-all duration-150 ${
               live
                 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
@@ -226,7 +226,7 @@ export function ChartPage() {
             }`}
           >
             {live
-              ? <Wifi size={13} className="flex-shrink-0" />
+              ? <Wifi    size={13} className="flex-shrink-0" />
               : <WifiOff size={13} className="flex-shrink-0" />}
             <span>{live ? 'Live' : 'Paused'}</span>
           </button>
@@ -234,7 +234,6 @@ export function ChartPage() {
           <button
             onClick={handleManualRefresh}
             disabled={loading}
-            title="Refresh now"
             className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-40"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -242,46 +241,58 @@ export function ChartPage() {
         </div>
       </div>
 
-      {/* Chart area */}
-      <div className="flex-1 relative" style={{ minHeight: 500 }}>
-        {loading && candles.length === 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-10 gap-3">
-            <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-slate-500">Loading candles…</p>
-          </div>
-        )}
+      {/* ── Body: chart + sidebar ── */}
+      <div className="flex flex-1 overflow-hidden">
 
-        {error && candles.length === 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-10 gap-3">
-            <p className="text-sm text-red-400">{error}</p>
-            <button
-              onClick={handleManualRefresh}
-              className="text-xs text-emerald-400 hover:text-emerald-300 underline"
-            >
-              Retry
-            </button>
-          </div>
-        )}
+        {/* Chart area */}
+        <div className="flex-1 relative" style={{ minHeight: 500 }}>
+          {loading && candles.length === 0 && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-10 gap-3">
+              <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-slate-500">Loading candles…</p>
+            </div>
+          )}
 
-        {candles.length > 0 && (
-          <CandleChart candles={candles} onCrosshairMove={handleCrosshair} />
-        )}
+          {error && candles.length === 0 && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-10 gap-3">
+              <p className="text-sm text-red-400">{error}</p>
+              <button
+                onClick={handleManualRefresh}
+                className="text-xs text-emerald-400 hover:text-emerald-300 underline"
+              >
+                Retry
+              </button>
+            </div>
+          )}
 
-        {/* Watermark */}
-        {candles.length > 0 && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none select-none">
-            <span className="text-slate-800 text-4xl font-black tracking-widest opacity-60">
-              {INSTRUMENTS.find(i => i.value === instrument)?.label}
-            </span>
-          </div>
-        )}
+          {candles.length > 0 && (
+            <CandleChart
+              candles={candles}
+              indicators={indicators}
+              toggles={toggles}
+              onCrosshairMove={handleCrosshair}
+            />
+          )}
 
-        {/* Candle count badge */}
-        {candles.length > 0 && (
-          <div className="absolute bottom-2 left-3 text-xs text-slate-700 font-mono select-none pointer-events-none">
-            {candles.length} candles
-          </div>
-        )}
+          {/* Watermark */}
+          {candles.length > 0 && (
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none select-none">
+              <span className="text-slate-800 text-4xl font-black tracking-widest opacity-60">
+                {INSTRUMENTS.find(i => i.value === instrument)?.label}
+              </span>
+            </div>
+          )}
+
+          {/* Candle count */}
+          {candles.length > 0 && (
+            <div className="absolute bottom-2 left-3 text-xs text-slate-700 font-mono select-none pointer-events-none">
+              {candles.length} candles
+            </div>
+          )}
+        </div>
+
+        {/* Indicator sidebar */}
+        <IndicatorControls toggles={toggles} onChange={setToggles} />
       </div>
     </div>
   );
