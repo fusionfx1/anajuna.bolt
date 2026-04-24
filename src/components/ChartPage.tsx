@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { RefreshCw, Wifi, WifiOff, ChevronDown } from 'lucide-react';
+import { RefreshCw, Wifi, WifiOff, ChevronDown, TrendingUp, TrendingDown } from 'lucide-react';
 import { CandleChart, useStableCrosshairCallback } from './chart/CandleChart';
 import { IndicatorControls, loadToggles, type IndicatorToggles } from './chart/IndicatorControls';
 import { PatternControls, loadPatternToggles, type PatternToggles } from './chart/PatternControls';
+import { TradeModal } from './paper/TradeModal';
 import {
   fetchCandles, fetchLatestCandles,
   type Instrument, type Granularity, type OHLCVCandle,
 } from '../services/candleService';
 import { computeAllIndicators, type IndicatorData } from '../services/indicators';
-import {
-  detectPatterns, detectSRLevels,
-  type CandlePattern, type SRLevel,
-} from '../services/patternDetection';
+import { detectPatterns, detectSRLevels, type CandlePattern, type SRLevel } from '../services/patternDetection';
+import { useMarketData } from '../hooks/useMarketData';
+import { usePaperAccount, usePaperPositions } from '../hooks/usePaperTrading';
+import { instrumentToSymbol, priceDp, PAPER_INSTRUMENTS } from '../types/paper';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const INSTRUMENTS: { value: Instrument; label: string }[] = [
+const CHART_INSTRUMENTS: { value: Instrument; label: string }[] = [
   { value: 'EUR_USD', label: 'EUR/USD' },
   { value: 'GBP_USD', label: 'GBP/USD' },
   { value: 'USD_JPY', label: 'USD/JPY' },
@@ -32,19 +33,14 @@ const TIMEFRAMES: { value: Granularity; label: string }[] = [
 const REFRESH_INTERVAL_MS = 10_000;
 
 const EMPTY_INDICATORS: IndicatorData = {
-  ema21: [], ema50: [], ema200: [],
-  rsi: [], macd: [], bollinger: [],
+  ema21: [], ema50: [], ema200: [], rsi: [], macd: [], bollinger: [],
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-interface SelectProps<T extends string> {
-  value: T;
-  options: { value: T; label: string }[];
-  onChange: (v: T) => void;
-}
-
-function Select<T extends string>({ value, options, onChange }: SelectProps<T>) {
+function Select<T extends string>({
+  value, options, onChange,
+}: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void }) {
   return (
     <div className="relative">
       <select
@@ -62,10 +58,7 @@ function Select<T extends string>({ value, options, onChange }: SelectProps<T>) 
 }
 
 function OHLCDisplay({ candle, instrument }: { candle: OHLCVCandle | null; instrument: Instrument }) {
-  const isJpy  = instrument === 'USD_JPY';
-  const isGold = instrument === 'XAU_USD';
-  const dp     = isJpy ? 3 : isGold ? 2 : 5;
-
+  const dp = priceDp(instrument);
   if (!candle) {
     return (
       <div className="flex items-center gap-4 text-xs font-mono text-slate-600 select-none">
@@ -75,7 +68,6 @@ function OHLCDisplay({ candle, instrument }: { candle: OHLCVCandle | null; instr
       </div>
     );
   }
-
   const color = candle.close >= candle.open ? 'text-emerald-400' : 'text-red-400';
   return (
     <div className={`flex items-center gap-4 text-xs font-mono ${color} select-none`}>
@@ -97,7 +89,6 @@ function CountdownBar({ resetKey }: { resetKey: number }) {
     }, 100);
     return () => clearInterval(timer);
   }, [resetKey]);
-
   return (
     <div className="h-0.5 bg-slate-800 w-28 rounded-full overflow-hidden">
       <div className="h-full bg-emerald-500/60 rounded-full" style={{ width: `${pct}%` }} />
@@ -118,21 +109,33 @@ export function ChartPage() {
   const [error,         setError]         = useState<string | null>(null);
   const [live,          setLive]          = useState(true);
   const [refreshKey,    setRefreshKey]    = useState(0);
+  const [tradeModal,    setTradeModal]    = useState<'buy' | 'sell' | null>(null);
+  const [tradeMsg,      setTradeMsg]      = useState<string | null>(null);
 
   const latestCandleRef = useRef<OHLCVCandle | null>(null);
   const displayCandle   = hoveredCandle ?? latestCandleRef.current;
 
-  // All heavy computations memoised — only run when candles change
+  // Market data for real bid/ask prices
+  const { getQuote } = useMarketData(800);
+  const symbol       = instrumentToSymbol(instrument);
+  const quote        = getQuote(symbol);
+  const bid          = quote?.bid ?? 0;
+  const ask          = quote?.ask ?? 0;
+  const dp           = priceDp(instrument);
+
+  // Paper trading account + positions
+  const { account, refresh: refreshAccount } = usePaperAccount();
+  const { executeOpen } = usePaperPositions();
+
+  // Memoised indicator / pattern computation
   const indicators = useMemo<IndicatorData>(
     () => (candles.length > 0 ? computeAllIndicators(candles) : EMPTY_INDICATORS),
     [candles]
   );
-
   const patterns = useMemo<CandlePattern[]>(
     () => (candles.length > 1 ? detectPatterns(candles) : []),
     [candles]
   );
-
   const srLevels = useMemo<SRLevel[]>(
     () => (candles.length > 11 ? detectSRLevels(candles, 5) : []),
     [candles]
@@ -159,7 +162,7 @@ export function ChartPage() {
     return () => { cancelled = true; };
   }, [instrument, granularity]);
 
-  // Auto-refresh every 10 s
+  // Auto-refresh
   useEffect(() => {
     if (!live) return;
     const timer = setInterval(async () => {
@@ -174,13 +177,12 @@ export function ChartPage() {
           return merged;
         });
         setRefreshKey(k => k + 1);
-      } catch { /* ignore transient errors */ }
+      } catch { /* ignore */ }
     }, REFRESH_INTERVAL_MS);
     return () => clearInterval(timer);
   }, [instrument, granularity, live]);
 
-  const handleCrosshair = useStableCrosshairCallback(c => setHoveredCandle(c));
-
+  const handleCrosshair     = useStableCrosshairCallback(c => setHoveredCandle(c));
   const handleManualRefresh = useCallback(async () => {
     setLoading(true);
     try {
@@ -192,24 +194,35 @@ export function ChartPage() {
   }, [instrument, granularity]);
 
   const handleInstrumentChange = useCallback((v: Instrument) => {
-    setInstrument(v);
-    setHoveredCandle(null);
+    setInstrument(v); setHoveredCandle(null);
+  }, []);
+  const handleGranularityChange = useCallback((v: Granularity) => {
+    setGranularity(v); setHoveredCandle(null);
   }, []);
 
-  const handleGranularityChange = useCallback((v: Granularity) => {
-    setGranularity(v);
-    setHoveredCandle(null);
-  }, []);
+  // Trade confirmation
+  const handleTradeConfirm = useCallback(async (
+    units: number, tp: number | null, sl: number | null
+  ) => {
+    const side = tradeModal!;
+    const entryPrice = side === 'buy' ? ask : bid;
+    await executeOpen({ instrument, side, units, entryPrice, tp, sl });
+    await refreshAccount();
+    setTradeModal(null);
+    setTradeMsg(`${side === 'buy' ? 'Buy' : 'Sell'} ${units.toLocaleString()} ${PAPER_INSTRUMENTS[instrument]} opened`);
+    setTimeout(() => setTradeMsg(null), 3500);
+  }, [tradeModal, instrument, bid, ask, executeOpen, refreshAccount]);
 
   return (
     <div className="flex flex-col h-full bg-slate-950" style={{ minHeight: 500 }}>
 
       {/* ── Toolbar ── */}
       <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex-shrink-0 flex-wrap">
+        {/* Left: selectors */}
         <div className="flex items-center gap-2">
           <Select<Instrument>
             value={instrument}
-            options={INSTRUMENTS}
+            options={CHART_INSTRUMENTS}
             onChange={handleInstrumentChange}
           />
           <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg p-0.5 gap-0.5">
@@ -229,13 +242,42 @@ export function ChartPage() {
           </div>
         </div>
 
-        <div className="flex-1 min-w-0">
+        {/* OHLC */}
+        <div className="flex-1 min-w-0 hidden sm:block">
           <OHLCDisplay candle={displayCandle} instrument={instrument} />
         </div>
 
-        <div className="flex items-center gap-3 ml-auto">
-          {live && <CountdownBar resetKey={refreshKey} />}
+        {/* BUY / SELL buttons */}
+        <div className="flex items-center gap-2">
+          {/* Current bid/ask mini display */}
+          {bid > 0 && (
+            <div className="hidden md:flex items-center gap-2 font-mono text-xs mr-1">
+              <span className="text-slate-500">B</span>
+              <span className="text-red-400">{bid.toFixed(dp)}</span>
+              <span className="text-slate-700">|</span>
+              <span className="text-slate-500">A</span>
+              <span className="text-emerald-400">{ask.toFixed(dp)}</span>
+            </div>
+          )}
+          <button
+            onClick={() => setTradeModal('sell')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-500 hover:bg-red-400 text-white text-xs font-bold transition-colors shadow"
+          >
+            <TrendingDown size={13} />
+            <span>SELL</span>
+          </button>
+          <button
+            onClick={() => setTradeModal('buy')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-900 text-xs font-bold transition-colors shadow"
+          >
+            <TrendingUp size={13} />
+            <span>BUY</span>
+          </button>
+        </div>
 
+        {/* Right: live / refresh */}
+        <div className="flex items-center gap-3">
+          {live && <CountdownBar resetKey={refreshKey} />}
           <button
             onClick={() => setLive(v => !v)}
             className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-all duration-150 ${
@@ -247,7 +289,6 @@ export function ChartPage() {
             {live ? <Wifi size={13} /> : <WifiOff size={13} />}
             <span>{live ? 'Live' : 'Paused'}</span>
           </button>
-
           <button
             onClick={handleManualRefresh}
             disabled={loading}
@@ -258,9 +299,8 @@ export function ChartPage() {
         </div>
       </div>
 
-      {/* ── Body: chart + combined sidebar ── */}
+      {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden">
-
         {/* Chart */}
         <div className="flex-1 relative" style={{ minHeight: 500 }}>
           {loading && candles.length === 0 && (
@@ -269,7 +309,6 @@ export function ChartPage() {
               <p className="text-sm text-slate-500">Loading candles…</p>
             </div>
           )}
-
           {error && candles.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-10 gap-3">
               <p className="text-sm text-red-400">{error}</p>
@@ -278,7 +317,6 @@ export function ChartPage() {
               </button>
             </div>
           )}
-
           {candles.length > 0 && (
             <CandleChart
               candles={candles}
@@ -290,17 +328,13 @@ export function ChartPage() {
               onCrosshairMove={handleCrosshair}
             />
           )}
-
-          {/* Watermark */}
           {candles.length > 0 && (
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none select-none">
               <span className="text-slate-800 text-4xl font-black tracking-widest opacity-60">
-                {INSTRUMENTS.find(i => i.value === instrument)?.label}
+                {CHART_INSTRUMENTS.find(i => i.value === instrument)?.label}
               </span>
             </div>
           )}
-
-          {/* Candle count + pattern count badge */}
           {candles.length > 0 && (
             <div className="absolute bottom-2 left-3 flex items-center gap-3 pointer-events-none select-none">
               <span className="text-xs text-slate-700 font-mono">{candles.length} candles</span>
@@ -309,17 +343,45 @@ export function ChartPage() {
               )}
             </div>
           )}
+
+          {/* Trade success toast */}
+          {tradeMsg && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-2 shadow-lg backdrop-blur-sm pointer-events-none">
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
+              {tradeMsg}
+            </div>
+          )}
         </div>
 
-        {/* ── Combined sidebar ── */}
+        {/* ── Sidebar ── */}
         <div className="w-52 flex-shrink-0 bg-slate-900 border-l border-slate-800 flex flex-col overflow-y-auto">
-          {/* Indicator toggles */}
           <IndicatorControls toggles={indToggles} onChange={setIndToggles} />
+          <PatternControls   toggles={patToggles} onChange={setPatToggles} />
 
-          {/* Pattern + S/R toggles */}
-          <PatternControls toggles={patToggles} onChange={setPatToggles} />
+          {/* Account balance strip */}
+          {account && (
+            <div className="mt-auto px-3 py-3 border-t border-slate-800">
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Paper Balance</p>
+              <p className="font-mono text-sm font-semibold text-slate-200">
+                ${account.balance.toFixed(2)}
+              </p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ── Trade modal ── */}
+      {tradeModal && account && (
+        <TradeModal
+          instrument={instrument}
+          side={tradeModal}
+          bid={bid}
+          ask={ask}
+          account={account}
+          onConfirm={handleTradeConfirm}
+          onClose={() => setTradeModal(null)}
+        />
+      )}
     </div>
   );
 }
