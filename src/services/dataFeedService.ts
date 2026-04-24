@@ -1,6 +1,8 @@
 import type {
   DataProvider, FeedStatus, Tick, OHLCVBar, ConnectionStats, DataFeedConfig
 } from '../types/dataFeed';
+import { oandaService } from './oandaService';
+import type { OandaPricingTick } from '../types/oanda';
 
 type TickHandler = (tick: Tick) => void;
 type StatusHandler = (stats: ConnectionStats) => void;
@@ -28,6 +30,7 @@ class DataFeedService {
   private simulationInterval: ReturnType<typeof setInterval> | null = null;
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+  private oandaUnsubscribe: (() => void) | null = null;
   private stats: ConnectionStats = {
     provider: 'simulation',
     status: 'disconnected',
@@ -46,6 +49,12 @@ class DataFeedService {
       reconnectCount: this.stats.reconnectCount,
     };
     this.emitStatus();
+
+    // When OANDA is the broker, subscribe to its pricing stream as the data source
+    if (config.brokerProvider === 'oanda' && oandaService.isConfigured()) {
+      this.connectOandaStream(config.symbols);
+      return;
+    }
 
     if (config.provider === 'simulation' || !config.apiKey) {
       this.startSimulation(config.symbols);
@@ -76,6 +85,11 @@ class DataFeedService {
       this.ws.onclose = null;
       this.ws.close();
       this.ws = null;
+    }
+    if (this.oandaUnsubscribe) {
+      this.oandaUnsubscribe();
+      this.oandaUnsubscribe = null;
+      oandaService.disconnectStream();
     }
     this.stats = { ...this.stats, status: 'disconnected' };
     this.emitStatus();
@@ -139,6 +153,51 @@ class DataFeedService {
     buf.close = tick.price;
     buf.volume += tick.size;
     return null;
+  }
+
+  private connectOandaStream(symbols: string[]): void {
+    // Register handler that converts OANDA pricing ticks into the standard Tick format
+    this.oandaUnsubscribe = oandaService.onPricingTick((oandaTick: OandaPricingTick) => {
+      if (!oandaTick.tradeable) return;
+
+      const bid = parseFloat(oandaTick.bids[0]?.price ?? oandaTick.closeoutBid);
+      const ask = parseFloat(oandaTick.asks[0]?.price ?? oandaTick.closeoutAsk);
+      if (isNaN(bid) || isNaN(ask)) return;
+
+      // OANDA instruments use underscore (EUR_USD) — normalise to no-separator (EURUSD)
+      const symbol = oandaTick.instrument.replace('_', '');
+
+      const tick: Tick = {
+        symbol,
+        price: (bid + ask) / 2,
+        bid,
+        ask,
+        size: 1,
+        timestamp: new Date(oandaTick.time).getTime(),
+        source: 'simulation', // re-uses existing DataProvider union; treated as live by UI
+      };
+      this.receiveTick(tick);
+    });
+
+    // Start the HTTP streaming connection
+    oandaService.connectPricingStream(symbols).then(() => {
+      this.stats = {
+        ...this.stats,
+        provider: 'simulation',
+        status: 'connected',
+        connectedAt: Date.now(),
+        latencyMs: 0,
+      };
+      this.emitStatus();
+      this.startHeartbeat();
+    }).catch(() => {
+      // OANDA stream failed — fall back to simulation so UI is never blank
+      this.fallbackToSimulation(symbols);
+    });
+
+    // Optimistically mark as connecting; first tick will confirm connected
+    this.stats = { ...this.stats, status: 'connecting' };
+    this.emitStatus();
   }
 
   private connectPolygon(config: DataFeedConfig): void {

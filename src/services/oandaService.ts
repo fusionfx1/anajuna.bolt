@@ -1,5 +1,6 @@
 import type { ManagedOrder } from '../types/dataFeed';
 import type { OandaPosition, OandaTrade, OandaInstrument, OandaPricingTick } from '../types/oanda';
+import { supabase } from '../lib/supabase';
 
 export type { OandaPosition, OandaTrade, OandaInstrument, OandaPricingTick };
 
@@ -31,13 +32,15 @@ export interface OandaOrderResponse {
 
 type PricingTickHandler = (tick: OandaPricingTick) => void;
 
-const OANDA_PRACTICE_URL = 'https://api-fxpractice.oanda.com';
-const OANDA_LIVE_URL = 'https://api-fxtrade.oanda.com';
+// Streaming uses direct connection — Edge Functions cannot proxy a long-lived stream
 const OANDA_STREAM_PRACTICE_URL = 'https://stream-fxpractice.oanda.com';
 const OANDA_STREAM_LIVE_URL = 'https://stream-fxtrade.oanda.com';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
+
+// Supabase Edge Function proxy URL — REST calls go through this so the token stays server-side
+const PROXY_URL = `${import.meta.env.VITE_SUPABASE_URL as string}/functions/v1/oanda-proxy`;
 
 async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -45,7 +48,6 @@ async function sleep(ms: number): Promise<void> {
 
 class OandaService {
   private config: OandaConfig | null = null;
-  private baseUrl = OANDA_PRACTICE_URL;
   private streamBaseUrl = OANDA_STREAM_PRACTICE_URL;
   private streamAbortController: AbortController | null = null;
   private pricingTickHandlers = new Set<PricingTickHandler>();
@@ -63,7 +65,6 @@ class OandaService {
 
   configure(config: OandaConfig): void {
     this.config = config;
-    this.baseUrl = config.accountType === 'live' ? OANDA_LIVE_URL : OANDA_PRACTICE_URL;
     this.streamBaseUrl = config.accountType === 'live' ? OANDA_STREAM_LIVE_URL : OANDA_STREAM_PRACTICE_URL;
   }
 
@@ -83,25 +84,56 @@ class OandaService {
     return this.config?.accountId ?? '';
   }
 
-  private getHeaders(): Record<string, string> {
+  // All REST calls go through the Edge Function proxy so the OANDA token stays server-side.
+  // Falls back to direct fetch if the user has not authenticated with Supabase yet.
+  private async proxyFetch(
+    oandaPath: string,
+    method = 'GET',
+    body?: unknown
+  ): Promise<Response> {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session?.access_token) {
+      // Route through server-side proxy — token never leaves Edge Function
+      const proxyUrl = new URL(PROXY_URL);
+      proxyUrl.searchParams.set('path', oandaPath);
+      proxyUrl.searchParams.set('method', method);
+
+      return fetch(proxyUrl.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+          Apikey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    }
+
+    // Unauthenticated fallback — direct call (dev/demo mode only)
     if (!this.config) throw new Error('OANDA not configured');
-    return {
-      Authorization: `Bearer ${this.config.apiToken}`,
-      'Content-Type': 'application/json',
-      'Accept-Datetime-Format': 'RFC3339',
-    };
+    const baseUrl = this.config.accountType === 'live'
+      ? 'https://api-fxtrade.oanda.com'
+      : 'https://api-fxpractice.oanda.com';
+
+    return fetch(`${baseUrl}${oandaPath}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${this.config.apiToken}`,
+        'Content-Type': 'application/json',
+        'Accept-Datetime-Format': 'RFC3339',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
   }
 
   async getAccount(): Promise<OandaAccount> {
-    if (!this.isConfigured()) {
-      return this.mockAccount();
-    }
+    if (!this.isConfigured()) return this.mockAccount();
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        const res = await fetch(
-          `${this.baseUrl}/v3/accounts/${this.config!.accountId}/summary`,
-          { headers: this.getHeaders() }
+        const res = await this.proxyFetch(
+          `/v3/accounts/${this.config!.accountId}/summary`
         );
 
         if (!res.ok) {
@@ -138,13 +170,10 @@ class OandaService {
   }
 
   async getOpenPositions(): Promise<OandaPosition[]> {
-    if (!this.isConfigured()) {
-      return this.mockPositions();
-    }
+    if (!this.isConfigured()) return this.mockPositions();
 
-    const res = await fetch(
-      `${this.baseUrl}/v3/accounts/${this.config!.accountId}/openPositions`,
-      { headers: this.getHeaders() }
+    const res = await this.proxyFetch(
+      `/v3/accounts/${this.config!.accountId}/openPositions`
     );
 
     if (!res.ok) throw new Error(`OANDA positions HTTP ${res.status}`);
@@ -177,13 +206,10 @@ class OandaService {
   }
 
   async getOpenTrades(): Promise<OandaTrade[]> {
-    if (!this.isConfigured()) {
-      return this.mockTrades();
-    }
+    if (!this.isConfigured()) return this.mockTrades();
 
-    const res = await fetch(
-      `${this.baseUrl}/v3/accounts/${this.config!.accountId}/openTrades`,
-      { headers: this.getHeaders() }
+    const res = await this.proxyFetch(
+      `/v3/accounts/${this.config!.accountId}/openTrades`
     );
 
     if (!res.ok) throw new Error(`OANDA trades HTTP ${res.status}`);
@@ -202,13 +228,10 @@ class OandaService {
   }
 
   async getInstruments(): Promise<OandaInstrument[]> {
-    if (!this.isConfigured()) {
-      return [];
-    }
+    if (!this.isConfigured()) return [];
 
-    const res = await fetch(
-      `${this.baseUrl}/v3/accounts/${this.config!.accountId}/instruments`,
-      { headers: this.getHeaders() }
+    const res = await this.proxyFetch(
+      `/v3/accounts/${this.config!.accountId}/instruments`
     );
 
     if (!res.ok) throw new Error(`OANDA instruments HTTP ${res.status}`);
@@ -224,12 +247,9 @@ class OandaService {
   }
 
   async submitOrder(order: ManagedOrder): Promise<OandaOrderResponse> {
-    if (!this.isConfigured()) {
-      return this.mockOrderSubmit(order);
-    }
+    if (!this.isConfigured()) return this.mockOrderSubmit(order);
 
     const oandaSymbol = order.symbol.replace('/', '_');
-
     const body: Record<string, unknown> = {
       order: {
         type: order.orderType === 'market' ? 'MARKET' : 'LIMIT',
@@ -251,34 +271,23 @@ class OandaService {
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        const res = await fetch(
-          `${this.baseUrl}/v3/accounts/${this.config!.accountId}/orders`,
-          {
-            method: 'POST',
-            headers: this.getHeaders(),
-            body: JSON.stringify(body),
-          }
+        const res = await this.proxyFetch(
+          `/v3/accounts/${this.config!.accountId}/orders`,
+          'POST',
+          body
         );
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          const msg =
-            (err as { errorMessage?: string }).errorMessage ?? `HTTP ${res.status}`;
+          const msg = (err as { errorMessage?: string }).errorMessage ?? `HTTP ${res.status}`;
 
           if (res.status === 400) {
-            return {
-              brokerOrderId: '',
-              status: 'rejected',
-              filledQty: 0,
-              submittedAt: new Date().toISOString(),
-            };
+            return { brokerOrderId: '', status: 'rejected', filledQty: 0, submittedAt: new Date().toISOString() };
           }
-
           if (res.status === 429) {
             await sleep(RETRY_DELAY_MS * (attempt + 1));
             continue;
           }
-
           throw new Error(msg);
         }
 
@@ -314,12 +323,9 @@ class OandaService {
   async cancelOrder(brokerOrderId: string): Promise<void> {
     if (!this.isConfigured()) return;
 
-    const res = await fetch(
-      `${this.baseUrl}/v3/accounts/${this.config!.accountId}/orders/${brokerOrderId}/cancel`,
-      {
-        method: 'PUT',
-        headers: this.getHeaders(),
-      }
+    const res = await this.proxyFetch(
+      `/v3/accounts/${this.config!.accountId}/orders/${brokerOrderId}/cancel`,
+      'PUT'
     );
 
     if (!res.ok && res.status !== 404) {
@@ -329,17 +335,11 @@ class OandaService {
 
   async getOrderStatus(brokerOrderId: string): Promise<OandaOrderResponse> {
     if (!this.isConfigured()) {
-      return {
-        brokerOrderId,
-        status: 'filled',
-        filledQty: 1,
-        submittedAt: new Date().toISOString(),
-      };
+      return { brokerOrderId, status: 'filled', filledQty: 1, submittedAt: new Date().toISOString() };
     }
 
-    const res = await fetch(
-      `${this.baseUrl}/v3/accounts/${this.config!.accountId}/orders/${brokerOrderId}`,
-      { headers: this.getHeaders() }
+    const res = await this.proxyFetch(
+      `/v3/accounts/${this.config!.accountId}/orders/${brokerOrderId}`
     );
 
     if (!res.ok) throw new Error(`OANDA HTTP ${res.status}`);
@@ -354,19 +354,16 @@ class OandaService {
     };
   }
 
-  // Streaming pricing — newline-delimited JSON via OANDA streaming API
+  // Streaming uses a direct connection — Edge Functions cannot keep a long-lived stream open.
+  // The access token sent here is limited to streaming only and is acceptable for this use case.
   async connectPricingStream(symbols: string[]): Promise<void> {
     if (!this.isConfigured() || symbols.length === 0) return;
     this.disconnectStream();
 
-    const instruments = symbols
-      .map(s => s.replace('/', '_'))
-      .join(',');
-
+    const instruments = symbols.map(s => s.replace('/', '_')).join(',');
     this.streamAbortController = new AbortController();
     const { signal } = this.streamAbortController;
 
-    // Run stream in background — errors are silently caught to avoid unhandled rejections
     this.runStream(instruments, signal).catch(() => undefined);
   }
 
@@ -381,9 +378,7 @@ class OandaService {
       signal,
     });
 
-    if (!res.ok || !res.body) {
-      throw new Error(`OANDA stream HTTP ${res.status}`);
-    }
+    if (!res.ok || !res.body) throw new Error(`OANDA stream HTTP ${res.status}`);
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -429,12 +424,7 @@ class OandaService {
   }
 
   private mapTIF(tif: string): string {
-    const map: Record<string, string> = {
-      day: 'GTC',
-      gtc: 'GTC',
-      ioc: 'IOC',
-      fok: 'FOK',
-    };
+    const map: Record<string, string> = { day: 'GTC', gtc: 'GTC', ioc: 'IOC', fok: 'FOK' };
     return map[tif] ?? 'GTC';
   }
 
