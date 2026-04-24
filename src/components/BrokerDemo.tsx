@@ -11,7 +11,7 @@ import type { BrokerAccount } from '../services/brokerService';
 import type { OandaAccount } from '../services/oandaService';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { FOREX_SYMBOLS } from '../lib/constants';
+import type { DataFeedConfig } from '../types/dataFeed';
 
 type BrokerTab = 'alpaca' | 'oanda';
 
@@ -50,18 +50,15 @@ const BASE_PRICES: Record<string, number> = {
   SPY: 498.65,
 };
 
-// Deterministic price noise using sine wave phase to avoid Math.random()
-let _tickPhase = 0;
 function generateTick(base: number, isJpy: boolean): { bid: number; ask: number } {
-  _tickPhase += 0.17;
-  const noise = Math.sin(_tickPhase) * (isJpy ? 0.025 : 0.00025);
+  const noise = (Math.random() - 0.5) * (isJpy ? 0.05 : 0.0005);
   const spread = isJpy ? 0.018 : 0.00018;
   const mid = base + noise;
   return { bid: parseFloat((mid - spread / 2).toFixed(isJpy ? 3 : 5)), ask: parseFloat((mid + spread / 2).toFixed(isJpy ? 3 : 5)) };
 }
 
 const ALPACA_SYMBOLS = ['AAPL', 'TSLA', 'SPY'];
-const OANDA_SYMBOLS = FOREX_SYMBOLS.slice(0, 5);
+const OANDA_SYMBOLS = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
 
 function AccountCard({
   broker,

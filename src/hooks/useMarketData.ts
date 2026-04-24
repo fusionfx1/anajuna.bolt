@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { MarketQuote, AccountSummary } from '../types/trading';
 import { FOREX_SYMBOLS, INITIAL_MARKET_PRICES } from '../lib/constants';
-import { dataFeedService } from '../services/dataFeedService';
 
 function buildInitialQuotes(symbols: string[]): MarketQuote[] {
   return symbols.map(symbol => {
@@ -52,41 +51,10 @@ function tickQuote(q: MarketQuote): MarketQuote {
 export function useMarketData(intervalMs = 800) {
   const [quotes, setQuotes] = useState<MarketQuote[]>(() => buildInitialQuotes(FOREX_SYMBOLS));
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Track which symbols are being driven by a live feed so we skip simulation ticks for them
-  const liveSymbols = useRef<Set<string>>(new Set());
 
-  // Subscribe to dataFeedService ticks — applies when OANDA streaming or Polygon/Alpaca is active
-  useEffect(() => {
-    const unsub = dataFeedService.onTick(tick => {
-      liveSymbols.current.add(tick.symbol);
-      setQuotes(prev => prev.map(q => {
-        if (q.symbol !== tick.symbol) return q;
-        const isJpy = q.symbol.includes('JPY') || q.symbol === 'XAUUSD';
-        const dp = isJpy ? 3 : 5;
-        const mid = (tick.bid + tick.ask) / 2;
-        const basePrice = INITIAL_MARKET_PRICES[q.symbol] ?? mid;
-        const changeDelta = ((mid - basePrice) / basePrice) * 100;
-        return {
-          ...q,
-          bid: parseFloat(tick.bid.toFixed(dp)),
-          ask: parseFloat(tick.ask.toFixed(dp)),
-          spread: parseFloat(((tick.ask - tick.bid) / (isJpy ? 0.001 : 0.00001)).toFixed(1)),
-          change_pct: Math.max(-5, Math.min(5, parseFloat(changeDelta.toFixed(2)))),
-          high_24h: Math.max(q.high_24h, tick.ask),
-          low_24h: Math.min(q.low_24h, tick.bid),
-          timestamp: tick.timestamp,
-        };
-      }));
-    });
-    return unsub;
-  }, []);
-
-  // Fallback simulation ticker — only fires for symbols not driven by a live feed
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       setQuotes(prev => prev.map((q, idx) => {
-        // If a real tick arrived for this symbol recently, skip simulation
-        if (liveSymbols.current.has(q.symbol)) return q;
         const phase = (Date.now() + idx * 137) % 3;
         if (phase === 0) return q;
         return tickQuote(q);

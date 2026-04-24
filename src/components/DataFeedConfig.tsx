@@ -110,10 +110,10 @@ export function DataFeedConfig() {
     symbols: FX_SYMBOLS,
     paperTrading: true,
     brokerProvider: 'paper',
-    alpacaKeyId: (import.meta.env.VITE_ALPACA_KEY_ID as string | undefined) ?? '',
-    alpacaSecretKey: (import.meta.env.VITE_ALPACA_SECRET_KEY as string | undefined) ?? '',
-    oandaAccountId: (import.meta.env.VITE_OANDA_ACCOUNT_ID as string | undefined) ?? '',
-    oandaApiToken: (import.meta.env.VITE_OANDA_ACCESS_TOKEN as string | undefined) ?? '',
+    alpacaKeyId: '',
+    alpacaSecretKey: '',
+    oandaAccountId: '',
+    oandaApiToken: '',
     oandaAccountType: 'practice',
   });
   const [stats, setStats] = useState<ConnectionStats>(() => dataFeedService.getStats());
@@ -138,8 +138,6 @@ export function DataFeedConfig() {
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
-          const envAccountId = (import.meta.env.VITE_OANDA_ACCOUNT_ID as string | undefined) ?? '';
-          const envApiToken = (import.meta.env.VITE_OANDA_ACCESS_TOKEN as string | undefined) ?? '';
           setConfig({
             provider: data.provider as DataProvider,
             apiKey: data.api_key ?? '',
@@ -147,10 +145,10 @@ export function DataFeedConfig() {
             symbols: data.symbols ?? FX_SYMBOLS,
             paperTrading: data.paper_trading ?? true,
             brokerProvider: (data.broker_provider as BrokerProvider) ?? 'paper',
-            alpacaKeyId: data.alpaca_key_id || ((import.meta.env.VITE_ALPACA_KEY_ID as string | undefined) ?? ''),
-            alpacaSecretKey: data.alpaca_secret_key || ((import.meta.env.VITE_ALPACA_SECRET_KEY as string | undefined) ?? ''),
-            oandaAccountId: data.oanda_account_id || envAccountId,
-            oandaApiToken: data.oanda_api_token || envApiToken,
+            alpacaKeyId: data.alpaca_key_id ?? '',
+            alpacaSecretKey: data.alpaca_secret_key ?? '',
+            oandaAccountId: data.oanda_account_id ?? '',
+            oandaApiToken: data.oanda_api_token ?? '',
             oandaAccountType: (data.oanda_account_type as 'practice' | 'live') ?? 'practice',
           });
           if (data.broker_provider === 'oanda') setActiveBroker('oanda');
@@ -184,7 +182,7 @@ export function DataFeedConfig() {
     }
   };
 
-  const handleConnect = async () => {
+  const handleConnect = () => {
     setConnecting(true);
     setTestResult(null);
     dataFeedService.connect(config);
@@ -195,20 +193,6 @@ export function DataFeedConfig() {
         apiToken: config.oandaApiToken ?? '',
         accountType: config.oandaAccountType ?? 'practice',
       });
-      try {
-        const acct = await oandaService.getAccount();
-        setTestResult({
-          ok: true,
-          msg: `Connected to OANDA account ${acct.id} — Balance: $${acct.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
-        });
-      } catch (err) {
-        setTestResult({
-          ok: false,
-          msg: err instanceof Error ? err.message : 'OANDA connection failed',
-        });
-      } finally {
-        setConnecting(false);
-      }
     } else {
       brokerService.configure({
         provider: config.brokerProvider === 'paper' ? 'alpaca' : config.brokerProvider,
@@ -216,17 +200,18 @@ export function DataFeedConfig() {
         secretKey: config.alpacaSecretKey ?? '',
         paperTrading: config.paperTrading,
       });
-      setTimeout(() => {
-        setConnecting(false);
-        const s = dataFeedService.getStats();
-        setTestResult({
-          ok: s.status === 'connected',
-          msg: s.status === 'connected'
-            ? `Connected via ${PROVIDER_INFO[s.provider].label}`
-            : s.errorMessage ?? 'Connection failed',
-        });
-      }, 2500);
     }
+
+    setTimeout(() => {
+      setConnecting(false);
+      const s = dataFeedService.getStats();
+      setTestResult({
+        ok: s.status === 'connected',
+        msg: s.status === 'connected'
+          ? `Connected via ${PROVIDER_INFO[s.provider].label}`
+          : s.errorMessage ?? 'Connection failed',
+      });
+    }, 2500);
   };
 
   const handleDisconnect = () => {

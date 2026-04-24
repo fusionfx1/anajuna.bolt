@@ -2,7 +2,6 @@ import { supabase } from '../lib/supabase';
 import type {
   Strategy, Position, Trade, EquitySnapshot, RiskEvent, AccountSummary, PerformanceMetrics
 } from '../types/trading';
-import type { OandaPosition, OandaTrade } from '../types/oanda';
 
 export async function fetchStrategies(userId: string): Promise<Strategy[]> {
   const { data, error } = await supabase
@@ -294,102 +293,4 @@ export function computePerformanceMetrics(trades: Trade[]): PerformanceMetrics {
     total_pnl: parseFloat(total_pnl.toFixed(2)),
     avg_trade_duration_mins: parseFloat(avg_trade_duration_mins.toFixed(1)),
   };
-}
-
-export async function fetchOandaPositions(userId: string): Promise<OandaPosition[]> {
-  const { data, error } = await supabase
-    .from('oanda_positions')
-    .select('*')
-    .eq('user_id', userId)
-    .order('snapshot_at', { ascending: false })
-    .limit(100);
-  if (error) throw error;
-  return (data ?? []).map(row => ({
-    instrument: row.instrument,
-    longUnits: parseFloat(row.long_units),
-    longAvgPrice: parseFloat(row.long_avg_price),
-    longUnrealizedPL: parseFloat(row.long_unrealized_pl),
-    longRealizedPL: parseFloat(row.long_realized_pl),
-    shortUnits: parseFloat(row.short_units),
-    shortAvgPrice: parseFloat(row.short_avg_price),
-    shortUnrealizedPL: parseFloat(row.short_unrealized_pl),
-    shortRealizedPL: parseFloat(row.short_realized_pl),
-    unrealizedPL: parseFloat(row.unrealized_pl),
-    realizedPL: parseFloat(row.realized_pl),
-  }));
-}
-
-export async function upsertOandaPositions(
-  userId: string,
-  accountId: string,
-  positions: OandaPosition[]
-): Promise<void> {
-  if (positions.length === 0) return;
-
-  const snapshotAt = new Date().toISOString();
-  const rows = positions.map(p => ({
-    user_id: userId,
-    account_id: accountId,
-    instrument: p.instrument,
-    long_units: p.longUnits,
-    short_units: p.shortUnits,
-    long_avg_price: p.longAvgPrice,
-    short_avg_price: p.shortAvgPrice,
-    long_unrealized_pl: p.longUnrealizedPL,
-    short_unrealized_pl: p.shortUnrealizedPL,
-    long_realized_pl: p.longRealizedPL,
-    short_realized_pl: p.shortRealizedPL,
-    unrealized_pl: p.unrealizedPL,
-    realized_pl: p.realizedPL,
-    snapshot_at: snapshotAt,
-  }));
-
-  const { error } = await supabase.from('oanda_positions').insert(rows);
-  if (error) throw error;
-}
-
-export async function fetchOandaTrades(userId: string): Promise<OandaTrade[]> {
-  const { data, error } = await supabase
-    .from('oanda_trades')
-    .select('*')
-    .eq('user_id', userId)
-    .order('snapshot_at', { ascending: false })
-    .limit(100);
-  if (error) throw error;
-  return (data ?? []).map(row => ({
-    tradeId: row.trade_id,
-    instrument: row.instrument,
-    openTime: row.open_time,
-    price: parseFloat(row.price),
-    currentUnits: parseFloat(row.current_units),
-    unrealizedPL: parseFloat(row.unrealized_pl),
-    financing: parseFloat(row.financing),
-    state: row.state as OandaTrade['state'],
-  }));
-}
-
-export async function upsertOandaTrades(
-  userId: string,
-  accountId: string,
-  trades: OandaTrade[]
-): Promise<void> {
-  if (trades.length === 0) return;
-
-  const snapshotAt = new Date().toISOString();
-  const rows = trades.map(t => ({
-    user_id: userId,
-    account_id: accountId,
-    trade_id: t.tradeId,
-    instrument: t.instrument,
-    open_time: t.openTime,
-    price: t.price,
-    current_units: t.currentUnits,
-    unrealized_pl: t.unrealizedPL,
-    financing: t.financing,
-    state: t.state,
-    snapshot_at: snapshotAt,
-  }));
-
-  const { error } = await supabase.from('oanda_trades').insert(rows);
-  if (error) throw error;
 }
