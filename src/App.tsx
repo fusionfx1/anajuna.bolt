@@ -13,6 +13,7 @@ import { OrderManagement } from './components/OrderManagement';
 import { SystemHealth } from './components/SystemHealth';
 import { BrokerDemo } from './components/BrokerDemo';
 import { AIEngine } from './components/AIEngine';
+import { ChartPage } from './components/ChartPage';
 import type { NavPage } from './types/trading';
 
 function AppContent() {
@@ -44,6 +45,7 @@ function AppContent() {
       case 'system_health': return <SystemHealth />;
       case 'settings': return <Settings />;
       case 'broker_demo': return <BrokerDemo />;
+      case 'chart': return <ChartPage />;
       default: return <Dashboard />;
     }
   };

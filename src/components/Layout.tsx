@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   LayoutDashboard, TrendingUp, Bot, History, ShieldAlert,
   FlaskConical, Settings, ChevronLeft, ChevronRight,
-  Activity, Wifi, Bell, User, LogOut, BookOpen, HeartPulse, Rocket, Brain
+  Activity, Wifi, Bell, User, LogOut, BookOpen, HeartPulse, Rocket, Brain, CandlestickChart
 } from 'lucide-react';
 import type { NavPage } from '../types/trading';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +18,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'market_watch', label: 'Market Watch', icon: TrendingUp },
+  { id: 'chart', label: 'Chart', icon: CandlestickChart },
   { id: 'strategies', label: 'Strategies', icon: Bot, badge: 2 },
   { id: 'ai_engine', label: 'AI Engine', icon: Brain },
   { id: 'order_management', label: 'Order Management', icon: BookOpen },
