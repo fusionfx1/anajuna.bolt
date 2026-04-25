@@ -27,6 +27,7 @@ class DataFeedService {
   private statusHandlers: Set<StatusHandler> = new Set();
   private simulationInterval: ReturnType<typeof setInterval> | null = null;
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+  private heartbeatTickUnsub: (() => void) | null = null;
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
   private stats: ConnectionStats = {
     provider: 'simulation',
@@ -38,12 +39,13 @@ class DataFeedService {
 
   connect(config: DataFeedConfig): void {
     this.config = config;
+    const prevReconnectCount = this.stats.reconnectCount;
     this.disconnect();
     this.stats = {
       provider: config.provider,
       status: 'connecting',
       ticksReceived: 0,
-      reconnectCount: this.stats.reconnectCount,
+      reconnectCount: prevReconnectCount,
     };
     this.emitStatus();
 
@@ -68,12 +70,18 @@ class DataFeedService {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
     }
+    if (this.heartbeatTickUnsub) {
+      this.heartbeatTickUnsub();
+      this.heartbeatTickUnsub = null;
+    }
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
     }
     if (this.ws) {
       this.ws.onclose = null;
+      this.ws.onerror = null;
+      this.ws.onmessage = null;
       this.ws.close();
       this.ws = null;
     }
@@ -146,7 +154,7 @@ class DataFeedService {
       this.ws = new WebSocket(POLYGON_WS_URL);
 
       this.ws.onopen = () => {
-        this.ws?.send(JSON.stringify({ action: 'auth', params: config.apiKey }));
+        // no-op: wait for the 'connected' event from Polygon before sending auth
       };
 
       this.ws.onmessage = (event) => {
@@ -168,6 +176,7 @@ class DataFeedService {
                 status: 'connected',
                 connectedAt: Date.now(),
                 latencyMs: 0,
+                reconnectCount: 0,
               };
               this.emitStatus();
               this.startHeartbeat();
@@ -232,7 +241,7 @@ class DataFeedService {
                 trades: subs,
                 quotes: subs,
               }));
-              this.stats = { ...this.stats, status: 'connected', connectedAt: Date.now() };
+              this.stats = { ...this.stats, status: 'connected', connectedAt: Date.now(), reconnectCount: 0 };
               this.emitStatus();
               this.startHeartbeat();
             } else if (msg.T === 't') {
@@ -363,7 +372,7 @@ class DataFeedService {
     if (this.heartbeatInterval) return;
     let lastTick = Date.now();
 
-    this.onTick(() => { lastTick = Date.now(); });
+    this.heartbeatTickUnsub = this.onTick(() => { lastTick = Date.now(); });
 
     this.heartbeatInterval = setInterval(() => {
       const silence = Date.now() - lastTick;
@@ -377,7 +386,7 @@ class DataFeedService {
 
   private scheduleReconnect(config: DataFeedConfig): void {
     if (this.reconnectTimeout) return;
-    const delay = Math.min(5000 * Math.pow(2, this.stats.reconnectCount), 60000);
+    const delay = Math.min(2000 * Math.pow(2, this.stats.reconnectCount), 30000);
     this.reconnectTimeout = setTimeout(() => {
       this.reconnectTimeout = null;
       this.stats = { ...this.stats, reconnectCount: this.stats.reconnectCount + 1 };

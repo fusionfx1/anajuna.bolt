@@ -14,10 +14,9 @@ export function useDataFeedConnection(config: DataFeedConfig | null) {
   useEffect(() => {
     if (config) {
       dataFeedService.connect(config);
+    } else {
+      dataFeedService.disconnect();
     }
-    return () => {
-      if (!config) dataFeedService.disconnect();
-    };
   }, [config]);
 
   const disconnect = useCallback(() => dataFeedService.disconnect(), []);
