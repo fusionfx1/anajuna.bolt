@@ -11,13 +11,17 @@ export function useStrategies() {
   const { user } = useAuth();
   const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchStrategies(user.id);
       setStrategies(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load strategies');
     } finally {
       setLoading(false);
     }
@@ -40,20 +44,24 @@ export function useStrategies() {
     setStrategies(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
   }, []);
 
-  return { strategies, loading, refresh: load, toggleStatus, addStrategy, saveConfig };
+  return { strategies, loading, error, refresh: load, toggleStatus, addStrategy, saveConfig };
 }
 
 export function usePositions() {
   const { user } = useAuth();
   const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchPositions(user.id);
       setPositions(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load positions');
     } finally {
       setLoading(false);
     }
@@ -61,20 +69,24 @@ export function usePositions() {
 
   useEffect(() => { load(); }, [load]);
 
-  return { positions, loading, refresh: load };
+  return { positions, loading, error, refresh: load };
 }
 
 export function useTrades() {
   const { user } = useAuth();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchTrades(user.id);
       setTrades(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load trades');
     } finally {
       setLoading(false);
     }
@@ -82,7 +94,7 @@ export function useTrades() {
 
   useEffect(() => { load(); }, [load]);
 
-  return { trades, loading, refresh: load };
+  return { trades, loading, error, refresh: load };
 }
 
 export function useEquitySnapshots() {
@@ -91,12 +103,12 @@ export function useEquitySnapshots() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
-    fetchEquitySnapshots(user.id).then(data => {
-      setSnapshots(data);
-      setLoading(false);
-    });
+    fetchEquitySnapshots(user.id)
+      .then(data => setSnapshots(data))
+      .catch(() => {/* empty equity curve is acceptable */})
+      .finally(() => setLoading(false));
   }, [user]);
 
   return { snapshots, loading };
@@ -106,13 +118,17 @@ export function useRiskEvents() {
   const { user } = useAuth();
   const [events, setEvents] = useState<RiskEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchRiskEvents(user.id);
       setEvents(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load risk events');
     } finally {
       setLoading(false);
     }
@@ -120,7 +136,7 @@ export function useRiskEvents() {
 
   useEffect(() => { load(); }, [load]);
 
-  return { events, loading, refresh: load };
+  return { events, loading, error, refresh: load };
 }
 
 export function useAccountData() {
@@ -129,11 +145,11 @@ export function useAccountData() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-    fetchAccountSnapshot(user.id).then(data => {
-      setAccount(data);
-      setLoading(false);
-    });
+    if (!user) { setLoading(false); return; }
+    fetchAccountSnapshot(user.id)
+      .then(data => setAccount(data))
+      .catch(() => {/* account may not exist yet */})
+      .finally(() => setLoading(false));
   }, [user]);
 
   return { account, loading };
@@ -158,11 +174,13 @@ export function useUserSettings() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     try {
       const data = await fetchUserSettings(user.id);
       setSettings(data);
+    } catch {
+      // settings missing is non-fatal — defaults will be used
     } finally {
       setLoading(false);
     }

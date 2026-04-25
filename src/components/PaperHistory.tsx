@@ -1,21 +1,19 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, RefreshCw, Filter, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
-import { fetchClosedTrades } from '../services/paperTradingService';
+import { fetchClosedTrades, fetchHistorySummary, resetAccount } from '../services/paperTradingService';
+import type { HistorySummaryData } from '../services/paperTradingService';
 import { usePaperAccount } from '../hooks/usePaperTrading';
 import {
   priceDp, PAPER_INSTRUMENTS,
-  type PaperTrade, type TradeHistoryFilters, type HistorySummary,
+  type PaperTrade, type TradeHistoryFilters,
 } from '../types/paper';
-import { resetAccount } from '../services/paperTradingService';
 
 const PAGE_SIZE = 20;
-
 const ALL_INSTRUMENTS = ['', 'EUR_USD', 'GBP_USD', 'USD_JPY', 'XAU_USD'];
 
 function durationLabel(openedAt: string, closedAt: string | null): string {
   if (!closedAt) return '—';
-  const ms = new Date(closedAt).getTime() - new Date(openedAt).getTime();
-  const s  = Math.floor(ms / 1000);
+  const s = Math.floor((new Date(closedAt).getTime() - new Date(openedAt).getTime()) / 1000);
   if (s < 60)   return `${s}s`;
   if (s < 3600) return `${Math.floor(s / 60)}m ${s % 60}s`;
   return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
@@ -24,9 +22,9 @@ function durationLabel(openedAt: string, closedAt: string | null): string {
 // ── Trade row ─────────────────────────────────────────────────────────────────
 
 function HistoryRow({ trade }: { trade: PaperTrade }) {
-  const dp     = priceDp(trade.instrument);
-  const isBuy  = trade.side === 'buy';
-  const pnl    = Number(trade.pnl ?? 0);
+  const dp    = priceDp(trade.instrument);
+  const isBuy = trade.side === 'buy';
+  const pnl   = Number(trade.pnl ?? 0);
   const pnlColor = pnl >= 0 ? 'text-emerald-400' : 'text-red-400';
 
   return (
@@ -70,17 +68,16 @@ function HistoryRow({ trade }: { trade: PaperTrade }) {
 
 // ── Summary cards ─────────────────────────────────────────────────────────────
 
-function SummaryCards({ summary, accountBalance }: { summary: HistorySummary; accountBalance: number }) {
+function SummaryCards({ summary }: { summary: HistorySummaryData }) {
   const pnlColor = summary.totalPnl >= 0 ? 'text-emerald-400' : 'text-red-400';
-
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
       {[
-        { label: 'Total Trades',  value: summary.totalTrades.toString(),                       color: 'text-slate-200' },
-        { label: 'Win Rate',      value: `${summary.winRate.toFixed(1)}%`,                     color: summary.winRate >= 50 ? 'text-emerald-400' : 'text-red-400' },
-        { label: 'Total P&L',     value: `${summary.totalPnl >= 0 ? '+' : ''}$${summary.totalPnl.toFixed(2)}`, color: pnlColor },
-        { label: 'Winners',       value: summary.winningTrades.toString(),                     color: 'text-emerald-400' },
-        { label: 'Losers',        value: summary.losingTrades.toString(),                      color: 'text-red-400' },
+        { label: 'Total Trades', value: summary.totalTrades.toString(),   color: 'text-slate-200' },
+        { label: 'Win Rate',     value: `${summary.winRate.toFixed(1)}%`, color: summary.winRate >= 50 ? 'text-emerald-400' : 'text-red-400' },
+        { label: 'Total P&L',   value: `${summary.totalPnl >= 0 ? '+' : ''}$${summary.totalPnl.toFixed(2)}`, color: pnlColor },
+        { label: 'Winners',     value: summary.winningTrades.toString(),  color: 'text-emerald-400' },
+        { label: 'Losers',      value: summary.losingTrades.toString(),   color: 'text-red-400'    },
       ].map(card => (
         <div key={card.label} className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3">
           <p className="text-xs text-slate-500 mb-1">{card.label}</p>
@@ -91,7 +88,7 @@ function SummaryCards({ summary, accountBalance }: { summary: HistorySummary; ac
   );
 }
 
-// ── Filters bar ───────────────────────────────────────────────────────────────
+// ── Filter bar ────────────────────────────────────────────────────────────────
 
 function FiltersBar({
   filters, onChange,
@@ -105,7 +102,6 @@ function FiltersBar({
         <Filter size={12} />
         <span>Filter:</span>
       </div>
-
       <select
         value={filters.instrument}
         onChange={e => onChange({ ...filters, instrument: e.target.value })}
@@ -116,7 +112,6 @@ function FiltersBar({
           <option key={i} value={i}>{PAPER_INSTRUMENTS[i] ?? i}</option>
         ))}
       </select>
-
       <input
         type="date"
         value={filters.dateFrom}
@@ -130,7 +125,6 @@ function FiltersBar({
         onChange={e => onChange({ ...filters, dateTo: e.target.value })}
         className="bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500"
       />
-
       {(filters.instrument || filters.dateFrom || filters.dateTo) && (
         <button
           onClick={() => onChange({ instrument: '', dateFrom: '', dateTo: '' })}
@@ -145,14 +139,21 @@ function FiltersBar({
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+const EMPTY_SUMMARY: HistorySummaryData = {
+  totalTrades: 0, winningTrades: 0, losingTrades: 0, winRate: 0, totalPnl: 0,
+};
+
 export function PaperHistory() {
-  const [trades,   setTrades]   = useState<PaperTrade[]>([]);
-  const [total,    setTotal]    = useState(0);
-  const [page,     setPage]     = useState(0);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState<string | null>(null);
-  const [filters,  setFilters]  = useState<TradeHistoryFilters>({ instrument: '', dateFrom: '', dateTo: '' });
+  const [trades,    setTrades]    = useState<PaperTrade[]>([]);
+  const [total,     setTotal]     = useState(0);
+  const [page,      setPage]      = useState(0);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState<string | null>(null);
+  const [summary,   setSummary]   = useState<HistorySummaryData>(EMPTY_SUMMARY);
   const [resetting, setResetting] = useState(false);
+  const [filters,   setFilters]   = useState<TradeHistoryFilters>({
+    instrument: '', dateFrom: '', dateTo: '',
+  });
 
   const { account, refresh: refreshAccount } = usePaperAccount();
 
@@ -160,9 +161,14 @@ export function PaperHistory() {
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchClosedTrades(f, p, PAGE_SIZE);
+      const [result, summaryData] = await Promise.all([
+        fetchClosedTrades(f, p, PAGE_SIZE),
+        // Summary uses instrument filter only (date filter would skew all-time stats)
+        fetchHistorySummary(f.instrument),
+      ]);
       setTrades(result.trades);
       setTotal(result.total);
+      setSummary(summaryData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load history');
     } finally {
@@ -179,26 +185,13 @@ export function PaperHistory() {
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  // Summary computed from ALL closed trades matching filters (not just current page)
-  const summary = useMemo<HistorySummary>(() => {
-    const winners = trades.filter(t => Number(t.pnl ?? 0) > 0).length;
-    const losers  = trades.filter(t => Number(t.pnl ?? 0) <= 0).length;
-    const totalPnl = trades.reduce((s, t) => s + Number(t.pnl ?? 0), 0);
-    return {
-      totalTrades:    total,
-      winningTrades:  winners,
-      losingTrades:   losers,
-      winRate:        total > 0 ? (winners / trades.length) * 100 : 0,
-      totalPnl,
-    };
-  }, [trades, total]);
-
   const handleReset = async () => {
     if (!confirm('Reset paper account to $10,000? This cannot be undone.')) return;
     setResetting(true);
     try {
       await resetAccount();
       await refreshAccount();
+      await load(filters, 0);
     } finally {
       setResetting(false);
     }
@@ -207,8 +200,8 @@ export function PaperHistory() {
   return (
     <div className="p-6 space-y-6">
 
-      {/* Header row */}
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-base font-semibold text-slate-200">Trade History</h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -233,8 +226,8 @@ export function PaperHistory() {
         </div>
       </div>
 
-      {/* Summary */}
-      <SummaryCards summary={summary} accountBalance={account?.balance ?? 10000} />
+      {/* Summary — always reflects all-time data for selected instrument */}
+      <SummaryCards summary={summary} />
 
       {/* Filters */}
       <FiltersBar filters={filters} onChange={handleFiltersChange} />
@@ -247,8 +240,7 @@ export function PaperHistory() {
           </div>
         ) : error ? (
           <div className="flex items-center justify-center py-16 text-sm text-red-400 gap-2">
-            <AlertCircle size={16} />
-            {error}
+            <AlertCircle size={16} /> {error}
           </div>
         ) : trades.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-2">
@@ -279,7 +271,6 @@ export function PaperHistory() {
               </table>
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-5 py-3 border-t border-slate-800">
                 <p className="text-xs text-slate-500">
@@ -293,9 +284,7 @@ export function PaperHistory() {
                   >
                     <ChevronLeft size={14} />
                   </button>
-                  <span className="text-xs text-slate-400 font-mono">
-                    {page + 1} / {totalPages}
-                  </span>
+                  <span className="text-xs text-slate-400 font-mono">{page + 1} / {totalPages}</span>
                   <button
                     onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                     disabled={page >= totalPages - 1}

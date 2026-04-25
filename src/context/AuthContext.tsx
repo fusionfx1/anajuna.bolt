@@ -18,13 +18,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    // Initialise from persisted session
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    // Subscribe to auth state changes.
+    // IMPORTANT: The callback must be synchronous — awaiting Supabase methods
+    // inside an onAuthStateChange callback causes a deadlock because the SDK
+    // processes events synchronously. Use a fire-and-forget async IIFE if
+    // async work is ever needed here.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
     });
 
     return () => subscription.unsubscribe();

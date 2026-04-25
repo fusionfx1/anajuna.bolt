@@ -16,6 +16,7 @@ import { AIEngine } from './components/AIEngine';
 import { ChartPage } from './components/ChartPage';
 import { PaperPositions } from './components/PaperPositions';
 import { PaperHistory } from './components/PaperHistory';
+import { NewsCalendar } from './components/NewsCalendar';
 import type { NavPage } from './types/trading';
 
 function AppContent() {
@@ -36,21 +37,22 @@ function AppContent() {
 
   const renderPage = () => {
     switch (page) {
-      case 'dashboard': return <Dashboard />;
-      case 'market_watch': return <MarketWatch />;
-      case 'strategies': return <Strategies />;
-      case 'ai_engine': return <AIEngine />;
+      case 'dashboard':       return <Dashboard />;
+      case 'market_watch':    return <MarketWatch />;
+      case 'strategies':      return <Strategies />;
+      case 'ai_engine':       return <AIEngine />;
       case 'order_management': return <OrderManagement />;
-      case 'trades': return <TradeHistory />;
-      case 'risk': return <RiskMonitor />;
-      case 'backtesting': return <Backtesting />;
-      case 'system_health': return <SystemHealth />;
-      case 'settings': return <Settings />;
-      case 'broker_demo': return <BrokerDemo />;
-      case 'chart':            return <ChartPage />;
-      case 'paper_positions':  return <PaperPositions />;
-      case 'paper_history':    return <PaperHistory />;
-      default: return <Dashboard />;
+      case 'trades':          return <TradeHistory />;
+      case 'risk':            return <RiskMonitor />;
+      case 'backtesting':     return <Backtesting />;
+      case 'system_health':   return <SystemHealth />;
+      case 'settings':        return <Settings />;
+      case 'broker_demo':     return <BrokerDemo />;
+      case 'chart':           return <ChartPage />;
+      case 'paper_positions': return <PaperPositions />;
+      case 'paper_history':   return <PaperHistory />;
+      case 'news':            return <NewsCalendar />;
+      default:                return <Dashboard />;
     }
   };
 

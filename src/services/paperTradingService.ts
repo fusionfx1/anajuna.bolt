@@ -161,6 +161,42 @@ export async function closeTrade(trade: PaperTrade, exitPrice: number): Promise<
   return data as PaperTrade;
 }
 
+// ── All-time history summary ──────────────────────────────────────────────────
+
+export interface HistorySummaryData {
+  totalTrades: number;
+  winningTrades: number;
+  losingTrades: number;
+  winRate: number;
+  totalPnl: number;
+}
+
+export async function fetchHistorySummary(instrument: string): Promise<HistorySummaryData> {
+  let query = supabase
+    .from('paper_trades')
+    .select('pnl')
+    .eq('status', 'closed');
+
+  if (instrument) query = query.eq('instrument', instrument);
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+
+  const rows = data ?? [];
+  const winners = rows.filter(r => Number(r.pnl ?? 0) > 0).length;
+  const losers  = rows.filter(r => Number(r.pnl ?? 0) <= 0).length;
+  const total   = rows.length;
+  const totalPnl = rows.reduce((s, r) => s + Number(r.pnl ?? 0), 0);
+
+  return {
+    totalTrades:   total,
+    winningTrades: winners,
+    losingTrades:  losers,
+    winRate:       total > 0 ? (winners / total) * 100 : 0,
+    totalPnl,
+  };
+}
+
 // ── TP/SL auto-close helper ───────────────────────────────────────────────────
 
 /**
