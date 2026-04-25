@@ -130,4 +130,4 @@ export interface PerformanceMetrics {
   avg_trade_duration_mins: number;
 }
 
-export type NavPage = 'dashboard' | 'market_watch' | 'strategies' | 'ai_engine' | 'trades' | 'risk' | 'backtesting' | 'order_management' | 'system_health' | 'settings' | 'broker_demo' | 'chart' | 'paper_positions' | 'paper_history' | 'news';
+export type NavPage = 'dashboard' | 'market_watch' | 'strategies' | 'ai_engine' | 'trades' | 'risk' | 'backtesting' | 'order_management' | 'system_health' | 'settings' | 'broker_demo' | 'chart' | 'paper_positions' | 'paper_history';

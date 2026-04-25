@@ -16,7 +16,6 @@ import { AIEngine } from './components/AIEngine';
 import { ChartPage } from './components/ChartPage';
 import { PaperPositions } from './components/PaperPositions';
 import { PaperHistory } from './components/PaperHistory';
-import { NewsCalendar } from './components/NewsCalendar';
 import type { NavPage } from './types/trading';
 
 function AppContent() {
@@ -51,7 +50,6 @@ function AppContent() {
       case 'chart':            return <ChartPage />;
       case 'paper_positions':  return <PaperPositions />;
       case 'paper_history':    return <PaperHistory />;
-      case 'news':             return <NewsCalendar />;
       default: return <Dashboard />;
     }
   };
