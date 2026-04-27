@@ -511,7 +511,15 @@ class DataFeedService {
               const isAuthCode = code === 401 || code === 402 || code === 404 || code === 406;
               if (isAuthCode || looksLikeAuthErrorMessage(text)) {
                 const reason: AuthFailureReason = code === 402 ? 'forbidden' : 'invalid_credentials';
-                this.handleAuthFailure('alpaca', reason, `${text} (code ${code})`);
+                // Code 402 specifically means the API key is valid but the
+                // Alpaca plan does not cover the requested data stream
+                // (e.g. SIP on a free plan, or hitting the connection cap).
+                // Surface that distinction so the user doesn't churn on keys.
+                const detail = code === 402
+                  ? `${text} (code 402) — Alpaca rejected this connection due to plan/permission limits. ` +
+                    `Verify your subscription covers the requested feed, or switch to paper/IEX.`
+                  : `${text} (code ${code})`;
+                this.handleAuthFailure('alpaca', reason, detail);
                 return;
               }
               // Otherwise, transient error: log and let onclose drive the

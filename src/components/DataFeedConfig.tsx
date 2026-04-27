@@ -284,6 +284,33 @@ export function DataFeedConfig() {
         <StatusBadge stats={stats} />
       </div>
 
+      {stats.authFailed && (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 flex items-start gap-3">
+          <AlertCircle size={18} className="text-red-400 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-red-300">
+              Authentication failed — feed locked out to prevent reconnect loop
+            </p>
+            <p className="text-xs text-red-200/80 mt-1 leading-relaxed">
+              {stats.errorMessage ?? 'The data feed rejected the supplied credentials.'}
+            </p>
+            <p className="text-xs text-slate-400 mt-2">
+              Update your API keys below, then click <span className="font-medium text-slate-200">Reset &amp; Reconnect</span> to clear the lock and try again.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              dataFeedService.clearAuthLock();
+              dataFeedService.disconnect();
+              setTestResult(null);
+            }}
+            className="flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-medium bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-500/30 transition-colors"
+          >
+            Reset &amp; Reconnect
+          </button>
+        </div>
+      )}
+
       <div className="flex gap-1 bg-slate-800/50 p-1 rounded-lg w-fit">
         {(['feed', 'broker', 'symbols'] as const).map(s => (
           <button
