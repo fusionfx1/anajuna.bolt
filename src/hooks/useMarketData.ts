@@ -48,11 +48,7 @@ function tickQuote(q: MarketQuote): MarketQuote {
   };
 }
 
-/**
- * Simulated quote stream — seeded random walk for demos and offline mode.
- * Production components should use `useLiveMarketData` from `useDataFeed.ts`.
- */
-export function useSimulatedMarketData(intervalMs = 800) {
+export function useMarketData(intervalMs = 800) {
   const [quotes, setQuotes] = useState<MarketQuote[]>(() => buildInitialQuotes(FOREX_SYMBOLS));
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -75,8 +71,6 @@ export function useSimulatedMarketData(intervalMs = 800) {
 
   return { quotes, getQuote };
 }
-
-export { buildInitialQuotes };
 
 const EMPTY_ACCOUNT: AccountSummary = {
   balance: 0,

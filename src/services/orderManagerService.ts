@@ -1,4 +1,4 @@
-import type { ManagedOrder, RiskCheckResult } from '../types/dataFeed';
+import type { ManagedOrder, OrderStatus, RiskCheckResult } from '../types/dataFeed';
 import { riskManager } from './riskManagerService';
 import { brokerService } from './brokerService';
 import type { AccountState } from './riskManagerService';
@@ -8,27 +8,6 @@ type OrderUpdateHandler = (order: ManagedOrder) => void;
 
 function generateClientOrderId(): string {
   return `ALT-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-}
-
-async function withRetry<T>(
-  operation: () => Promise<T>,
-  label: string,
-  maxRetries: number = 3,
-  baseDelayMs: number = 500,
-): Promise<T> {
-  let lastErr: unknown;
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      return await operation();
-    } catch (err) {
-      lastErr = err;
-      if (attempt === maxRetries - 1) break;
-      const delay = baseDelayMs * Math.pow(2, attempt) + Math.floor(Math.random() * 100);
-      await new Promise<void>(resolve => setTimeout(resolve, delay));
-    }
-  }
-  const message = lastErr instanceof Error ? lastErr.message : String(lastErr);
-  throw new Error(`${label} failed after ${maxRetries} attempts: ${message}`);
 }
 
 class OrderManagerService {
@@ -142,68 +121,11 @@ class OrderManagerService {
 
   async cancelOrder(orderId: string): Promise<void> {
     const order = this.orders.get(orderId);
-    if (!order) {
-      throw new Error(`Order ${orderId} not found`);
-    }
-    if (order.status === 'filled') {
-      throw new Error(`Order ${orderId} is already filled and cannot be cancelled`);
-    }
-    if (order.status === 'cancelled') {
-      return;
-    }
+    if (!order) return;
+    if (order.status === 'filled' || order.status === 'cancelled') return;
 
-    if (!order.brokerOrderId) {
-      order.status = 'cancelled';
-      order.cancelledAt = new Date().toISOString();
-      this.orders.set(orderId, order);
-      this.emitUpdate(order);
-      await this.persistOrder(order);
-      return;
-    }
-
-    try {
-      await brokerService.cancelOrder(order.brokerOrderId);
-    } catch (cancelErr) {
-      const message = cancelErr instanceof Error ? cancelErr.message : 'Broker cancel failed';
-      console.warn('[orderManager] broker cancel rejected', { orderId, error: message });
-
-      try {
-        const brokerStatus = await brokerService.getOrderStatus(order.brokerOrderId);
-        if (brokerStatus.status === 'filled') {
-          order.status = 'filled';
-          order.filledQty = brokerStatus.filledQty;
-          order.filledAvgPrice = brokerStatus.filledAvgPrice;
-          order.filledAt = order.filledAt ?? new Date().toISOString();
-        } else if (brokerStatus.status === 'cancelled' || brokerStatus.status === 'canceled') {
-          order.status = 'cancelled';
-          order.cancelledAt = new Date().toISOString();
-        } else if (brokerStatus.status === 'partially_filled') {
-          order.status = 'partially_filled';
-          order.filledQty = brokerStatus.filledQty;
-          order.filledAvgPrice = brokerStatus.filledAvgPrice;
-        } else if (brokerStatus.status === 'rejected') {
-          order.status = 'rejected';
-          order.rejectionReason = 'Rejected by broker';
-        }
-      } catch (statusErr) {
-        console.warn('[orderManager] failed to reconcile broker status after cancel', {
-          orderId,
-          error: statusErr instanceof Error ? statusErr.message : String(statusErr),
-        });
-      }
-
-      this.orders.set(orderId, order);
-      this.emitUpdate(order);
-      await this.persistOrder(order).catch(persistErr => {
-        console.warn('[orderManager] persist after cancel reject failed', {
-          orderId,
-          error: persistErr instanceof Error ? persistErr.message : String(persistErr),
-        });
-      });
-
-      throw new Error(
-        `Cancellation rejected by broker for order ${orderId} (current status: ${order.status}): ${message}`,
-      );
+    if (order.brokerOrderId) {
+      await brokerService.cancelOrder(order.brokerOrderId).catch(() => {});
     }
 
     order.status = 'cancelled';
@@ -235,11 +157,8 @@ class OrderManagerService {
       }
       this.orders.set(orderId, order);
       this.emitUpdate(order);
-    } catch (err) {
-      console.warn('[orderManager] poll status failed', {
-        orderId,
-        error: err instanceof Error ? err.message : String(err),
-      });
+    } catch {
+      // ignore polling errors
     }
   }
 
@@ -278,70 +197,56 @@ class OrderManagerService {
 
   private async persistOrder(order: ManagedOrder): Promise<void> {
     if (!this.userId) return;
-    const userId = this.userId;
-
     try {
-      await withRetry(async () => {
-        const { error } = await supabase.from('managed_orders').upsert({
-          id: order.id,
-          user_id: userId,
-          client_order_id: order.clientOrderId,
-          symbol: order.symbol,
-          side: order.side,
-          order_type: order.orderType,
-          quantity: order.quantity,
-          limit_price: order.limitPrice ?? null,
-          stop_price: order.stopPrice ?? null,
-          status: order.status,
-          filled_qty: order.filledQty,
-          filled_avg_price: order.filledAvgPrice ?? null,
-          strategy_id: order.strategyId ?? null,
-          risk_approved: order.riskApproved,
-          rejection_reason: order.rejectionReason ?? null,
-          broker_order_id: order.brokerOrderId ?? null,
-          submitted_at: order.submittedAt,
-          filled_at: order.filledAt ?? null,
-          cancelled_at: order.cancelledAt ?? null,
-          time_in_force: order.timeInForce,
-        }, { onConflict: 'id' });
-        if (error) throw new Error(error.message);
-      }, 'persistOrder');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.warn('[orderManager] persistOrder exhausted retries', { orderId: order.id, error: message });
-      throw new Error(`Failed to persist order ${order.id}: ${message}`);
+      await supabase.from('managed_orders').upsert({
+        id: order.id,
+        user_id: this.userId,
+        client_order_id: order.clientOrderId,
+        symbol: order.symbol,
+        side: order.side,
+        order_type: order.orderType,
+        quantity: order.quantity,
+        limit_price: order.limitPrice ?? null,
+        stop_price: order.stopPrice ?? null,
+        status: order.status,
+        filled_qty: order.filledQty,
+        filled_avg_price: order.filledAvgPrice ?? null,
+        strategy_id: order.strategyId ?? null,
+        risk_approved: order.riskApproved,
+        rejection_reason: order.rejectionReason ?? null,
+        broker_order_id: order.brokerOrderId ?? null,
+        submitted_at: order.submittedAt,
+        filled_at: order.filledAt ?? null,
+        cancelled_at: order.cancelledAt ?? null,
+        time_in_force: order.timeInForce,
+      }, { onConflict: 'id' });
+    } catch {
+      // non-blocking
     }
   }
 
   private async persistTrade(order: ManagedOrder, latencyMs: number): Promise<void> {
     if (!this.userId) return;
-    const userId = this.userId;
-
     try {
-      await withRetry(async () => {
-        const { error } = await supabase.from('trades').insert({
-          user_id: userId,
-          strategy_id: order.strategyId ?? null,
-          symbol: order.symbol,
-          order_type: order.orderType.toUpperCase(),
-          side: order.side.toUpperCase(),
-          quantity: order.filledQty,
-          requested_price: order.limitPrice ?? order.filledAvgPrice ?? 0,
-          fill_price: order.filledAvgPrice ?? 0,
-          slippage_pips: 0,
-          commission_usd: 0,
-          swap_usd: 0,
-          pnl_usd: null,
-          broker_order_id: order.brokerOrderId ?? null,
-          execution_latency_ms: latencyMs,
-          executed_at: order.filledAt ?? new Date().toISOString(),
-        });
-        if (error) throw new Error(error.message);
-      }, 'persistTrade');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.warn('[orderManager] persistTrade exhausted retries', { orderId: order.id, error: message });
-      throw new Error(`Failed to persist trade for order ${order.id}: ${message}`);
+      await supabase.from('trades').insert({
+        user_id: this.userId,
+        strategy_id: order.strategyId ?? null,
+        symbol: order.symbol,
+        order_type: order.orderType.toUpperCase(),
+        side: order.side.toUpperCase(),
+        quantity: order.filledQty,
+        requested_price: order.limitPrice ?? order.filledAvgPrice ?? 0,
+        fill_price: order.filledAvgPrice ?? 0,
+        slippage_pips: 0,
+        commission_usd: 0,
+        swap_usd: 0,
+        pnl_usd: null,
+        broker_order_id: order.brokerOrderId ?? null,
+        execution_latency_ms: latencyMs,
+        executed_at: order.filledAt ?? new Date().toISOString(),
+      });
+    } catch {
+      // non-blocking
     }
   }
 }

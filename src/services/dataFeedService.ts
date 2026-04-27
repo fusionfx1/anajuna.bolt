@@ -1,11 +1,9 @@
 import type {
-  Tick, OHLCVBar, ConnectionStats, DataFeedConfig, AuthFailureReason
+  Tick, OHLCVBar, ConnectionStats, DataFeedConfig
 } from '../types/dataFeed';
-import { connectionLogger } from './connectionLogger';
 
 type TickHandler = (tick: Tick) => void;
 type StatusHandler = (stats: ConnectionStats) => void;
-type AuthState = 'idle' | 'pending' | 'authenticated' | 'failed';
 
 const POLYGON_WS_URL = 'wss://socket.polygon.io/forex';
 const ALPACA_WS_URL_PAPER = 'wss://stream.data.alpaca.markets/v2/iex';
@@ -15,15 +13,6 @@ const BASE_RECONNECT_DELAY = 2000;
 const MAX_RECONNECT_DELAY = 30000;
 const HEARTBEAT_CHECK_INTERVAL = 10000;
 const HEARTBEAT_SILENCE_THRESHOLD = 30000;
-const AUTH_TIMEOUT_MS = 8000;
-
-/**
- * WebSocket close codes that unambiguously indicate authentication or
- * authorization rejection. The 4xxx range is application-level (used by
- * Polygon / Alpaca), 1008 is the WebSocket "policy violation" code that
- * brokers commonly emit when an auth token is rejected.
- */
-const AUTH_REJECT_CLOSE_CODES = new Set<number>([1008, 4001, 4003, 4401, 4403]);
 
 const FX_SYMBOL_MAP: Record<string, string> = {
   'EURUSD': 'C:EURUSD',
@@ -36,43 +25,6 @@ const FX_SYMBOL_MAP: Record<string, string> = {
   'EURGBP': 'C:EURGBP',
 };
 
-/**
- * Returns true if the message text from a provider's `error` payload
- * indicates a credential / authorization problem rather than a transient
- * network issue. Matches common phrasing across Polygon and Alpaca.
- */
-function looksLikeAuthErrorMessage(msg: string): boolean {
-  const m = msg.toLowerCase();
-  return (
-    m.includes('auth') ||
-    m.includes('unauthor') ||
-    m.includes('forbidden') ||
-    m.includes('invalid key') ||
-    m.includes('invalid api') ||
-    m.includes('invalid credentials') ||
-    m.includes('not authorized') ||
-    m.includes('permission')
-  );
-}
-
-/**
- * Stable fingerprint of the credentials used by a config. Two configs that
- * share this fingerprint are considered equivalent for the purposes of the
- * auth lock — re-attempting them would just hit the same server-side
- * rejection.
- */
-function credentialFingerprint(config: DataFeedConfig): string {
-  return [
-    config.provider,
-    config.apiKey ?? '',
-    config.apiSecret ?? '',
-    config.alpacaKeyId ?? '',
-    config.alpacaSecretKey ?? '',
-    config.oandaApiToken ?? '',
-    config.oandaAccountId ?? '',
-  ].join('|');
-}
-
 class DataFeedService {
   private ws: WebSocket | null = null;
   private config: DataFeedConfig | null = null;
@@ -82,19 +34,8 @@ class DataFeedService {
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private heartbeatTickUnsub: (() => void) | null = null;
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
-  private authTimeout: ReturnType<typeof setTimeout> | null = null;
   private oandaAbortController: AbortController | null = null;
   private connectGeneration = 0;
-  private authState: AuthState = 'idle';
-
-  /**
-   * When set, the service is permanently locked out of reconnecting until
-   * `disconnect()` is called or `connect()` is invoked with different
-   * credentials. Stored as a credential fingerprint so a config swap clears
-   * the lock automatically.
-   */
-  private authLockFingerprint: string | null = null;
-
   private stats: ConnectionStats = {
     provider: 'simulation',
     status: 'disconnected',
@@ -104,44 +45,15 @@ class DataFeedService {
   private barBuffers: Map<string, { open: number; high: number; low: number; close: number; volume: number; startTs: number }> = new Map();
 
   connect(config: DataFeedConfig): void {
-    const fingerprint = credentialFingerprint(config);
-
-    // If the same credentials previously failed authentication, refuse to
-    // attempt the connection again — server will just reject us a second
-    // time and we'll be back in the same loop the bug created.
-    if (this.authLockFingerprint && this.authLockFingerprint === fingerprint) {
-      this.stats = {
-        ...this.stats,
-        provider: config.provider,
-        status: 'error',
-        authFailed: true,
-        authFailureReason: this.stats.authFailureReason ?? 'invalid_credentials',
-        errorMessage: this.stats.errorMessage ?? 'Authentication previously failed — update API keys to retry.',
-        maxRetriesReached: true,
-      };
-      this.emitStatus();
-      return;
-    }
-
-    // Different credentials → clear the auth lock so a re-keyed config can
-    // attempt a fresh connection.
-    if (this.authLockFingerprint && this.authLockFingerprint !== fingerprint) {
-      this.authLockFingerprint = null;
-    }
-
     this.config = config;
     const prevReconnectCount = this.stats.reconnectCount;
     this.connectGeneration++;
-    this.authState = 'idle';
     this.teardown();
     this.stats = {
       provider: config.provider,
       status: 'connecting',
       ticksReceived: 0,
       reconnectCount: prevReconnectCount,
-      authFailed: false,
-      authFailureReason: undefined,
-      errorMessage: undefined,
     };
     this.emitStatus();
 
@@ -159,31 +71,8 @@ class DataFeedService {
 
   disconnect(): void {
     this.connectGeneration++;
-    this.authLockFingerprint = null;
-    this.authState = 'idle';
     this.teardown();
-    this.stats = {
-      ...this.stats,
-      status: 'disconnected',
-      authFailed: false,
-      authFailureReason: undefined,
-    };
-    this.emitStatus();
-  }
-
-  /**
-   * Manually clear an auth lock without dropping subscriptions. Intended for
-   * a "Reconfigure / Retry with new credentials" button in the UI.
-   */
-  clearAuthLock(): void {
-    this.authLockFingerprint = null;
-    this.stats = {
-      ...this.stats,
-      authFailed: false,
-      authFailureReason: undefined,
-      errorMessage: undefined,
-      maxRetriesReached: false,
-    };
+    this.stats = { ...this.stats, status: 'disconnected' };
     this.emitStatus();
   }
 
@@ -197,7 +86,6 @@ class DataFeedService {
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
     }
-    this.clearAuthTimeout();
     if (this.oandaAbortController) {
       this.oandaAbortController.abort();
       this.oandaAbortController = null;
@@ -221,30 +109,6 @@ class DataFeedService {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
     }
-  }
-
-  private clearAuthTimeout(): void {
-    if (this.authTimeout) {
-      clearTimeout(this.authTimeout);
-      this.authTimeout = null;
-    }
-  }
-
-  /**
-   * Start a hard deadline by which the server must have confirmed our
-   * credentials. If it doesn't, we treat the silence as an auth failure —
-   * many brokers simply hang the socket on a bad key instead of replying.
-   */
-  private armAuthTimeout(provider: 'polygon' | 'alpaca'): void {
-    this.clearAuthTimeout();
-    this.authTimeout = setTimeout(() => {
-      if (this.authState === 'authenticated') return;
-      this.handleAuthFailure(
-        provider,
-        'auth_timeout',
-        `Authentication timed out after ${AUTH_TIMEOUT_MS / 1000}s — check API keys and network access.`,
-      );
-    }, AUTH_TIMEOUT_MS);
   }
 
   onTick(handler: TickHandler): () => void {
@@ -313,32 +177,17 @@ class DataFeedService {
 
   private connectPolygon(config: DataFeedConfig): void {
     const gen = this.connectGeneration;
-    this.authState = 'pending';
     try {
       this.ws = new WebSocket(POLYGON_WS_URL);
 
       this.ws.onopen = () => {
-        if (gen !== this.connectGeneration) return;
-        // Polygon emits {ev:'connected'} before accepting auth; we still arm
-        // the auth-timeout so a silent socket can't park us in 'pending'.
-        this.armAuthTimeout('polygon');
+        // Wait for the 'connected' event from Polygon before sending auth
       };
 
       this.ws.onmessage = (event) => {
         if (gen !== this.connectGeneration) return;
-        let messages: unknown;
         try {
-          messages = JSON.parse(event.data);
-        } catch (err) {
-          const preview = typeof event.data === 'string' ? event.data.slice(0, 240) : '<binary>';
-          console.warn('[dataFeed:polygon] failed to parse WS message', err, preview);
-          return;
-        }
-        if (!Array.isArray(messages)) {
-          console.warn('[dataFeed:polygon] expected array WS payload, got', typeof messages);
-          return;
-        }
-        try {
+          const messages = JSON.parse(event.data);
           for (const msg of messages) {
             if (msg.ev === 'connected') {
               this.ws?.send(JSON.stringify({
@@ -346,16 +195,12 @@ class DataFeedService {
                 params: config.apiKey,
               }));
             } else if (msg.ev === 'auth_success') {
-              this.authState = 'authenticated';
-              this.clearAuthTimeout();
               const subs = config.symbols
                 .map(s => `C.${FX_SYMBOL_MAP[s] ?? s}`)
                 .join(',');
               this.ws?.send(JSON.stringify({ action: 'subscribe', params: subs }));
               this.markConnected();
             } else if (msg.ev === 'C') {
-              // Defensive: ignore data frames that arrive before auth_success.
-              if (this.authState !== 'authenticated') continue;
               const tick: Tick = {
                 symbol: msg.pair?.replace('C:', '').replace('/', '') ?? msg.sym,
                 price: (msg.bp + msg.ap) / 2,
@@ -366,73 +211,37 @@ class DataFeedService {
                 source: 'polygon',
               };
               this.receiveTick(tick);
-            } else if (msg.ev === 'auth_failed' || msg.status === 'auth_failed') {
-              this.handleAuthFailure(
-                'polygon',
-                'invalid_credentials',
-                msg.message ?? 'Polygon rejected the API key.',
-              );
-              return;
-            } else if (msg.ev === 'status' && typeof msg.message === 'string' && looksLikeAuthErrorMessage(msg.message)) {
-              this.handleAuthFailure('polygon', 'auth_rejected', msg.message);
-              return;
+            } else if (msg.ev === 'auth_failed') {
+              this.stats = { ...this.stats, status: 'error', errorMessage: 'Polygon auth failed -- check API key' };
+              this.emitStatus();
+              this.fallbackToSimulation(config.symbols);
             }
           }
-        } catch (err) {
-          console.warn('[dataFeed:polygon] error processing WS message', err);
+        } catch {
+          // ignore parse errors
         }
       };
 
       this.ws.onerror = () => {
         if (gen !== this.connectGeneration) return;
-        // Browsers expose almost no detail on WS errors. We let onclose make
-        // the auth-vs-network call based on the close code.
         this.stats = { ...this.stats, status: 'error', errorMessage: 'WebSocket error' };
         this.emitStatus();
       };
 
-      this.ws.onclose = (event) => {
+      this.ws.onclose = () => {
         if (gen !== this.connectGeneration) return;
         this.stopHeartbeat();
-        this.clearAuthTimeout();
-
-        // Close codes are the only signal a browser exposes for auth-level
-        // rejections. Treat the documented codes as fatal; everything else
-        // that closes mid-handshake is also fatal because a healthy server
-        // wouldn't drop us before auth completes.
-        if (AUTH_REJECT_CLOSE_CODES.has(event.code)) {
-          this.handleAuthFailure(
-            'polygon',
-            'auth_rejected',
-            `Polygon closed the socket with code ${event.code}: ${event.reason || 'authorization rejected'}`,
-          );
-          return;
-        }
-        if (this.authState === 'pending') {
-          this.handleAuthFailure(
-            'polygon',
-            'auth_rejected',
-            `Polygon dropped the connection before authentication completed (code ${event.code}).`,
-          );
-          return;
-        }
-
         this.stats = { ...this.stats, status: 'reconnecting' };
         this.emitStatus();
         this.scheduleReconnect(config);
       };
-    } catch (err) {
-      this.handleAuthFailure(
-        'polygon',
-        'auth_rejected',
-        `Polygon WebSocket constructor threw: ${err instanceof Error ? err.message : String(err)}`,
-      );
+    } catch {
+      this.fallbackToSimulation(config.symbols);
     }
   }
 
   private connectAlpaca(config: DataFeedConfig): void {
     const gen = this.connectGeneration;
-    this.authState = 'pending';
     const wsUrl = config.paperTrading ? ALPACA_WS_URL_PAPER : ALPACA_WS_URL_LIVE;
     try {
       this.ws = new WebSocket(wsUrl);
@@ -444,30 +253,14 @@ class DataFeedService {
           key: config.alpacaKeyId ?? config.apiKey,
           secret: config.alpacaSecretKey ?? config.apiSecret ?? '',
         }));
-        // Crucially, we do NOT call markConnected() here. Status remains
-        // 'connecting' until the server emits {T:'success', msg:'authenticated'}.
-        this.armAuthTimeout('alpaca');
       };
 
       this.ws.onmessage = (event) => {
         if (gen !== this.connectGeneration) return;
-        let messages: unknown;
         try {
-          messages = JSON.parse(event.data);
-        } catch (err) {
-          const preview = typeof event.data === 'string' ? event.data.slice(0, 240) : '<binary>';
-          console.warn('[dataFeed:alpaca] failed to parse WS message', err, preview);
-          return;
-        }
-        if (!Array.isArray(messages)) {
-          console.warn('[dataFeed:alpaca] expected array WS payload, got', typeof messages);
-          return;
-        }
-        try {
+          const messages = JSON.parse(event.data);
           for (const msg of messages) {
             if (msg.T === 'success' && msg.msg === 'authenticated') {
-              this.authState = 'authenticated';
-              this.clearAuthTimeout();
               const subs = config.symbols.filter(s => !s.includes('USD') || s === 'BTCUSD' || s === 'ETHUSD');
               this.ws?.send(JSON.stringify({
                 action: 'subscribe',
@@ -476,7 +269,6 @@ class DataFeedService {
               }));
               this.markConnected();
             } else if (msg.T === 't') {
-              if (this.authState !== 'authenticated') continue;
               const tick: Tick = {
                 symbol: msg.S,
                 price: msg.p,
@@ -488,7 +280,6 @@ class DataFeedService {
               };
               this.receiveTick(tick);
             } else if (msg.T === 'q') {
-              if (this.authState !== 'authenticated') continue;
               const mid = (msg.bp + msg.ap) / 2;
               const tick: Tick = {
                 symbol: msg.S,
@@ -501,137 +292,38 @@ class DataFeedService {
               };
               this.receiveTick(tick);
             } else if (msg.T === 'error') {
-              const code = typeof msg.code === 'number' ? msg.code : 0;
-              const text = typeof msg.msg === 'string' ? msg.msg : 'Alpaca error';
-              // Alpaca documents auth-related codes: 401 unauthorized,
-              // 402 plan/permission, 404 invalid creds, 406 too many conns
-              // for plan, 409 already authenticated. Treat the credential
-              // codes — and any text that smells like an auth error — as
-              // fatal so we don't reconnect into the same rejection.
-              const isAuthCode = code === 401 || code === 402 || code === 404 || code === 406;
-              if (isAuthCode || looksLikeAuthErrorMessage(text)) {
-                const reason: AuthFailureReason = code === 402 ? 'forbidden' : 'invalid_credentials';
-                // Code 402 specifically means the API key is valid but the
-                // Alpaca plan does not cover the requested data stream
-                // (e.g. SIP on a free plan, or hitting the connection cap).
-                // Surface that distinction so the user doesn't churn on keys.
-                const detail = code === 402
-                  ? `${text} (code 402) — Alpaca rejected this connection due to plan/permission limits. ` +
-                    `Verify your subscription covers the requested feed, or switch to paper/IEX.`
-                  : `${text} (code ${code})`;
-                this.handleAuthFailure('alpaca', reason, detail);
-                return;
-              }
-              // Otherwise, transient error: log and let onclose drive the
-              // normal reconnect logic.
-              this.stats = { ...this.stats, status: 'error', errorMessage: text };
+              this.stats = { ...this.stats, status: 'error', errorMessage: msg.msg };
               this.emitStatus();
-              connectionLogger.warn('data_feed', `Alpaca transient error: ${text}`, undefined, { code });
+              this.fallbackToSimulation(config.symbols);
             }
           }
-        } catch (err) {
-          console.warn('[dataFeed:alpaca] error processing WS message', err);
+        } catch {
+          // ignore parse errors
         }
       };
 
       this.ws.onerror = () => {
         if (gen !== this.connectGeneration) return;
-        // Don't fall back to simulation here — that masked the auth bug.
-        // Let onclose decide whether this is an auth or a network problem.
         this.stats = { ...this.stats, status: 'error', errorMessage: 'WebSocket connection failed' };
         this.emitStatus();
+        this.fallbackToSimulation(config.symbols);
       };
 
-      this.ws.onclose = (event) => {
+      this.ws.onclose = () => {
         if (gen !== this.connectGeneration) return;
-        this.stopHeartbeat();
-        this.clearAuthTimeout();
-
-        if (AUTH_REJECT_CLOSE_CODES.has(event.code)) {
-          this.handleAuthFailure(
-            'alpaca',
-            'auth_rejected',
-            `Alpaca closed the socket with code ${event.code}: ${event.reason || 'authorization rejected'}`,
-          );
-          return;
-        }
-        if (this.authState === 'pending') {
-          this.handleAuthFailure(
-            'alpaca',
-            'auth_rejected',
-            `Alpaca dropped the connection before authentication completed (code ${event.code}).`,
-          );
-          return;
-        }
-        if (this.authState === 'authenticated') {
+        if (this.stats.status === 'connected') {
+          this.stopHeartbeat();
           this.stats = { ...this.stats, status: 'reconnecting' };
           this.emitStatus();
           this.scheduleReconnect(config);
         }
       };
-    } catch (err) {
-      this.handleAuthFailure(
-        'alpaca',
-        'auth_rejected',
-        `Alpaca WebSocket constructor threw: ${err instanceof Error ? err.message : String(err)}`,
-      );
+    } catch {
+      this.fallbackToSimulation(config.symbols);
     }
-  }
-
-  /**
-   * Centralized authentication-failure handler. Cancels every reconnection
-   * timer, tears the socket down, sets a permanent auth lock keyed to the
-   * current credentials, and emits a fatal-credential log entry. The system
-   * stays disconnected until disconnect() / clearAuthLock() / a config swap.
-   */
-  private handleAuthFailure(
-    provider: 'polygon' | 'alpaca',
-    reason: AuthFailureReason,
-    detail: string,
-  ): void {
-    // Bumping the generation invalidates any in-flight reconnect timer
-    // closures so a late-firing setTimeout cannot re-enter connect().
-    this.connectGeneration++;
-    this.authState = 'failed';
-    this.teardown();
-
-    if (this.config) {
-      this.authLockFingerprint = credentialFingerprint(this.config);
-    }
-
-    const message =
-      `[${provider}] Authentication failed (${reason}): ${detail}. ` +
-      `Update API keys in Data Feed settings and click Reconnect to retry.`;
-
-    this.stats = {
-      ...this.stats,
-      provider,
-      status: 'error',
-      authFailed: true,
-      authFailureReason: reason,
-      errorMessage: message,
-      maxRetriesReached: true,
-      reconnectCount: 0,
-      connectedAt: undefined,
-      uptimeMs: undefined,
-    };
-    this.emitStatus();
-
-    // Persist a fatal credential-error log row. The category is chosen so
-    // the SystemHealth UI can filter and surface a permanent banner.
-    void connectionLogger.error('data_feed_auth', message, new Error(detail), {
-      provider,
-      reason,
-      fatal: true,
-      is_credential_error: true,
-      suggested_action: 'verify_api_keys',
-    });
   }
 
   private markConnected(): void {
-    // Defensive: never report 'connected' unless we actually completed the
-    // authentication handshake.
-    if (this.authState !== 'authenticated') return;
     this.stats = {
       ...this.stats,
       status: 'connected',
@@ -639,14 +331,8 @@ class DataFeedService {
       latencyMs: 0,
       reconnectCount: 0,
       maxRetriesReached: false,
-      authFailed: false,
-      authFailureReason: undefined,
-      errorMessage: undefined,
     };
     this.emitStatus();
-    void connectionLogger.info('data_feed', `Data feed connected: ${this.stats.provider}`, {
-      provider: this.stats.provider,
-    });
     this.startHeartbeat();
   }
 
@@ -658,8 +344,6 @@ class DataFeedService {
       status: 'connected',
       connectedAt: Date.now(),
       latencyMs: 0,
-      authFailed: false,
-      authFailureReason: undefined,
     };
     this.emitStatus();
 
@@ -704,6 +388,13 @@ class DataFeedService {
     }, 500);
   }
 
+  private fallbackToSimulation(symbols: string[]): void {
+    if (this.simulationInterval) return;
+    this.stats = { ...this.stats, status: 'connected', provider: 'simulation' };
+    this.emitStatus();
+    this.startSimulation(symbols);
+  }
+
   private receiveTick(tick: Tick): void {
     this.stats = {
       ...this.stats,
@@ -736,23 +427,17 @@ class DataFeedService {
   }
 
   private scheduleReconnect(config: DataFeedConfig): void {
-    // Hard guard: a fatal auth failure must never schedule another attempt.
-    if (this.authLockFingerprint) return;
-    if (this.authState === 'failed') return;
     if (this.reconnectTimeout) return;
 
     if (this.stats.reconnectCount >= MAX_RECONNECT_ATTEMPTS) {
       this.stats = {
         ...this.stats,
         status: 'error',
-        errorMessage: `Connection failed after ${MAX_RECONNECT_ATTEMPTS} attempts.`,
+        errorMessage: `Connection failed after ${MAX_RECONNECT_ATTEMPTS} attempts. Falling back to simulation.`,
         maxRetriesReached: true,
       };
       this.emitStatus();
-      void connectionLogger.error('data_feed', this.stats.errorMessage ?? 'Max reconnects reached', undefined, {
-        provider: config.provider,
-        reconnectCount: this.stats.reconnectCount,
-      });
+      this.fallbackToSimulation(config.symbols);
       return;
     }
 
@@ -765,9 +450,6 @@ class DataFeedService {
     this.reconnectTimeout = setTimeout(() => {
       this.reconnectTimeout = null;
       if (gen !== this.connectGeneration) return;
-      // Re-check the auth lock at fire-time too, in case the failure landed
-      // between scheduling and firing.
-      if (this.authLockFingerprint) return;
       this.stats = { ...this.stats, reconnectCount: this.stats.reconnectCount + 1 };
       this.connect(config);
     }, delay);

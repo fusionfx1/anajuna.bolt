@@ -8,7 +8,6 @@ import type { ManagedOrder, OrderStatus, RiskCheckResult } from '../types/dataFe
 import { useOrderManager, useRiskManager } from '../hooks/useOrderManager';
 import { useLiveQuotes } from '../hooks/useDataFeed';
 import { useAccountData } from '../hooks/useSupabaseData';
-import { useToast } from './ui/Toast';
 import { FOREX_SYMBOLS } from '../lib/constants';
 
 const SYMBOLS = FOREX_SYMBOLS.slice(0, 8);
@@ -345,7 +344,6 @@ export function OrderManagement() {
   const { orders, pendingCount, stats, submitOrder, cancelOrder, refreshOrderStatus } = useOrderManager();
   const { getQuote } = useLiveQuotes(SYMBOLS);
   const { account } = useAccountData();
-  const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [lastResult, setLastResult] = useState<{ result: RiskCheckResult; order: ManagedOrder } | null>(null);
   const [filterStatus, setFilterStatus] = useState<OrderStatus | 'all'>('all');
@@ -359,78 +357,15 @@ export function OrderManagement() {
   );
 
   const handleSubmit = async (params: Parameters<typeof submitOrder>[0]) => {
-    try {
-      const { order, riskCheck } = await submitOrder(params);
-      setLastResult({ result: riskCheck, order });
-      setShowForm(false);
-
-      if (!riskCheck.approved) {
-        toast({
-          variant: 'destructive',
-          title: 'Order Blocked by Risk Check',
-          description: riskCheck.reason ?? 'Pre-trade risk validation failed.',
-        });
-      } else if (order.status === 'rejected') {
-        toast({
-          variant: 'destructive',
-          title: 'Order Rejected',
-          description: order.rejectionReason ?? 'The broker rejected this order.',
-        });
-      } else if (order.status === 'filled') {
-        toast({
-          variant: 'success',
-          title: 'Order Filled',
-          description: `${order.side.toUpperCase()} ${order.filledQty} ${order.symbol} @ ${order.filledAvgPrice?.toFixed(order.symbol.includes('JPY') ? 3 : 5) ?? 'market'}`,
-        });
-      } else {
-        toast({
-          variant: 'info',
-          title: 'Order Submitted',
-          description: `${order.side.toUpperCase()} ${order.quantity} ${order.symbol} sent to broker.`,
-        });
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred';
-      toast({
-        variant: 'destructive',
-        title: 'System Sync Error',
-        description: message,
-      });
-    }
-  };
-
-  const handleCancel = async (orderId: string) => {
-    try {
-      await cancelOrder(orderId);
-      toast({
-        variant: 'success',
-        title: 'Order Cancelled',
-        description: `Order ${orderId} cancelled at the broker.`,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Cancellation failed';
-      toast({
-        variant: 'destructive',
-        title: 'Order Cancellation Failed',
-        description: message,
-      });
-    }
+    const { order, riskCheck } = await submitOrder(params);
+    setLastResult({ result: riskCheck, order });
+    setShowForm(false);
   };
 
   const handleRefresh = async (orderId: string) => {
     setRefreshing(orderId);
-    try {
-      await refreshOrderStatus(orderId);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Status refresh failed';
-      toast({
-        variant: 'destructive',
-        title: 'Status Refresh Failed',
-        description: message,
-      });
-    } finally {
-      setRefreshing(null);
-    }
+    await refreshOrderStatus(orderId);
+    setRefreshing(null);
   };
 
   const filtered = filterStatus === 'all' ? orders : orders.filter(o => o.status === filterStatus);
@@ -560,7 +495,7 @@ export function OrderManagement() {
                           <RefreshCw size={12} className={refreshing === order.id ? 'animate-spin' : ''} />
                         </button>
                         <button
-                          onClick={() => handleCancel(order.id)}
+                          onClick={() => cancelOrder(order.id)}
                           className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
                           title="Cancel order"
                         >

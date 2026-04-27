@@ -10,7 +10,6 @@ import { useAuth } from '../context/AuthContext';
 import { useUserSettings } from '../hooks/useSupabaseData';
 import { useFeedStatus } from '../hooks/useDataFeed';
 import { dataFeedService } from '../services/dataFeedService';
-import { brokerService } from '../services/brokerService';
 import { supabase } from '../lib/supabase';
 import { FOREX_SYMBOLS } from '../lib/constants';
 import { SessionClock } from './SessionClock';
@@ -270,17 +269,6 @@ export function Layout({ page, onNavigate, children }: LayoutProps) {
           </div>
 
           <div className="flex items-center gap-2.5">
-            {/* Mock account warning when broker not configured */}
-            {!brokerService.isConfigured() && (
-              <div
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold"
-                title="No broker credentials configured. All trades are simulated against an in-memory account."
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                MOCK ACCOUNT
-              </div>
-            )}
-
             {/* Next high-impact news countdown */}
             <NextNewsWidget nextHigh={nextHigh} onNavigate={onNavigate} />
 

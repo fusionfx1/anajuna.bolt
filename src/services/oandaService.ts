@@ -64,20 +64,6 @@ class OandaService {
     return this.config?.accountType !== 'live';
   }
 
-  /**
-   * Throws when the caller targets a live OANDA account but credentials
-   * are missing. Practice mode falls back to the in-memory mock account
-   * so demos can run without keys.
-   */
-  private assertLiveCredentialsIfRequired(action: string): void {
-    if (this.config && this.config.accountType === 'live' && !this.isConfigured()) {
-      throw new Error(
-        `Cannot ${action} on a LIVE OANDA account: account ID and API token are required. ` +
-          `Configure credentials in Data Feed settings or switch to a practice account.`,
-      );
-    }
-  }
-
   private getHeaders(): Record<string, string> {
     if (!this.config) throw new Error('OANDA not configured');
     return {
@@ -88,7 +74,6 @@ class OandaService {
   }
 
   async getAccount(): Promise<OandaAccount> {
-    this.assertLiveCredentialsIfRequired('fetch account');
     if (!this.isConfigured()) {
       return this.mockAccount();
     }
@@ -134,7 +119,6 @@ class OandaService {
   }
 
   async submitOrder(order: ManagedOrder): Promise<OandaOrderResponse> {
-    this.assertLiveCredentialsIfRequired('submit order');
     if (!this.isConfigured()) {
       return this.mockOrderSubmit(order);
     }
@@ -223,7 +207,6 @@ class OandaService {
   }
 
   async cancelOrder(brokerOrderId: string): Promise<void> {
-    this.assertLiveCredentialsIfRequired('cancel order');
     if (!this.isConfigured()) return;
 
     const res = await fetchWithTimeout(
@@ -240,7 +223,6 @@ class OandaService {
   }
 
   async getOrderStatus(brokerOrderId: string): Promise<OandaOrderResponse> {
-    this.assertLiveCredentialsIfRequired('fetch order status');
     if (!this.isConfigured()) {
       return {
         brokerOrderId,
