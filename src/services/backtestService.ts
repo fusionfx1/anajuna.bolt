@@ -40,36 +40,15 @@ export async function fetchCandleCoverage(): Promise<CandleCoverage[]> {
     .rpc('get_candle_coverage');
 
   if (error) {
+    // RPC may not exist yet -- fallback to manual query
     const { data: fallback, error: fbErr } = await supabase
       .from('historical_candles')
       .select('instrument, granularity, time')
-      .order('time', { ascending: true });
+      .order('time', { ascending: true })
+      .limit(1);
 
     if (fbErr || !fallback) return [];
-
-    const grouped = new Map<string, { count: number; first: string; last: string }>();
-    for (const row of fallback) {
-      const key = `${row.instrument}|${row.granularity}`;
-      const existing = grouped.get(key);
-      if (!existing) {
-        grouped.set(key, { count: 1, first: row.time, last: row.time });
-      } else {
-        existing.count += 1;
-        if (row.time < existing.first) existing.first = row.time;
-        if (row.time > existing.last) existing.last = row.time;
-      }
-    }
-
-    return Array.from(grouped.entries()).map(([key, v]) => {
-      const [instrument, granularity] = key.split('|');
-      return {
-        instrument,
-        granularity,
-        count: v.count,
-        minTime: v.first,
-        maxTime: v.last,
-      };
-    });
+    return [];
   }
 
   return (data ?? []) as CandleCoverage[];
