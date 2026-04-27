@@ -125,7 +125,9 @@ class OrderManagerService {
     if (order.status === 'filled' || order.status === 'cancelled') return;
 
     if (order.brokerOrderId) {
-      await brokerService.cancelOrder(order.brokerOrderId).catch(() => {});
+      await brokerService.cancelOrder(order.brokerOrderId).catch((err) => {
+        console.warn('[orderManager] broker cancel failed', { orderId, err });
+      });
     }
 
     order.status = 'cancelled';
@@ -157,8 +159,8 @@ class OrderManagerService {
       }
       this.orders.set(orderId, order);
       this.emitUpdate(order);
-    } catch {
-      // ignore polling errors
+    } catch (err) {
+      console.warn('[orderManager] poll status failed', { orderId, err });
     }
   }
 
@@ -220,8 +222,8 @@ class OrderManagerService {
         cancelled_at: order.cancelledAt ?? null,
         time_in_force: order.timeInForce,
       }, { onConflict: 'id' });
-    } catch {
-      // non-blocking
+    } catch (err) {
+      console.warn('[orderManager] persistOrder failed', { id: order.id, err });
     }
   }
 
@@ -245,8 +247,8 @@ class OrderManagerService {
         execution_latency_ms: latencyMs,
         executed_at: order.filledAt ?? new Date().toISOString(),
       });
-    } catch {
-      // non-blocking
+    } catch (err) {
+      console.warn('[orderManager] persistTrade failed', { id: order.id, err });
     }
   }
 }
