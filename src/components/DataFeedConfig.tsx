@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Wifi, WifiOff, Zap, AlertCircle, CheckCircle2, Settings2,
-  Eye, EyeOff, Loader2, Radio, ChevronDown
+  WifiOff, Zap, AlertCircle, CheckCircle2, Settings2,
+  Eye, EyeOff, Loader2, Radio,
 } from 'lucide-react';
 import type { DataFeedConfig, DataProvider, BrokerProvider, ConnectionStats } from '../types/dataFeed';
 import { dataFeedService } from '../services/dataFeedService';
@@ -43,6 +43,15 @@ const BROKER_INFO: Record<Exclude<BrokerProvider, 'paper'>, { label: string; des
 };
 
 const FX_SYMBOLS = FOREX_SYMBOLS.slice(0, 8);
+
+function formatUptime(ms: number): string {
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.floor(s / 60)}m ${s % 60}s`;
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  return `${h}h ${m}m`;
+}
 
 interface StatusBadgeProps {
   stats: ConnectionStats;
@@ -182,9 +191,55 @@ export function DataFeedConfig() {
     }
   };
 
+  const connectListenerRef = React.useRef<(() => void) | null>(null);
+
   const handleConnect = () => {
     setConnecting(true);
     setTestResult(null);
+
+    if (connectListenerRef.current) {
+      connectListenerRef.current();
+      connectListenerRef.current = null;
+    }
+
+    const unsub = dataFeedService.onStatus((s) => {
+      if (s.status === 'connected') {
+        setConnecting(false);
+        setTestResult({
+          ok: true,
+          msg: `Connected via ${PROVIDER_INFO[s.provider].label}`,
+        });
+        unsub();
+        connectListenerRef.current = null;
+      } else if (s.status === 'error') {
+        setConnecting(false);
+        setTestResult({
+          ok: false,
+          msg: s.errorMessage ?? 'Connection failed',
+        });
+        unsub();
+        connectListenerRef.current = null;
+      }
+    });
+    connectListenerRef.current = unsub;
+
+    const timeout = setTimeout(() => {
+      if (connectListenerRef.current === unsub) {
+        setConnecting(false);
+        const s = dataFeedService.getStats();
+        if (s.status !== 'connected') {
+          setTestResult({
+            ok: false,
+            msg: s.errorMessage ?? 'Connection timed out',
+          });
+        }
+        unsub();
+        connectListenerRef.current = null;
+      }
+    }, 8000);
+
+    connectListenerRef.current = () => { unsub(); clearTimeout(timeout); };
+
     dataFeedService.connect(config);
 
     if (config.brokerProvider === 'oanda') {
@@ -201,17 +256,6 @@ export function DataFeedConfig() {
         paperTrading: config.paperTrading,
       });
     }
-
-    setTimeout(() => {
-      setConnecting(false);
-      const s = dataFeedService.getStats();
-      setTestResult({
-        ok: s.status === 'connected',
-        msg: s.status === 'connected'
-          ? `Connected via ${PROVIDER_INFO[s.provider].label}`
-          : s.errorMessage ?? 'Connection failed',
-      });
-    }, 2500);
   };
 
   const handleDisconnect = () => {
@@ -519,7 +563,7 @@ export function DataFeedConfig() {
           </button>
         )}
 
-        {isConnected && (
+        {(isConnected || stats.status === 'reconnecting') && (
           <div className="ml-auto flex items-center gap-3 text-xs text-slate-500">
             <span>Ticks: <span className="text-slate-300">{stats.ticksReceived.toLocaleString()}</span></span>
             {stats.reconnectCount > 0 && (
@@ -528,6 +572,16 @@ export function DataFeedConfig() {
             {stats.latencyMs !== undefined && (
               <span>Latency: <span className="text-slate-300">{stats.latencyMs}ms</span></span>
             )}
+            {stats.uptimeMs !== undefined && stats.uptimeMs > 0 && (
+              <span>Uptime: <span className="text-slate-300">{formatUptime(stats.uptimeMs)}</span></span>
+            )}
+          </div>
+        )}
+
+        {stats.maxRetriesReached && (
+          <div className="ml-auto flex items-center gap-2 text-xs">
+            <AlertCircle size={12} className="text-red-400" />
+            <span className="text-red-400">Max reconnection attempts reached</span>
           </div>
         )}
       </div>

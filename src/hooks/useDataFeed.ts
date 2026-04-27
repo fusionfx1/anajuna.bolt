@@ -5,6 +5,8 @@ import type { MarketQuote } from '../types/trading';
 
 export function useDataFeedConnection(config: DataFeedConfig | null) {
   const [stats, setStats] = useState<ConnectionStats>(() => dataFeedService.getStats());
+  const configRef = useRef(config);
+  configRef.current = config;
 
   useEffect(() => {
     const unsub = dataFeedService.onStatus(setStats);
@@ -17,6 +19,9 @@ export function useDataFeedConnection(config: DataFeedConfig | null) {
     } else {
       dataFeedService.disconnect();
     }
+    return () => {
+      dataFeedService.disconnect();
+    };
   }, [config]);
 
   const disconnect = useCallback(() => dataFeedService.disconnect(), []);

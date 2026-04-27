@@ -1,5 +1,5 @@
 import type {
-  DataProvider, FeedStatus, Tick, OHLCVBar, ConnectionStats, DataFeedConfig
+  Tick, OHLCVBar, ConnectionStats, DataFeedConfig
 } from '../types/dataFeed';
 
 type TickHandler = (tick: Tick) => void;
@@ -8,6 +8,11 @@ type StatusHandler = (stats: ConnectionStats) => void;
 const POLYGON_WS_URL = 'wss://socket.polygon.io/forex';
 const ALPACA_WS_URL_PAPER = 'wss://stream.data.alpaca.markets/v2/iex';
 const ALPACA_WS_URL_LIVE = 'wss://stream.data.alpaca.markets/v2/iex';
+const MAX_RECONNECT_ATTEMPTS = 10;
+const BASE_RECONNECT_DELAY = 2000;
+const MAX_RECONNECT_DELAY = 30000;
+const HEARTBEAT_CHECK_INTERVAL = 10000;
+const HEARTBEAT_SILENCE_THRESHOLD = 30000;
 
 const FX_SYMBOL_MAP: Record<string, string> = {
   'EURUSD': 'C:EURUSD',
@@ -29,6 +34,8 @@ class DataFeedService {
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private heartbeatTickUnsub: (() => void) | null = null;
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+  private oandaAbortController: AbortController | null = null;
+  private connectGeneration = 0;
   private stats: ConnectionStats = {
     provider: 'simulation',
     status: 'disconnected',
@@ -40,7 +47,8 @@ class DataFeedService {
   connect(config: DataFeedConfig): void {
     this.config = config;
     const prevReconnectCount = this.stats.reconnectCount;
-    this.disconnect();
+    this.connectGeneration++;
+    this.teardown();
     this.stats = {
       provider: config.provider,
       status: 'connecting',
@@ -62,31 +70,45 @@ class DataFeedService {
   }
 
   disconnect(): void {
+    this.connectGeneration++;
+    this.teardown();
+    this.stats = { ...this.stats, status: 'disconnected' };
+    this.emitStatus();
+  }
+
+  private teardown(): void {
     if (this.simulationInterval) {
       clearInterval(this.simulationInterval);
       this.simulationInterval = null;
     }
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = null;
-    }
-    if (this.heartbeatTickUnsub) {
-      this.heartbeatTickUnsub();
-      this.heartbeatTickUnsub = null;
-    }
+    this.stopHeartbeat();
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
+    }
+    if (this.oandaAbortController) {
+      this.oandaAbortController.abort();
+      this.oandaAbortController = null;
     }
     if (this.ws) {
       this.ws.onclose = null;
       this.ws.onerror = null;
       this.ws.onmessage = null;
+      this.ws.onopen = null;
       this.ws.close();
       this.ws = null;
     }
-    this.stats = { ...this.stats, status: 'disconnected' };
-    this.emitStatus();
+  }
+
+  private stopHeartbeat(): void {
+    if (this.heartbeatTickUnsub) {
+      this.heartbeatTickUnsub();
+      this.heartbeatTickUnsub = null;
+    }
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
   }
 
   onTick(handler: TickHandler): () => void {
@@ -101,7 +123,11 @@ class DataFeedService {
   }
 
   getStats(): ConnectionStats {
-    return { ...this.stats };
+    const s = { ...this.stats };
+    if (s.connectedAt && s.status === 'connected') {
+      s.uptimeMs = Date.now() - s.connectedAt;
+    }
+    return s;
   }
 
   aggregateTick(tick: Tick): OHLCVBar | null {
@@ -150,14 +176,16 @@ class DataFeedService {
   }
 
   private connectPolygon(config: DataFeedConfig): void {
+    const gen = this.connectGeneration;
     try {
       this.ws = new WebSocket(POLYGON_WS_URL);
 
       this.ws.onopen = () => {
-        // no-op: wait for the 'connected' event from Polygon before sending auth
+        // Wait for the 'connected' event from Polygon before sending auth
       };
 
       this.ws.onmessage = (event) => {
+        if (gen !== this.connectGeneration) return;
         try {
           const messages = JSON.parse(event.data);
           for (const msg of messages) {
@@ -171,15 +199,7 @@ class DataFeedService {
                 .map(s => `C.${FX_SYMBOL_MAP[s] ?? s}`)
                 .join(',');
               this.ws?.send(JSON.stringify({ action: 'subscribe', params: subs }));
-              this.stats = {
-                ...this.stats,
-                status: 'connected',
-                connectedAt: Date.now(),
-                latencyMs: 0,
-                reconnectCount: 0,
-              };
-              this.emitStatus();
-              this.startHeartbeat();
+              this.markConnected();
             } else if (msg.ev === 'C') {
               const tick: Tick = {
                 symbol: msg.pair?.replace('C:', '').replace('/', '') ?? msg.sym,
@@ -192,7 +212,7 @@ class DataFeedService {
               };
               this.receiveTick(tick);
             } else if (msg.ev === 'auth_failed') {
-              this.stats = { ...this.stats, status: 'error', errorMessage: 'Polygon auth failed — check API key' };
+              this.stats = { ...this.stats, status: 'error', errorMessage: 'Polygon auth failed -- check API key' };
               this.emitStatus();
               this.fallbackToSimulation(config.symbols);
             }
@@ -203,11 +223,14 @@ class DataFeedService {
       };
 
       this.ws.onerror = () => {
+        if (gen !== this.connectGeneration) return;
         this.stats = { ...this.stats, status: 'error', errorMessage: 'WebSocket error' };
         this.emitStatus();
       };
 
       this.ws.onclose = () => {
+        if (gen !== this.connectGeneration) return;
+        this.stopHeartbeat();
         this.stats = { ...this.stats, status: 'reconnecting' };
         this.emitStatus();
         this.scheduleReconnect(config);
@@ -218,11 +241,13 @@ class DataFeedService {
   }
 
   private connectAlpaca(config: DataFeedConfig): void {
+    const gen = this.connectGeneration;
     const wsUrl = config.paperTrading ? ALPACA_WS_URL_PAPER : ALPACA_WS_URL_LIVE;
     try {
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
+        if (gen !== this.connectGeneration) return;
         this.ws?.send(JSON.stringify({
           action: 'auth',
           key: config.alpacaKeyId ?? config.apiKey,
@@ -231,6 +256,7 @@ class DataFeedService {
       };
 
       this.ws.onmessage = (event) => {
+        if (gen !== this.connectGeneration) return;
         try {
           const messages = JSON.parse(event.data);
           for (const msg of messages) {
@@ -241,9 +267,7 @@ class DataFeedService {
                 trades: subs,
                 quotes: subs,
               }));
-              this.stats = { ...this.stats, status: 'connected', connectedAt: Date.now(), reconnectCount: 0 };
-              this.emitStatus();
-              this.startHeartbeat();
+              this.markConnected();
             } else if (msg.T === 't') {
               const tick: Tick = {
                 symbol: msg.S,
@@ -279,13 +303,16 @@ class DataFeedService {
       };
 
       this.ws.onerror = () => {
+        if (gen !== this.connectGeneration) return;
         this.stats = { ...this.stats, status: 'error', errorMessage: 'WebSocket connection failed' };
         this.emitStatus();
         this.fallbackToSimulation(config.symbols);
       };
 
       this.ws.onclose = () => {
+        if (gen !== this.connectGeneration) return;
         if (this.stats.status === 'connected') {
+          this.stopHeartbeat();
           this.stats = { ...this.stats, status: 'reconnecting' };
           this.emitStatus();
           this.scheduleReconnect(config);
@@ -296,7 +323,21 @@ class DataFeedService {
     }
   }
 
+  private markConnected(): void {
+    this.stats = {
+      ...this.stats,
+      status: 'connected',
+      connectedAt: Date.now(),
+      latencyMs: 0,
+      reconnectCount: 0,
+      maxRetriesReached: false,
+    };
+    this.emitStatus();
+    this.startHeartbeat();
+  }
+
   private startSimulation(symbols: string[]): void {
+    if (this.simulationInterval) return;
     this.stats = {
       ...this.stats,
       provider: 'simulation',
@@ -369,26 +410,46 @@ class DataFeedService {
   }
 
   private startHeartbeat(): void {
-    if (this.heartbeatInterval) return;
+    this.stopHeartbeat();
     let lastTick = Date.now();
 
     this.heartbeatTickUnsub = this.onTick(() => { lastTick = Date.now(); });
 
     this.heartbeatInterval = setInterval(() => {
       const silence = Date.now() - lastTick;
-      if (silence > 30000 && this.stats.status === 'connected') {
-        this.stats = { ...this.stats, status: 'reconnecting', errorMessage: 'Feed silent >30s' };
+      if (silence > HEARTBEAT_SILENCE_THRESHOLD && this.stats.status === 'connected') {
+        this.stopHeartbeat();
+        this.stats = { ...this.stats, status: 'reconnecting', errorMessage: `Feed silent >${HEARTBEAT_SILENCE_THRESHOLD / 1000}s` };
         this.emitStatus();
         if (this.config) this.scheduleReconnect(this.config);
       }
-    }, 10000);
+    }, HEARTBEAT_CHECK_INTERVAL);
   }
 
   private scheduleReconnect(config: DataFeedConfig): void {
     if (this.reconnectTimeout) return;
-    const delay = Math.min(2000 * Math.pow(2, this.stats.reconnectCount), 30000);
+
+    if (this.stats.reconnectCount >= MAX_RECONNECT_ATTEMPTS) {
+      this.stats = {
+        ...this.stats,
+        status: 'error',
+        errorMessage: `Connection failed after ${MAX_RECONNECT_ATTEMPTS} attempts. Falling back to simulation.`,
+        maxRetriesReached: true,
+      };
+      this.emitStatus();
+      this.fallbackToSimulation(config.symbols);
+      return;
+    }
+
+    const delay = Math.min(
+      BASE_RECONNECT_DELAY * Math.pow(2, this.stats.reconnectCount),
+      MAX_RECONNECT_DELAY,
+    );
+    const gen = this.connectGeneration;
+
     this.reconnectTimeout = setTimeout(() => {
       this.reconnectTimeout = null;
+      if (gen !== this.connectGeneration) return;
       this.stats = { ...this.stats, reconnectCount: this.stats.reconnectCount + 1 };
       this.connect(config);
     }, delay);

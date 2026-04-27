@@ -31,9 +31,16 @@ const OANDA_LIVE_URL = 'https://api-fxtrade.oanda.com';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
+const FETCH_TIMEOUT_MS = 15000;
 
 async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function fetchWithTimeout(url: string, opts: RequestInit, timeoutMs = FETCH_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...opts, signal: controller.signal }).finally(() => clearTimeout(id));
 }
 
 class OandaService {
@@ -73,7 +80,7 @@ class OandaService {
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        const res = await fetch(
+        const res = await fetchWithTimeout(
           `${this.baseUrl}/v3/accounts/${this.config!.accountId}/summary`,
           { headers: this.getHeaders() }
         );
@@ -139,7 +146,7 @@ class OandaService {
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        const res = await fetch(
+        const res = await fetchWithTimeout(
           `${this.baseUrl}/v3/accounts/${this.config!.accountId}/orders`,
           {
             method: 'POST',
@@ -202,7 +209,7 @@ class OandaService {
   async cancelOrder(brokerOrderId: string): Promise<void> {
     if (!this.isConfigured()) return;
 
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${this.baseUrl}/v3/accounts/${this.config!.accountId}/orders/${brokerOrderId}/cancel`,
       {
         method: 'PUT',
@@ -225,7 +232,7 @@ class OandaService {
       };
     }
 
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${this.baseUrl}/v3/accounts/${this.config!.accountId}/orders/${brokerOrderId}`,
       { headers: this.getHeaders() }
     );

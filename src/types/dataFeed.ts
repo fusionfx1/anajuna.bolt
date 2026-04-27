@@ -102,6 +102,8 @@ export interface ConnectionStats {
   reconnectCount: number;
   latencyMs?: number;
   errorMessage?: string;
+  maxRetriesReached?: boolean;
+  uptimeMs?: number;
 }
 
 export interface PositionSizeResult {
