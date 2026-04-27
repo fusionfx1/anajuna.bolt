@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Tick, ConnectionStats, OHLCVBar, DataFeedConfig, OrderBook, OrderBookLevel } from '../types/dataFeed';
 import { dataFeedService } from '../services/dataFeedService';
 import type { MarketQuote } from '../types/trading';
+import { buildInitialQuotes } from './useMarketData';
+import { FOREX_SYMBOLS } from '../lib/constants';
 
 export function useFeedStatus() {
   const [stats, setStats] = useState<ConnectionStats>(() => dataFeedService.getStats());
@@ -85,6 +87,88 @@ export function useLiveQuotes(symbols: string[]) {
   const allQuotes = Array.from(quotes.values());
 
   return { quotes: allQuotes, getQuote };
+}
+
+/**
+ * Production market quote hook — sources bid/ask from the live data feed
+ * (Polygon / Alpaca / OANDA / simulation fallback) and exposes the same
+ * `{ quotes, getQuote }` shape that the legacy simulated hook provided.
+ *
+ * Quotes are seeded from `INITIAL_MARKET_PRICES` so the table renders
+ * immediately while the feed connects. Each incoming tick patches the
+ * matching symbol with fresh bid/ask/spread/timestamp and an updated
+ * change_pct relative to the seed price.
+ */
+export function useLiveMarketData(symbols: string[] = FOREX_SYMBOLS) {
+  const [quotes, setQuotes] = useState<MarketQuote[]>(() => buildInitialQuotes(symbols));
+  const seedRef = useRef<Map<string, number>>(
+    new Map(buildInitialQuotes(symbols).map(q => [q.symbol, (q.bid + q.ask) / 2])),
+  );
+
+  useEffect(() => {
+    setQuotes(buildInitialQuotes(symbols));
+    seedRef.current = new Map(
+      buildInitialQuotes(symbols).map(q => [q.symbol, (q.bid + q.ask) / 2]),
+    );
+  }, [symbols.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const unsub = dataFeedService.onTick(tick => {
+      if (symbols.length > 0 && !symbols.includes(tick.symbol)) return;
+      const isJpy = tick.symbol.includes('JPY') || tick.symbol === 'XAUUSD';
+      const dp = isJpy ? 3 : 5;
+      const pipMultiplier = isJpy ? 100 : 10000;
+      const seed = seedRef.current.get(tick.symbol);
+      const changePct = seed && seed > 0
+        ? parseFloat((((tick.bid + tick.ask) / 2 - seed) / seed * 100).toFixed(3))
+        : 0;
+
+      setQuotes(prev => {
+        const idx = prev.findIndex(q => q.symbol === tick.symbol);
+        const next = [...prev];
+        const spreadPips = parseFloat(((tick.ask - tick.bid) * pipMultiplier).toFixed(2));
+        const bid = parseFloat(tick.bid.toFixed(dp));
+        const ask = parseFloat(tick.ask.toFixed(dp));
+
+        if (idx === -1) {
+          next.push({
+            symbol: tick.symbol,
+            bid,
+            ask,
+            spread: spreadPips,
+            change_pct: 0,
+            high_24h: bid,
+            low_24h: bid,
+            volume: tick.size,
+            timestamp: tick.timestamp,
+          });
+          return next;
+        }
+
+        const existing = next[idx];
+        next[idx] = {
+          ...existing,
+          bid,
+          ask,
+          spread: spreadPips,
+          change_pct: changePct,
+          high_24h: Math.max(existing.high_24h, bid),
+          low_24h: existing.low_24h > 0 ? Math.min(existing.low_24h, bid) : bid,
+          volume: existing.volume + tick.size,
+          timestamp: tick.timestamp,
+        };
+        return next;
+      });
+    });
+    return unsub;
+  }, [symbols.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const getQuote = useCallback(
+    (symbol: string) => quotes.find(q => q.symbol === symbol),
+    [quotes],
+  );
+
+  return { quotes, getQuote };
 }
 
 export function useLiveBars(symbol: string, maxBars = 60) {

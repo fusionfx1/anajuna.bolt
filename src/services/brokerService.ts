@@ -55,6 +55,20 @@ class BrokerService {
     return this.config?.paperTrading ?? true;
   }
 
+  /**
+   * Throws when the caller is in live trading mode and credentials are
+   * missing or incomplete. In paper mode this is a no-op so demos can run
+   * against the in-memory mock account.
+   */
+  private assertLiveCredentialsIfRequired(action: string): void {
+    if (this.config && this.config.paperTrading === false && !this.isConfigured()) {
+      throw new Error(
+        `Cannot ${action} in LIVE trading mode: Alpaca API key id and secret are required. ` +
+          `Configure credentials in Data Feed settings or switch to paper trading.`,
+      );
+    }
+  }
+
   private getHeaders(): Record<string, string> {
     if (!this.config) throw new Error('Broker not configured');
     return {
@@ -65,6 +79,7 @@ class BrokerService {
   }
 
   async getAccount(): Promise<BrokerAccount> {
+    this.assertLiveCredentialsIfRequired('fetch account');
     if (!this.config || !this.isConfigured()) {
       return this.mockAccount();
     }
@@ -106,6 +121,7 @@ class BrokerService {
   }
 
   async submitOrder(order: ManagedOrder): Promise<BrokerOrderResponse> {
+    this.assertLiveCredentialsIfRequired('submit order');
     if (!this.config || !this.isConfigured()) {
       return this.mockOrderSubmit(order);
     }
@@ -173,6 +189,7 @@ class BrokerService {
   }
 
   async cancelOrder(brokerOrderId: string): Promise<void> {
+    this.assertLiveCredentialsIfRequired('cancel order');
     if (!this.config || !this.isConfigured()) {
       return;
     }
@@ -188,6 +205,7 @@ class BrokerService {
   }
 
   async getOrderStatus(brokerOrderId: string): Promise<BrokerOrderResponse> {
+    this.assertLiveCredentialsIfRequired('fetch order status');
     if (!this.config || !this.isConfigured()) {
       return {
         brokerOrderId,

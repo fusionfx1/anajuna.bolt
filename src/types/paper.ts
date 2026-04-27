@@ -51,7 +51,7 @@ export const PAPER_INSTRUMENTS: Record<string, string> = {
   XAU_USD: 'XAU/USD',
 };
 
-/** Map from chart Instrument to useMarketData symbol key */
+/** Map from chart Instrument to live-feed symbol key (e.g. EUR_USD -> EURUSD) */
 export function instrumentToSymbol(instrument: string): string {
   return instrument.replace('_', '');
 }

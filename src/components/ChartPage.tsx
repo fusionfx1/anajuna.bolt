@@ -10,7 +10,7 @@ import {
 } from '../services/candleService';
 import { computeAllIndicators, type IndicatorData } from '../services/indicators';
 import { detectPatterns, detectSRLevels, type CandlePattern, type SRLevel } from '../services/patternDetection';
-import { useMarketData } from '../hooks/useMarketData';
+import { useLiveMarketData } from '../hooks/useDataFeed';
 import { usePaperAccount, usePaperPositions } from '../hooks/usePaperTrading';
 import { instrumentToSymbol, priceDp, PAPER_INSTRUMENTS } from '../types/paper';
 
@@ -116,7 +116,7 @@ export function ChartPage() {
   const displayCandle   = hoveredCandle ?? latestCandleRef.current;
 
   // Market data for real bid/ask prices
-  const { getQuote } = useMarketData(800);
+  const { getQuote } = useLiveMarketData();
   const symbol       = instrumentToSymbol(instrument);
   const quote        = getQuote(symbol);
   const bid          = quote?.bid ?? 0;

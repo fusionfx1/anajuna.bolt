@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, TrendingUp, TrendingDown, Star } from 'lucide-react';
-import { useMarketData } from '../hooks/useMarketData';
+import { useLiveMarketData } from '../hooks/useDataFeed';
 import { useUserSettings } from '../hooks/useSupabaseData';
 import { useAuth } from '../context/AuthContext';
 import { upsertUserSettings } from '../services/tradingService';
@@ -104,7 +104,7 @@ const DEFAULT_STARRED = ['EURUSD', 'GBPUSD', 'USDJPY'];
 
 export function MarketWatch() {
   const { user } = useAuth();
-  const { quotes } = useMarketData(600);
+  const { quotes } = useLiveMarketData();
   const { settings } = useUserSettings();
   const { toast } = useToast();
   const [search, setSearch] = useState('');

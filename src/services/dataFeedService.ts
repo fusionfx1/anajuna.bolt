@@ -186,8 +186,19 @@ class DataFeedService {
 
       this.ws.onmessage = (event) => {
         if (gen !== this.connectGeneration) return;
+        let messages: unknown;
         try {
-          const messages = JSON.parse(event.data);
+          messages = JSON.parse(event.data);
+        } catch (err) {
+          const preview = typeof event.data === 'string' ? event.data.slice(0, 240) : '<binary>';
+          console.warn('[dataFeed:polygon] failed to parse WS message', err, preview);
+          return;
+        }
+        if (!Array.isArray(messages)) {
+          console.warn('[dataFeed:polygon] expected array WS payload, got', typeof messages);
+          return;
+        }
+        try {
           for (const msg of messages) {
             if (msg.ev === 'connected') {
               this.ws?.send(JSON.stringify({
@@ -217,8 +228,8 @@ class DataFeedService {
               this.fallbackToSimulation(config.symbols);
             }
           }
-        } catch {
-          // ignore parse errors
+        } catch (err) {
+          console.warn('[dataFeed:polygon] error processing WS message', err);
         }
       };
 
@@ -257,8 +268,19 @@ class DataFeedService {
 
       this.ws.onmessage = (event) => {
         if (gen !== this.connectGeneration) return;
+        let messages: unknown;
         try {
-          const messages = JSON.parse(event.data);
+          messages = JSON.parse(event.data);
+        } catch (err) {
+          const preview = typeof event.data === 'string' ? event.data.slice(0, 240) : '<binary>';
+          console.warn('[dataFeed:alpaca] failed to parse WS message', err, preview);
+          return;
+        }
+        if (!Array.isArray(messages)) {
+          console.warn('[dataFeed:alpaca] expected array WS payload, got', typeof messages);
+          return;
+        }
+        try {
           for (const msg of messages) {
             if (msg.T === 'success' && msg.msg === 'authenticated') {
               const subs = config.symbols.filter(s => !s.includes('USD') || s === 'BTCUSD' || s === 'ETHUSD');
@@ -297,8 +319,8 @@ class DataFeedService {
               this.fallbackToSimulation(config.symbols);
             }
           }
-        } catch {
-          // ignore parse errors
+        } catch (err) {
+          console.warn('[dataFeed:alpaca] error processing WS message', err);
         }
       };
 
