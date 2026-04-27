@@ -7,15 +7,22 @@ import type { Candle } from './backtestEngine';
 
 // --- Historical candle operations ---
 
+export type CandleSource = 'live' | 'simulated' | 'mixed' | 'generated';
+
+export interface FetchedCandles {
+  candles: Candle[];
+  source: CandleSource;
+}
+
 export async function fetchHistoricalCandles(
   instrument: BacktestInstrument,
   granularity: BacktestGranularity,
   startDate: string,
   endDate: string,
-): Promise<Candle[]> {
+): Promise<FetchedCandles> {
   const { data, error } = await supabase
     .from('historical_candles')
-    .select('time, open, high, low, close, volume')
+    .select('time, open, high, low, close, volume, source')
     .eq('instrument', instrument)
     .eq('granularity', granularity)
     .gte('time', startDate)
@@ -25,7 +32,8 @@ export async function fetchHistoricalCandles(
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map(row => ({
+  const rows = data ?? [];
+  const candles = rows.map(row => ({
     time: Math.floor(new Date(row.time).getTime() / 1000),
     open: Number(row.open),
     high: Number(row.high),
@@ -33,6 +41,15 @@ export async function fetchHistoricalCandles(
     close: Number(row.close),
     volume: Number(row.volume),
   }));
+
+  let source: CandleSource = 'simulated';
+  if (rows.length > 0) {
+    const sources = new Set(rows.map(r => (r.source ?? 'simulated') as string));
+    if (sources.size > 1) source = 'mixed';
+    else source = (sources.values().next().value as CandleSource) ?? 'simulated';
+  }
+
+  return { candles, source };
 }
 
 export async function fetchCandleCoverage(): Promise<CandleCoverage[]> {
@@ -58,6 +75,7 @@ export async function upsertCandles(
   instrument: string,
   granularity: string,
   candles: Candle[],
+  source: 'live' | 'simulated' = 'simulated',
 ): Promise<number> {
   if (candles.length === 0) return 0;
 
@@ -70,6 +88,7 @@ export async function upsertCandles(
     low: c.low,
     close: c.close,
     volume: c.volume,
+    source,
   }));
 
   // Batch upsert in chunks of 500

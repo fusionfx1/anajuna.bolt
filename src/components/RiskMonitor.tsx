@@ -6,6 +6,7 @@ import {
 import { useRiskEvents, useStrategies, useAccountData, useUserSettings } from '../hooks/useSupabaseData';
 import { upsertUserSettings } from '../services/tradingService';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from './ui/Toast';
 import type { RiskEvent } from '../types/trading';
 
 function GaugeArc({ pct, color }: { pct: number; color: string }) {
@@ -119,6 +120,7 @@ export function RiskMonitor() {
   const { events, loading: eventsLoading } = useRiskEvents();
   const { strategies } = useStrategies();
   const { settings, loading: settingsLoading } = useUserSettings();
+  const { toast } = useToast();
 
   const [breakers, setBreakers] = useState({
     dailyLossLimit: true,
@@ -150,7 +152,14 @@ export function RiskMonitor() {
         newsFilter: 'cb_news_filter',
         overnightHold: 'cb_overnight_hold',
       };
-      upsertUserSettings(user.id, { [colMap[key]]: newVal }).catch(console.error);
+      upsertUserSettings(user.id, { [colMap[key]]: newVal }).catch(err => {
+        setBreakers(prev => ({ ...prev, [key]: !newVal }));
+        toast({
+          variant: 'destructive',
+          title: 'Could not save circuit breaker',
+          description: err instanceof Error ? err.message : 'Unknown error',
+        });
+      });
     }
   };
 

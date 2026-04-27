@@ -4,6 +4,7 @@ import { useMarketData } from '../hooks/useMarketData';
 import { useUserSettings } from '../hooks/useSupabaseData';
 import { useAuth } from '../context/AuthContext';
 import { upsertUserSettings } from '../services/tradingService';
+import { useToast } from './ui/Toast';
 import type { MarketQuote } from '../types/trading';
 
 function SparkLine({ history, color }: { history: number[]; color: string }) {
@@ -105,6 +106,7 @@ export function MarketWatch() {
   const { user } = useAuth();
   const { quotes } = useMarketData(600);
   const { settings } = useUserSettings();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [starred, setStarred] = useState<Set<string>>(new Set(DEFAULT_STARRED));
   const [showStarredOnly, setShowStarredOnly] = useState(false);
@@ -137,7 +139,13 @@ export function MarketWatch() {
       else next.add(symbol);
       const updated = Array.from(next);
       if (user) {
-        upsertUserSettings(user.id, { starred_symbols: updated }).catch(console.error);
+        upsertUserSettings(user.id, { starred_symbols: updated }).catch(err => {
+          toast({
+            variant: 'destructive',
+            title: 'Could not save starred symbols',
+            description: err instanceof Error ? err.message : 'Unknown error',
+          });
+        });
       }
       return next;
     });

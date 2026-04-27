@@ -11,6 +11,14 @@ import { BacktestTradeLog } from './backtest/BacktestTradeLog';
 import { BacktestEquityCurve } from './backtest/BacktestEquityCurve';
 import { BacktestRunHistory } from './backtest/BacktestRunHistory';
 import type { BacktestConfig, BacktestResult, BacktestRun, BacktestInstrument, BacktestGranularity } from '../types/backtest';
+import type { CandleSource } from '../services/backtestService';
+
+const SOURCE_LABEL: Record<CandleSource, { text: string; cls: string }> = {
+  live: { text: 'Live data', cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+  simulated: { text: 'Simulated data', cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+  mixed: { text: 'Mixed data', cls: 'bg-sky-500/10 text-sky-400 border-sky-500/20' },
+  generated: { text: 'Generated (no DB)', cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+};
 
 export function Backtesting() {
   const { user } = useAuth();
@@ -22,6 +30,7 @@ export function Backtesting() {
   const [savedResult, setSavedResult] = useState<BacktestResult | null>(null);
   const [lastConfig, setLastConfig] = useState<BacktestConfig | null>(null);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [candleSource, setCandleSource] = useState<CandleSource | null>(null);
 
   const activeResult = result ?? savedResult;
   const activeConfig = lastConfig;
@@ -33,11 +42,14 @@ export function Backtesting() {
     setDownloadMsg(null);
 
     // Try fetching from Supabase first, fall back to generated candles
-    let candles;
+    let candles: Awaited<ReturnType<typeof fetchHistoricalCandles>>['candles'] = [];
+    let source: CandleSource = 'simulated';
     try {
-      candles = await fetchHistoricalCandles(
+      const fetched = await fetchHistoricalCandles(
         config.instrument, config.granularity, config.startDate, config.endDate,
       );
+      candles = fetched.candles;
+      source = fetched.source;
     } catch {
       candles = [];
     }
@@ -46,6 +58,7 @@ export function Backtesting() {
       candles = generateHistoricalCandles(
         config.instrument, config.granularity, config.startDate, config.endDate,
       );
+      source = 'generated';
     }
 
     if (candles.length < 2) {
@@ -53,6 +66,7 @@ export function Backtesting() {
       return;
     }
 
+    setCandleSource(source);
     run(config, candles);
   }, [run]);
 
@@ -186,6 +200,14 @@ export function Backtesting() {
                 <span>{activeConfig.granularity}</span>
                 <span className="text-slate-600">|</span>
                 <span>{activeResult.candleCount.toLocaleString()} candles</span>
+                {candleSource && (
+                  <>
+                    <span className="text-slate-600">|</span>
+                    <span className={`px-2 py-0.5 rounded-full border text-xs font-semibold ${SOURCE_LABEL[candleSource].cls}`}>
+                      {SOURCE_LABEL[candleSource].text}
+                    </span>
+                  </>
+                )}
               </div>
               <span className={`text-xs font-bold tabular-nums ${activeResult.metrics.netPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {activeResult.metrics.netPnl >= 0 ? '+' : ''}${activeResult.metrics.netPnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

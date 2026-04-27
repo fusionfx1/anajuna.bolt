@@ -164,28 +164,31 @@ async function callGemini(
 }
 
 function parseSignalResponse(raw: string): AISignalResponse {
+  let parsed: Record<string, unknown>;
   try {
-    const parsed = JSON.parse(raw);
-    const signal = (["BUY", "SELL", "HOLD"].includes(parsed.signal) ? parsed.signal : "HOLD") as "BUY" | "SELL" | "HOLD";
-    const confidence = Math.min(1, Math.max(0, parseFloat(parsed.confidence) || 0.5));
-    return {
-      signal,
-      confidence,
-      reasoning: String(parsed.reasoning ?? "No reasoning provided"),
-      suggested_sl: parsed.suggested_sl ?? null,
-      suggested_tp: parsed.suggested_tp ?? null,
-      key_factors: Array.isArray(parsed.key_factors) ? parsed.key_factors : [],
-      latency_ms: 0,
-    };
+    parsed = JSON.parse(raw);
   } catch {
-    return {
-      signal: "HOLD",
-      confidence: 0.5,
-      reasoning: "Failed to parse AI response",
-      key_factors: [],
-      latency_ms: 0,
-    };
+    throw new Error(
+      `AI provider returned non-JSON response (truncated): ${raw.slice(0, 240)}`,
+    );
   }
+
+  if (!parsed.signal || !["BUY", "SELL", "HOLD"].includes(String(parsed.signal))) {
+    throw new Error(
+      `AI provider response missing/invalid 'signal' field: ${JSON.stringify(parsed).slice(0, 240)}`,
+    );
+  }
+
+  const confidence = Math.min(1, Math.max(0, parseFloat(String(parsed.confidence)) || 0.5));
+  return {
+    signal: parsed.signal as "BUY" | "SELL" | "HOLD",
+    confidence,
+    reasoning: String(parsed.reasoning ?? "No reasoning provided"),
+    suggested_sl: (parsed.suggested_sl as number | null | undefined) ?? null,
+    suggested_tp: (parsed.suggested_tp as number | null | undefined) ?? null,
+    key_factors: Array.isArray(parsed.key_factors) ? (parsed.key_factors as string[]) : [],
+    latency_ms: 0,
+  };
 }
 
 Deno.serve(async (req: Request) => {
