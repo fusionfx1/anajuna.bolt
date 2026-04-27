@@ -17,6 +17,7 @@ import { ChartPage } from './components/ChartPage';
 import { PaperPositions } from './components/PaperPositions';
 import { PaperHistory } from './components/PaperHistory';
 import { NewsCalendar } from './components/NewsCalendar';
+import { Toaster } from './components/ui/Toast';
 import type { NavPage } from './types/trading';
 
 function AppContent() {
@@ -57,9 +58,12 @@ function AppContent() {
   };
 
   return (
-    <Layout page={page} onNavigate={setPage}>
-      {renderPage()}
-    </Layout>
+    <>
+      <Layout page={page} onNavigate={setPage}>
+        {renderPage()}
+      </Layout>
+      <Toaster />
+    </>
   );
 }
 
