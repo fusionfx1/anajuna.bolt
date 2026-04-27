@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, TrendingUp, Bot, History, ShieldAlert,
   FlaskConical, Settings, ChevronLeft, ChevronRight,
-  Activity, Wifi, Bell, User, LogOut, BookOpen, HeartPulse, Rocket, Brain, CandlestickChart,
+  Activity, Wifi, WifiOff, Bell, User, LogOut, BookOpen, HeartPulse, Rocket, Brain, CandlestickChart,
   BarChart2, Clock, Newspaper
 } from 'lucide-react';
 import type { NavPage } from '../types/trading';
 import { useAuth } from '../context/AuthContext';
 import { useUserSettings } from '../hooks/useSupabaseData';
+import { useFeedStatus } from '../hooks/useDataFeed';
+import { dataFeedService } from '../services/dataFeedService';
+import { supabase } from '../lib/supabase';
+import { FOREX_SYMBOLS } from '../lib/constants';
 import { SessionClock } from './SessionClock';
 import { NextNewsWidget } from './news/NextNewsWidget';
 import { useNewsData } from '../hooks/useNewsData';
+import type { DataFeedConfig, DataProvider, BrokerProvider } from '../types/dataFeed';
 
 interface NavItem {
   id: NavPage;
@@ -57,6 +62,50 @@ export function Layout({ page, onNavigate, children }: LayoutProps) {
   const { user, signOut } = useAuth();
   const { settings } = useUserSettings();
   const { nextHigh } = useNewsData();
+  const feedStats = useFeedStatus();
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    supabase
+      .from('data_feed_configs')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const current = dataFeedService.getStats();
+        if (current.status === 'connected' || current.status === 'connecting') return;
+
+        if (data && data.provider) {
+          const config: DataFeedConfig = {
+            provider: data.provider as DataProvider,
+            apiKey: data.api_key ?? '',
+            apiSecret: data.api_secret ?? '',
+            symbols: data.symbols ?? FOREX_SYMBOLS.slice(0, 8),
+            paperTrading: data.paper_trading ?? true,
+            brokerProvider: (data.broker_provider as BrokerProvider) ?? 'paper',
+            alpacaKeyId: data.alpaca_key_id ?? '',
+            alpacaSecretKey: data.alpaca_secret_key ?? '',
+            oandaAccountId: data.oanda_account_id ?? '',
+            oandaApiToken: data.oanda_api_token ?? '',
+            oandaAccountType: (data.oanda_account_type as 'practice' | 'live') ?? 'practice',
+          };
+          dataFeedService.connect(config);
+        } else {
+          dataFeedService.connect({
+            provider: 'simulation',
+            apiKey: '',
+            symbols: FOREX_SYMBOLS.slice(0, 8),
+            paperTrading: true,
+            brokerProvider: 'paper',
+          });
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   const emailShort   = user?.email?.split('@')[0] ?? 'Trader';
   const brokerServer = settings?.broker_server as string | undefined;
@@ -150,10 +199,36 @@ export function Layout({ page, onNavigate, children }: LayoutProps) {
 
         {/* User / connection footer */}
         <div className="px-3 py-4 border-t border-slate-800 space-y-2 flex-shrink-0">
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-emerald-500/10">
-            <Wifi size={14} className="text-emerald-400 flex-shrink-0" />
+          <div className={`flex items-center gap-2 px-2 py-1.5 rounded-lg ${
+            feedStats.status === 'connected'
+              ? 'bg-emerald-500/10'
+              : feedStats.status === 'connecting' || feedStats.status === 'reconnecting'
+                ? 'bg-amber-500/10'
+                : 'bg-slate-800'
+          }`}>
+            {feedStats.status === 'connected' ? (
+              <Wifi size={14} className="text-emerald-400 flex-shrink-0" />
+            ) : (
+              <WifiOff size={14} className={`flex-shrink-0 ${
+                feedStats.status === 'connecting' || feedStats.status === 'reconnecting'
+                  ? 'text-amber-400'
+                  : 'text-slate-500'
+              }`} />
+            )}
             {!collapsed && (
-              <span className="text-xs font-medium text-emerald-400">MT5 Connected</span>
+              <span className={`text-xs font-medium ${
+                feedStats.status === 'connected'
+                  ? 'text-emerald-400'
+                  : feedStats.status === 'connecting' || feedStats.status === 'reconnecting'
+                    ? 'text-amber-400'
+                    : 'text-slate-500'
+              }`}>
+                {feedStats.status === 'connected'
+                  ? `${feedStats.provider === 'simulation' ? 'Sim' : feedStats.provider} Feed`
+                  : feedStats.status === 'connecting' ? 'Connecting...'
+                  : feedStats.status === 'reconnecting' ? 'Reconnecting...'
+                  : 'Feed Offline'}
+              </span>
             )}
           </div>
           {!collapsed && (
@@ -197,10 +272,14 @@ export function Layout({ page, onNavigate, children }: LayoutProps) {
             {/* Next high-impact news countdown */}
             <NextNewsWidget nextHigh={nextHigh} onNavigate={onNavigate} />
 
-            {/* Live badge */}
-            <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded-lg">
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-              <span>Live</span>
+            {/* Feed status badge */}
+            <div className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg ${
+              feedStats.status === 'connected' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-400 bg-slate-800'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${
+                feedStats.status === 'connected' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'
+              }`} />
+              <span>{feedStats.status === 'connected' ? 'Live' : 'Offline'}</span>
             </div>
 
             {/* Notifications */}

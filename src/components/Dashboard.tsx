@@ -3,7 +3,7 @@ import { DollarSign, TrendingUp, Activity, AlertTriangle, Radio, Zap, BookOpen, 
 import { StatCard } from './ui/StatCard';
 import { useAccountData, useStrategies, usePositions, useEquitySnapshots, useUserSettings } from '../hooks/useSupabaseData';
 import type { EquitySnapshot, Strategy, Position } from '../types/trading';
-import { useDataFeedConnection } from '../hooks/useDataFeed';
+import { useFeedStatus } from '../hooks/useDataFeed';
 import { useOrderManager } from '../hooks/useOrderManager';
 
 function EquityChart({ snapshots }: { snapshots: EquitySnapshot[] }) {
@@ -106,7 +106,7 @@ function OpenPositionRow({ pos }: { pos: Position }) {
 }
 
 function FeedStatusBar() {
-  const { stats } = useDataFeedConnection(null);
+  const stats = useFeedStatus();
   const { stats: orderStats, pendingCount } = useOrderManager();
 
   const feedOk = stats.status === 'connected';

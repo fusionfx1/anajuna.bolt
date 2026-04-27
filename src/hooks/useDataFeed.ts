@@ -3,25 +3,23 @@ import type { Tick, ConnectionStats, OHLCVBar, DataFeedConfig, OrderBook, OrderB
 import { dataFeedService } from '../services/dataFeedService';
 import type { MarketQuote } from '../types/trading';
 
-export function useDataFeedConnection(config: DataFeedConfig | null) {
+export function useFeedStatus() {
   const [stats, setStats] = useState<ConnectionStats>(() => dataFeedService.getStats());
-  const configRef = useRef(config);
-  configRef.current = config;
 
   useEffect(() => {
     const unsub = dataFeedService.onStatus(setStats);
     return unsub;
   }, []);
 
+  return stats;
+}
+
+export function useDataFeedConnection(config: DataFeedConfig | null) {
+  const stats = useFeedStatus();
+
   useEffect(() => {
-    if (config) {
-      dataFeedService.connect(config);
-    } else {
-      dataFeedService.disconnect();
-    }
-    return () => {
-      dataFeedService.disconnect();
-    };
+    if (!config) return;
+    dataFeedService.connect(config);
   }, [config]);
 
   const disconnect = useCallback(() => dataFeedService.disconnect(), []);
