@@ -93,6 +93,12 @@ export interface SystemHealthMetric {
   lastUpdated: number;
 }
 
+export type AuthFailureReason =
+  | 'invalid_credentials'
+  | 'forbidden'
+  | 'auth_timeout'
+  | 'auth_rejected';
+
 export interface ConnectionStats {
   provider: DataProvider;
   status: FeedStatus;
@@ -104,6 +110,10 @@ export interface ConnectionStats {
   errorMessage?: string;
   maxRetriesReached?: boolean;
   uptimeMs?: number;
+  /** True when the feed is locked out due to a fatal credential failure. */
+  authFailed?: boolean;
+  /** Specific reason for the auth failure, when known. */
+  authFailureReason?: AuthFailureReason;
 }
 
 export interface PositionSizeResult {
