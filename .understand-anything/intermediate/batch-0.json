@@ -1,0 +1,2081 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/main.tsx",
+      "type": "file",
+      "name": "main.tsx",
+      "filePath": "src/main.tsx",
+      "summary": "React application entry point, mounts App to DOM",
+      "tags": ["react", "entry-point"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/App.tsx",
+      "type": "file",
+      "name": "App.tsx",
+      "filePath": "src/App.tsx",
+      "summary": "Root component with authentication routing, page navigation, and context providers",
+      "tags": ["react", "routing", "auth", "main-component"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/index.css",
+      "type": "file",
+      "name": "index.css",
+      "filePath": "src/index.css",
+      "summary": "Global styles with Tailwind layers configuration",
+      "tags": ["styles", "tailwind"],
+      "complexity": "simple",
+      "language": "CSS"
+    },
+    {
+      "id": "file:package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "package.json",
+      "summary": "Node.js project manifest with React, Supabase, and dev dependencies",
+      "tags": ["config", "dependencies", "scripts"],
+      "complexity": "simple",
+      "language": "JSON"
+    },
+    {
+      "id": "file:tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "tsconfig.json",
+      "summary": "TypeScript configuration with app and node references",
+      "tags": ["config", "typescript"],
+      "complexity": "simple",
+      "language": "JSON"
+    },
+    {
+      "id": "file:vite.config.ts",
+      "type": "config",
+      "name": "vite.config.ts",
+      "filePath": "vite.config.ts",
+      "summary": "Vite build configuration with React plugin and code splitting",
+      "tags": ["config", "build"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:vitest.config.ts",
+      "type": "config",
+      "name": "vitest.config.ts",
+      "filePath": "vitest.config.ts",
+      "summary": "Vitest unit test configuration",
+      "tags": ["config", "testing"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:playwright.config.ts",
+      "type": "config",
+      "name": "playwright.config.ts",
+      "filePath": "playwright.config.ts",
+      "summary": "Playwright E2E test configuration with Chromium only",
+      "tags": ["config", "e2e-testing"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:tailwind.config.js",
+      "type": "config",
+      "name": "tailwind.config.js",
+      "filePath": "tailwind.config.js",
+      "summary": "Tailwind CSS configuration",
+      "tags": ["config", "styles"],
+      "complexity": "simple",
+      "language": "JavaScript"
+    },
+    {
+      "id": "file:postcss.config.js",
+      "type": "config",
+      "name": "postcss.config.js",
+      "filePath": "postcss.config.js",
+      "summary": "PostCSS configuration with Tailwind and Autoprefixer",
+      "tags": ["config", "styles"],
+      "complexity": "simple",
+      "language": "JavaScript"
+    },
+    {
+      "id": "file:eslint.config.js",
+      "type": "config",
+      "name": "eslint.config.js",
+      "filePath": "eslint.config.js",
+      "summary": "ESLint flat configuration for TypeScript and React",
+      "tags": ["config", "linting"],
+      "complexity": "simple",
+      "language": "JavaScript"
+    },
+    {
+      "id": "file:src/context/AuthContext.tsx",
+      "type": "file",
+      "name": "AuthContext.tsx",
+      "filePath": "src/context/AuthContext.tsx",
+      "summary": "Authentication context with Supabase session management",
+      "tags": ["react", "context", "auth", "supabase"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/context/DataProviderContext.tsx",
+      "type": "file",
+      "name": "DataProviderContext.tsx",
+      "filePath": "src/context/DataProviderContext.tsx",
+      "summary": "Data provider selection context for multi-source support (EODHD, Tiingo, Synthetic)",
+      "tags": ["react", "context", "data-providers"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/lib/supabase.ts",
+      "type": "file",
+      "name": "supabase.ts",
+      "filePath": "src/lib/supabase.ts",
+      "summary": "Supabase client initialization",
+      "tags": ["supabase", "client"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/lib/constants.ts",
+      "type": "file",
+      "name": "constants.ts",
+      "filePath": "src/lib/constants.ts",
+      "summary": "Global constants for symbols, timeframes, and default settings",
+      "tags": ["constants"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/Layout.tsx",
+      "type": "file",
+      "name": "Layout.tsx",
+      "filePath": "src/components/Layout.tsx",
+      "summary": "Main layout wrapper with navigation, clock, and news widget",
+      "tags": ["react", "component", "layout"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/Dashboard.tsx",
+      "type": "file",
+      "name": "Dashboard.tsx",
+      "filePath": "src/components/Dashboard.tsx",
+      "summary": "Main dashboard with equity chart and statistics",
+      "tags": ["react", "component", "page"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/MarketWatch.tsx",
+      "type": "file",
+      "name": "MarketWatch.tsx",
+      "filePath": "src/components/MarketWatch.tsx",
+      "summary": "Market data display with real-time quotes and sparklines",
+      "tags": ["react", "component", "market-data"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/Strategies.tsx",
+      "type": "file",
+      "name": "Strategies.tsx",
+      "filePath": "src/components/Strategies.tsx",
+      "summary": "Strategy management UI with create/edit modals",
+      "tags": ["react", "component", "strategies"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/Backtesting.tsx",
+      "type": "file",
+      "name": "Backtesting.tsx",
+      "filePath": "src/components/Backtesting.tsx",
+      "summary": "Backtesting execution and results display across multiple data providers",
+      "tags": ["react", "component", "backtesting"],
+      "complexity": "complex",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/AIEngine.tsx",
+      "type": "file",
+      "name": "AIEngine.tsx",
+      "filePath": "src/components/AIEngine.tsx",
+      "summary": "AI signal generation with provider management",
+      "tags": ["react", "component", "ai"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/OrderManagement.tsx",
+      "type": "file",
+      "name": "OrderManagement.tsx",
+      "filePath": "src/components/OrderManagement.tsx",
+      "summary": "Order creation and management interface",
+      "tags": ["react", "component", "orders"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/RiskMonitor.tsx",
+      "type": "file",
+      "name": "RiskMonitor.tsx",
+      "filePath": "src/components/RiskMonitor.tsx",
+      "summary": "Risk metrics display with gauges and alerts",
+      "tags": ["react", "component", "risk"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/SystemHealth.tsx",
+      "type": "file",
+      "name": "SystemHealth.tsx",
+      "filePath": "src/components/SystemHealth.tsx",
+      "summary": "System status monitoring with health indicators",
+      "tags": ["react", "component", "monitoring"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/Settings.tsx",
+      "type": "file",
+      "name": "Settings.tsx",
+      "filePath": "src/components/Settings.tsx",
+      "summary": "User settings configuration interface",
+      "tags": ["react", "component", "settings"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/TradeHistory.tsx",
+      "type": "file",
+      "name": "TradeHistory.tsx",
+      "filePath": "src/components/TradeHistory.tsx",
+      "summary": "Historical trade records display",
+      "tags": ["react", "component", "trades"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/BrokerDemo.tsx",
+      "type": "file",
+      "name": "BrokerDemo.tsx",
+      "filePath": "src/components/BrokerDemo.tsx",
+      "summary": "Demo OANDA broker integration with live quotes and charting",
+      "tags": ["react", "component", "broker", "demo"],
+      "complexity": "complex",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/ChartPage.tsx",
+      "type": "file",
+      "name": "ChartPage.tsx",
+      "filePath": "src/components/ChartPage.tsx",
+      "summary": "Advanced charting with indicators and pattern detection",
+      "tags": ["react", "component", "chart"],
+      "complexity": "complex",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/PaperPositions.tsx",
+      "type": "file",
+      "name": "PaperPositions.tsx",
+      "filePath": "src/components/PaperPositions.tsx",
+      "summary": "Paper trading positions display with close dialog",
+      "tags": ["react", "component", "paper-trading"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/PaperHistory.tsx",
+      "type": "file",
+      "name": "PaperHistory.tsx",
+      "filePath": "src/components/PaperHistory.tsx",
+      "summary": "Paper trading history with pagination",
+      "tags": ["react", "component", "paper-trading"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/NewsCalendar.tsx",
+      "type": "file",
+      "name": "NewsCalendar.tsx",
+      "filePath": "src/components/NewsCalendar.tsx",
+      "summary": "Economic news and events calendar",
+      "tags": ["react", "component", "news"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/SessionClock.tsx",
+      "type": "file",
+      "name": "SessionClock.tsx",
+      "filePath": "src/components/SessionClock.tsx",
+      "summary": "Market session clock display",
+      "tags": ["react", "component", "clock"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/DataFeedConfig.tsx",
+      "type": "file",
+      "name": "DataFeedConfig.tsx",
+      "filePath": "src/components/DataFeedConfig.tsx",
+      "summary": "Data feed configuration UI for providers and credentials",
+      "tags": ["react", "component", "config"],
+      "complexity": "complex",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/auth/LoginScreen.tsx",
+      "type": "file",
+      "name": "LoginScreen.tsx",
+      "filePath": "src/components/auth/LoginScreen.tsx",
+      "summary": "Supabase authentication login UI",
+      "tags": ["react", "component", "auth"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/ai/AIProviderModal.tsx",
+      "type": "file",
+      "name": "AIProviderModal.tsx",
+      "filePath": "src/components/ai/AIProviderModal.tsx",
+      "summary": "Modal for AI provider configuration",
+      "tags": ["react", "component", "ai"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/ai/AISignalPanel.tsx",
+      "type": "file",
+      "name": "AISignalPanel.tsx",
+      "filePath": "src/components/ai/AISignalPanel.tsx",
+      "summary": "AI signal display panel with badges",
+      "tags": ["react", "component", "ai"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/backtest/BacktestConfig.tsx",
+      "type": "file",
+      "name": "BacktestConfig.tsx",
+      "filePath": "src/components/backtest/BacktestConfig.tsx",
+      "summary": "Backtesting configuration form with date pickers and strategy selection",
+      "tags": ["react", "component", "backtest"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/backtest/BacktestDataSource.tsx",
+      "type": "file",
+      "name": "BacktestDataSource.tsx",
+      "filePath": "src/components/backtest/BacktestDataSource.tsx",
+      "summary": "Provider selection UI for backtesting data sources",
+      "tags": ["react", "component", "backtest"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/backtest/BacktestResults.tsx",
+      "type": "file",
+      "name": "BacktestResults.tsx",
+      "filePath": "src/components/backtest/BacktestResults.tsx",
+      "summary": "Backtest results summary display",
+      "tags": ["react", "component", "backtest"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/backtest/BacktestEquityCurve.tsx",
+      "type": "file",
+      "name": "BacktestEquityCurve.tsx",
+      "filePath": "src/components/backtest/BacktestEquityCurve.tsx",
+      "summary": "Equity curve visualization for backtest results",
+      "tags": ["react", "component", "backtest", "chart"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/backtest/BacktestTradeLog.tsx",
+      "type": "file",
+      "name": "BacktestTradeLog.tsx",
+      "filePath": "src/components/backtest/BacktestTradeLog.tsx",
+      "summary": "Trade log table for backtest results",
+      "tags": ["react", "component", "backtest"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/backtest/BacktestRunHistory.tsx",
+      "type": "file",
+      "name": "BacktestRunHistory.tsx",
+      "filePath": "src/components/backtest/BacktestRunHistory.tsx",
+      "summary": "Historical backtest runs display",
+      "tags": ["react", "component", "backtest"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/backtest/BacktestProgress.tsx",
+      "type": "file",
+      "name": "BacktestProgress.tsx",
+      "filePath": "src/components/backtest/BacktestProgress.tsx",
+      "summary": "Progress bar for active backtest runs",
+      "tags": ["react", "component", "backtest"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/backtest/ComparisonResults.tsx",
+      "type": "file",
+      "name": "ComparisonResults.tsx",
+      "filePath": "src/components/backtest/ComparisonResults.tsx",
+      "summary": "Side-by-side metrics comparison across multiple providers",
+      "tags": ["react", "component", "backtest"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/chart/CandleChart.tsx",
+      "type": "file",
+      "name": "CandleChart.tsx",
+      "filePath": "src/components/chart/CandleChart.tsx",
+      "summary": "Lightweight candlestick chart implementation",
+      "tags": ["react", "component", "chart"],
+      "complexity": "complex",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/chart/IndicatorControls.tsx",
+      "type": "file",
+      "name": "IndicatorControls.tsx",
+      "filePath": "src/components/chart/IndicatorControls.tsx",
+      "summary": "Technical indicator toggle controls",
+      "tags": ["react", "component", "chart"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/chart/PatternControls.tsx",
+      "type": "file",
+      "name": "PatternControls.tsx",
+      "filePath": "src/components/chart/PatternControls.tsx",
+      "summary": "Chart pattern detection controls",
+      "tags": ["react", "component", "chart"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/paper/TradeModal.tsx",
+      "type": "file",
+      "name": "TradeModal.tsx",
+      "filePath": "src/components/paper/TradeModal.tsx",
+      "summary": "Modal for entering paper trades",
+      "tags": ["react", "component", "paper-trading"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/strategies/NewStrategyModal.tsx",
+      "type": "file",
+      "name": "NewStrategyModal.tsx",
+      "filePath": "src/components/strategies/NewStrategyModal.tsx",
+      "summary": "Modal for creating new strategies with templates",
+      "tags": ["react", "component", "strategies"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/strategies/ConfigEditorModal.tsx",
+      "type": "file",
+      "name": "ConfigEditorModal.tsx",
+      "filePath": "src/components/strategies/ConfigEditorModal.tsx",
+      "summary": "Modal for editing strategy configuration",
+      "tags": ["react", "component", "strategies"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/strategies/strategyTemplates.ts",
+      "type": "file",
+      "name": "strategyTemplates.ts",
+      "filePath": "src/components/strategies/strategyTemplates.ts",
+      "summary": "Pre-defined strategy templates and forex symbols",
+      "tags": ["data", "strategies"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/ui/StatCard.tsx",
+      "type": "file",
+      "name": "StatCard.tsx",
+      "filePath": "src/components/ui/StatCard.tsx",
+      "summary": "Reusable statistics card component",
+      "tags": ["react", "component", "ui"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/components/news/NextNewsWidget.tsx",
+      "type": "file",
+      "name": "NextNewsWidget.tsx",
+      "filePath": "src/components/news/NextNewsWidget.tsx",
+      "summary": "Upcoming news events widget",
+      "tags": ["react", "component", "news"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/hooks/useAIEngine.ts",
+      "type": "file",
+      "name": "useAIEngine.ts",
+      "filePath": "src/hooks/useAIEngine.ts",
+      "summary": "AI engine state and prediction management hook",
+      "tags": ["react", "hook", "ai"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/hooks/useBacktest.ts",
+      "type": "file",
+      "name": "useBacktest.ts",
+      "filePath": "src/hooks/useBacktest.ts",
+      "summary": "Backtest execution management hook",
+      "tags": ["react", "hook", "backtest"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/hooks/useComparisonBacktest.ts",
+      "type": "file",
+      "name": "useComparisonBacktest.ts",
+      "filePath": "src/hooks/useComparisonBacktest.ts",
+      "summary": "Multi-provider backtest comparison logic hook",
+      "tags": ["react", "hook", "backtest"],
+      "complexity": "complex",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/hooks/useDataFeed.ts",
+      "type": "file",
+      "name": "useDataFeed.ts",
+      "filePath": "src/hooks/useDataFeed.ts",
+      "summary": "Data feed connection and status management",
+      "tags": ["react", "hook", "data-feed"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/hooks/useMarketData.ts",
+      "type": "file",
+      "name": "useMarketData.ts",
+      "filePath": "src/hooks/useMarketData.ts",
+      "summary": "Market data and account summary fetching",
+      "tags": ["react", "hook", "market-data"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/hooks/useNewsData.ts",
+      "type": "file",
+      "name": "useNewsData.ts",
+      "filePath": "src/hooks/useNewsData.ts",
+      "summary": "News events data fetching and formatting",
+      "tags": ["react", "hook", "news"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/hooks/useOrderManager.ts",
+      "type": "file",
+      "name": "useOrderManager.ts",
+      "filePath": "src/hooks/useOrderManager.ts",
+      "summary": "Order management and risk management hook",
+      "tags": ["react", "hook", "orders"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/hooks/usePaperTrading.ts",
+      "type": "file",
+      "name": "usePaperTrading.ts",
+      "filePath": "src/hooks/usePaperTrading.ts",
+      "summary": "Paper trading position and trade management",
+      "tags": ["react", "hook", "paper-trading"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/hooks/useSupabaseData.ts",
+      "type": "file",
+      "name": "useSupabaseData.ts",
+      "filePath": "src/hooks/useSupabaseData.ts",
+      "summary": "Supabase real-time data fetching for strategies, positions, trades",
+      "tags": ["react", "hook", "supabase"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/backtestEngine.ts",
+      "type": "file",
+      "name": "backtestEngine.ts",
+      "filePath": "src/services/backtestEngine.ts",
+      "summary": "Core backtesting engine with strategy execution logic",
+      "tags": ["service", "backtest", "engine"],
+      "complexity": "complex",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/backtestService.ts",
+      "type": "file",
+      "name": "backtestService.ts",
+      "filePath": "src/services/backtestService.ts",
+      "summary": "Supabase operations for backtest runs and results",
+      "tags": ["service", "backtest", "supabase"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/backtestStrategies.ts",
+      "type": "file",
+      "name": "backtestStrategies.ts",
+      "filePath": "src/services/backtestStrategies.ts",
+      "summary": "Pre-defined backtesting strategy implementations (EMA, RSI, MACD, Bollinger)",
+      "tags": ["service", "backtest", "strategies"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/dataFeedService.ts",
+      "type": "file",
+      "name": "dataFeedService.ts",
+      "filePath": "src/services/dataFeedService.ts",
+      "summary": "Data feed orchestration and tick/quote distribution",
+      "tags": ["service", "data-feed"],
+      "complexity": "complex",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/dataFetchers/fetchOHLCV.ts",
+      "type": "file",
+      "name": "fetchOHLCV.ts",
+      "filePath": "src/services/dataFetchers/fetchOHLCV.ts",
+      "summary": "Multi-provider OHLCV data fetching with provider selection",
+      "tags": ["service", "data-fetcher"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/dataFetchers/eodhd.ts",
+      "type": "file",
+      "name": "eodhd.ts",
+      "filePath": "src/services/dataFetchers/eodhd.ts",
+      "summary": "EODHD API data fetcher for OHLCV data",
+      "tags": ["service", "data-fetcher"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/dataFetchers/tiingo.ts",
+      "type": "file",
+      "name": "tiingo.ts",
+      "filePath": "src/services/dataFetchers/tiingo.ts",
+      "summary": "Tiingo API data fetcher for OHLCV data",
+      "tags": ["service", "data-fetcher"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/dataFetchers/synthetic.ts",
+      "type": "file",
+      "name": "synthetic.ts",
+      "filePath": "src/services/dataFetchers/synthetic.ts",
+      "summary": "Synthetic data generator for testing and demo purposes",
+      "tags": ["service", "data-fetcher"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/dataFetchers/types.ts",
+      "type": "file",
+      "name": "types.ts",
+      "filePath": "src/services/dataFetchers/types.ts",
+      "summary": "Type definitions for data providers and OHLCV data",
+      "tags": ["types", "data-fetcher"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/cache.ts",
+      "type": "file",
+      "name": "cache.ts",
+      "filePath": "src/services/cache.ts",
+      "summary": "In-memory caching service for OHLCV data",
+      "tags": ["service", "cache"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/normalize.ts",
+      "type": "file",
+      "name": "normalize.ts",
+      "filePath": "src/services/normalize.ts",
+      "summary": "Data normalization across different provider formats",
+      "tags": ["service", "data"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/candleService.ts",
+      "type": "file",
+      "name": "candleService.ts",
+      "filePath": "src/services/candleService.ts",
+      "summary": "Candle data fetching for instruments and granularities",
+      "tags": ["service", "candles"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/indicators.ts",
+      "type": "file",
+      "name": "indicators.ts",
+      "filePath": "src/services/indicators.ts",
+      "summary": "Technical indicator calculations (EMA, MACD, RSI, Bollinger)",
+      "tags": ["service", "indicators"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/patternDetection.ts",
+      "type": "file",
+      "name": "patternDetection.ts",
+      "filePath": "src/services/patternDetection.ts",
+      "summary": "Chart pattern detection (head-and-shoulders, double tops/bottoms, triangles)",
+      "tags": ["service", "patterns"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/oandaService.ts",
+      "type": "file",
+      "name": "oandaService.ts",
+      "filePath": "src/services/oandaService.ts",
+      "summary": "OANDA REST API integration for live trading and data",
+      "tags": ["service", "broker"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/brokerService.ts",
+      "type": "file",
+      "name": "brokerService.ts",
+      "filePath": "src/services/brokerService.ts",
+      "summary": "Broker abstraction for account and order management",
+      "tags": ["service", "broker"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/tradingService.ts",
+      "type": "file",
+      "name": "tradingService.ts",
+      "filePath": "src/services/tradingService.ts",
+      "summary": "Trading strategy and position management via Supabase",
+      "tags": ["service", "trading"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/orderManagerService.ts",
+      "type": "file",
+      "name": "orderManagerService.ts",
+      "filePath": "src/services/orderManagerService.ts",
+      "summary": "Order lifecycle management with risk checks",
+      "tags": ["service", "orders"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/riskManagerService.ts",
+      "type": "file",
+      "name": "riskManagerService.ts",
+      "filePath": "src/services/riskManagerService.ts",
+      "summary": "Risk parameter calculations and monitoring",
+      "tags": ["service", "risk"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/paperTradingService.ts",
+      "type": "file",
+      "name": "paperTradingService.ts",
+      "filePath": "src/services/paperTradingService.ts",
+      "summary": "Paper trading position management and P&L calculation",
+      "tags": ["service", "paper-trading"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/services/aiProviderService.ts",
+      "type": "file",
+      "name": "aiProviderService.ts",
+      "filePath": "src/services/aiProviderService.ts",
+      "summary": "AI provider configuration and signal fetching",
+      "tags": ["service", "ai"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/types/trading.ts",
+      "type": "file",
+      "name": "trading.ts",
+      "filePath": "src/types/trading.ts",
+      "summary": "Core trading domain types (Strategy, Position, Trade, Order)",
+      "tags": ["types", "trading"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/types/backtest.ts",
+      "type": "file",
+      "name": "backtest.ts",
+      "filePath": "src/types/backtest.ts",
+      "summary": "Backtest-specific types and configurations",
+      "tags": ["types", "backtest"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/types/dataFeed.ts",
+      "type": "file",
+      "name": "dataFeed.ts",
+      "filePath": "src/types/dataFeed.ts",
+      "summary": "Data feed and provider types",
+      "tags": ["types", "data-feed"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/types/paper.ts",
+      "type": "file",
+      "name": "paper.ts",
+      "filePath": "src/types/paper.ts",
+      "summary": "Paper trading types",
+      "tags": ["types", "paper-trading"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/types/news.ts",
+      "type": "file",
+      "name": "news.ts",
+      "filePath": "src/types/news.ts",
+      "summary": "News and economic calendar event types",
+      "tags": ["types", "news"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/types/aiProvider.ts",
+      "type": "file",
+      "name": "aiProvider.ts",
+      "filePath": "src/types/aiProvider.ts",
+      "summary": "AI provider configuration and prediction types",
+      "tags": ["types", "ai"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/workers/backtestWorker.ts",
+      "type": "file",
+      "name": "backtestWorker.ts",
+      "filePath": "src/workers/backtestWorker.ts",
+      "summary": "Web Worker for offloading backtest computations",
+      "tags": ["worker", "backtest"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:src/pages/Settings/DataProviders.tsx",
+      "type": "file",
+      "name": "DataProviders.tsx",
+      "filePath": "src/pages/Settings/DataProviders.tsx",
+      "summary": "Data provider settings and API key configuration",
+      "tags": ["react", "component", "settings"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:supabase/functions/ai-signal-proxy/index.ts",
+      "type": "file",
+      "name": "ai-signal-proxy",
+      "filePath": "supabase/functions/ai-signal-proxy/index.ts",
+      "summary": "Supabase Edge Function for AI signal proxying",
+      "tags": ["supabase", "edge-function"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:supabase/functions/candle-ingest/index.ts",
+      "type": "file",
+      "name": "candle-ingest",
+      "filePath": "supabase/functions/candle-ingest/index.ts",
+      "summary": "Supabase Edge Function for ingesting candle data",
+      "tags": ["supabase", "edge-function"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:supabase/functions/news-proxy/index.ts",
+      "type": "file",
+      "name": "news-proxy",
+      "filePath": "supabase/functions/news-proxy/index.ts",
+      "summary": "Supabase Edge Function for news proxying",
+      "tags": ["supabase", "edge-function"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:supabase/migrations/20260412082411_create_forex_trading_schema.sql",
+      "type": "table",
+      "name": "create_forex_trading_schema",
+      "filePath": "supabase/migrations/20260412082411_create_forex_trading_schema.sql",
+      "summary": "Initial forex trading schema with accounts, positions, trades",
+      "tags": ["database", "migration"],
+      "complexity": "moderate",
+      "language": "SQL"
+    },
+    {
+      "id": "file:supabase/migrations/20260412094030_add_account_settings_and_seed_support.sql",
+      "type": "table",
+      "name": "add_account_settings_and_seed_support",
+      "filePath": "supabase/migrations/20260412094030_add_account_settings_and_seed_support.sql",
+      "summary": "Account settings and seed tracking tables",
+      "tags": ["database", "migration"],
+      "complexity": "simple",
+      "language": "SQL"
+    },
+    {
+      "id": "file:supabase/migrations/20260412180521_add_data_feed_and_order_management.sql",
+      "type": "table",
+      "name": "add_data_feed_and_order_management",
+      "filePath": "supabase/migrations/20260412180521_add_data_feed_and_order_management.sql",
+      "summary": "Data feed configuration and order management tables",
+      "tags": ["database", "migration"],
+      "complexity": "moderate",
+      "language": "SQL"
+    },
+    {
+      "id": "file:supabase/migrations/20260412211702_add_oanda_credentials_to_data_feed_configs.sql",
+      "type": "table",
+      "name": "add_oanda_credentials",
+      "filePath": "supabase/migrations/20260412211702_add_oanda_credentials_to_data_feed_configs.sql",
+      "summary": "OANDA credentials to data feed configs",
+      "tags": ["database", "migration"],
+      "complexity": "simple",
+      "language": "SQL"
+    },
+    {
+      "id": "file:supabase/migrations/20260412224612_add_circuit_breakers_to_user_settings.sql",
+      "type": "table",
+      "name": "add_circuit_breakers",
+      "filePath": "supabase/migrations/20260412224612_add_circuit_breakers_to_user_settings.sql",
+      "summary": "Circuit breaker settings for risk management",
+      "tags": ["database", "migration"],
+      "complexity": "simple",
+      "language": "SQL"
+    },
+    {
+      "id": "file:supabase/migrations/20260419224350_add_ai_engine_tables.sql",
+      "type": "table",
+      "name": "add_ai_engine_tables",
+      "filePath": "supabase/migrations/20260419224350_add_ai_engine_tables.sql",
+      "summary": "AI engine prediction and signal tables",
+      "tags": ["database", "migration"],
+      "complexity": "moderate",
+      "language": "SQL"
+    },
+    {
+      "id": "file:supabase/migrations/20260419224445_add_ai_provider_api_keys_table.sql",
+      "type": "table",
+      "name": "add_ai_provider_api_keys",
+      "filePath": "supabase/migrations/20260419224445_add_ai_provider_api_keys_table.sql",
+      "summary": "AI provider API keys secure storage",
+      "tags": ["database", "migration"],
+      "complexity": "simple",
+      "language": "SQL"
+    },
+    {
+      "id": "file:supabase/migrations/20260424234712_create_paper_trading_tables.sql",
+      "type": "table",
+      "name": "create_paper_trading_tables",
+      "filePath": "supabase/migrations/20260424234712_create_paper_trading_tables.sql",
+      "summary": "Paper trading positions and trades tables",
+      "tags": ["database", "migration"],
+      "complexity": "moderate",
+      "language": "SQL"
+    },
+    {
+      "id": "file:supabase/migrations/20260426214256_create_backtest_tables.sql",
+      "type": "table",
+      "name": "create_backtest_tables",
+      "filePath": "supabase/migrations/20260426214256_create_backtest_tables.sql",
+      "summary": "Backtesting results and trade log tables",
+      "tags": ["database", "migration"],
+      "complexity": "moderate",
+      "language": "SQL"
+    },
+    {
+      "id": "file:trading_system/backtester.py",
+      "type": "file",
+      "name": "backtester.py",
+      "filePath": "trading_system/backtester.py",
+      "summary": "Python backtesting engine with strategy execution",
+      "tags": ["python", "backtest", "trading-system"],
+      "complexity": "complex",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/broker.py",
+      "type": "file",
+      "name": "broker.py",
+      "filePath": "trading_system/broker.py",
+      "summary": "Virtual broker implementation with order and position management",
+      "tags": ["python", "broker", "trading-system"],
+      "complexity": "complex",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/models.py",
+      "type": "file",
+      "name": "models.py",
+      "filePath": "trading_system/models.py",
+      "summary": "Data models for indicators, strategies, and results",
+      "tags": ["python", "models", "trading-system"],
+      "complexity": "moderate",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/indicators.py",
+      "type": "file",
+      "name": "indicators.py",
+      "filePath": "trading_system/indicators.py",
+      "summary": "Technical indicator computations in Python",
+      "tags": ["python", "indicators", "trading-system"],
+      "complexity": "moderate",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/signal_engine.py",
+      "type": "file",
+      "name": "signal_engine.py",
+      "filePath": "trading_system/signal_engine.py",
+      "summary": "Trading signal generation from strategies",
+      "tags": ["python", "signals", "trading-system"],
+      "complexity": "moderate",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/generator.py",
+      "type": "file",
+      "name": "generator.py",
+      "filePath": "trading_system/generator.py",
+      "summary": "Code generator for creating trading systems from strategies",
+      "tags": ["python", "generator", "trading-system"],
+      "complexity": "complex",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/prompt_parser.py",
+      "type": "file",
+      "name": "prompt_parser.py",
+      "filePath": "trading_system/prompt_parser.py",
+      "summary": "Parser for natural language trading strategy prompts",
+      "tags": ["python", "parser", "trading-system"],
+      "complexity": "complex",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/supabase_client.py",
+      "type": "file",
+      "name": "supabase_client.py",
+      "filePath": "trading_system/supabase_client.py",
+      "summary": "Supabase client for saving backtest results and strategies",
+      "tags": ["python", "supabase", "trading-system"],
+      "complexity": "moderate",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/main.py",
+      "type": "file",
+      "name": "main.py",
+      "filePath": "trading_system/main.py",
+      "summary": "Entry point for Python trading system",
+      "tags": ["python", "entry-point", "trading-system"],
+      "complexity": "moderate",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/examples.py",
+      "type": "file",
+      "name": "examples.py",
+      "filePath": "trading_system/examples.py",
+      "summary": "Example trading strategies (RSI, MACD, EMA, Bollinger)",
+      "tags": ["python", "examples", "trading-system"],
+      "complexity": "moderate",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "trading_system/__init__.py",
+      "summary": "Python package initialization",
+      "tags": ["python", "package"],
+      "complexity": "simple",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/tests/test_backtester.py",
+      "type": "file",
+      "name": "test_backtester.py",
+      "filePath": "trading_system/tests/test_backtester.py",
+      "summary": "Unit tests for backtester functionality",
+      "tags": ["python", "test"],
+      "complexity": "moderate",
+      "language": "Python"
+    },
+    {
+      "id": "file:trading_system/tests/test_prompt_parser.py",
+      "type": "file",
+      "name": "test_prompt_parser.py",
+      "filePath": "trading_system/tests/test_prompt_parser.py",
+      "summary": "Unit tests for prompt parser",
+      "tags": ["python", "test"],
+      "complexity": "moderate",
+      "language": "Python"
+    },
+    {
+      "id": "file:e2e/anjuna-dashboard.spec.ts",
+      "type": "file",
+      "name": "anjuna-dashboard.spec.ts",
+      "filePath": "e2e/anjuna-dashboard.spec.ts",
+      "summary": "Playwright E2E tests for critical dashboard flows",
+      "tags": ["e2e", "testing", "playwright"],
+      "complexity": "complex",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:e2e/data-providers.spec.ts",
+      "type": "file",
+      "name": "data-providers.spec.ts",
+      "filePath": "e2e/data-providers.spec.ts",
+      "summary": "E2E tests for multi-provider data fetching",
+      "tags": ["e2e", "testing", "data-providers"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:e2e/setup-test-user.ts",
+      "type": "file",
+      "name": "setup-test-user.ts",
+      "filePath": "e2e/setup-test-user.ts",
+      "summary": "Test user registration helper for E2E tests",
+      "tags": ["e2e", "testing", "setup"],
+      "complexity": "simple",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:tests/services/cache.test.ts",
+      "type": "file",
+      "name": "cache.test.ts",
+      "filePath": "tests/services/cache.test.ts",
+      "summary": "Unit tests for cache service",
+      "tags": ["unit-test", "testing"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:tests/services/normalize.test.ts",
+      "type": "file",
+      "name": "normalize.test.ts",
+      "filePath": "tests/services/normalize.test.ts",
+      "summary": "Unit tests for data normalization",
+      "tags": ["unit-test", "testing"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:tests/components/Backtesting.handleRun.test.ts",
+      "type": "file",
+      "name": "Backtesting.handleRun.test.ts",
+      "filePath": "tests/components/Backtesting.handleRun.test.ts",
+      "summary": "Unit tests for Backtesting component handleRun logic",
+      "tags": ["unit-test", "testing"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "file:index.html",
+      "type": "file",
+      "name": "index.html",
+      "filePath": "index.html",
+      "summary": "HTML entry point with React root element",
+      "tags": ["markup"],
+      "complexity": "simple",
+      "language": "HTML"
+    },
+    {
+      "id": "file:setup-auth.ts",
+      "type": "file",
+      "name": "setup-auth.ts",
+      "filePath": "setup-auth.ts",
+      "summary": "Test user setup and authentication configuration",
+      "tags": ["test-setup", "auth"],
+      "complexity": "moderate",
+      "language": "TypeScript"
+    },
+    {
+      "id": "doc:CLAUDE.md",
+      "type": "document",
+      "name": "CLAUDE.md",
+      "filePath": "CLAUDE.md",
+      "summary": "OpenWolf context management instructions",
+      "tags": ["documentation"],
+      "complexity": "simple",
+      "language": "Markdown"
+    },
+    {
+      "id": "doc:QUICKSTART.md",
+      "type": "document",
+      "name": "QUICKSTART.md",
+      "filePath": "QUICKSTART.md",
+      "summary": "Project quickstart guide",
+      "tags": ["documentation"],
+      "complexity": "simple",
+      "language": "Markdown"
+    },
+    {
+      "id": "doc:trading_system/README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "trading_system/README.md",
+      "summary": "Python trading system documentation",
+      "tags": ["documentation"],
+      "complexity": "moderate",
+      "language": "Markdown"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/main.tsx",
+      "target": "file:src/App.tsx",
+      "type": "imports",
+      "weight": 0.9,
+      "description": "Main entry mounts App component"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/context/AuthContext.tsx",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "App uses AuthProvider and useAuth for authentication"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/context/DataProviderContext.tsx",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "App wraps content with DataProviderProvider"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/auth/LoginScreen.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App renders LoginScreen when not authenticated"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/Layout.tsx",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "App renders Layout for authenticated users"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/Dashboard.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders Dashboard page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/MarketWatch.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders MarketWatch page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/Strategies.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders Strategies page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/Backtesting.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders Backtesting page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/AIEngine.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders AIEngine page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/RiskMonitor.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders RiskMonitor page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/OrderManagement.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders OrderManagement page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/SystemHealth.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders SystemHealth page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/Settings.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders Settings page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/BrokerDemo.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders BrokerDemo page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/ChartPage.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders ChartPage"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/PaperPositions.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders PaperPositions page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/PaperHistory.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders PaperHistory page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/NewsCalendar.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders NewsCalendar page"
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/TradeHistory.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "App imports and renders TradeHistory page"
+    },
+    {
+      "source": "file:src/context/AuthContext.tsx",
+      "target": "file:src/lib/supabase.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "description": "AuthContext uses supabase client"
+    },
+    {
+      "source": "file:src/context/DataProviderContext.tsx",
+      "target": "file:src/services/dataFetchers/types.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "DataProviderContext uses data fetcher types"
+    },
+    {
+      "source": "file:src/context/DataProviderContext.tsx",
+      "target": "file:src/services/dataFetchers/fetchOHLCV.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "DataProviderContext uses fetchOHLCV"
+    },
+    {
+      "source": "file:src/components/Layout.tsx",
+      "target": "file:src/context/AuthContext.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Layout uses auth context"
+    },
+    {
+      "source": "file:src/components/Layout.tsx",
+      "target": "file:src/lib/supabase.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "description": "Layout uses supabase client"
+    },
+    {
+      "source": "file:src/components/Layout.tsx",
+      "target": "file:src/hooks/useDataFeed.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Layout uses useDataFeed hook"
+    },
+    {
+      "source": "file:src/components/Dashboard.tsx",
+      "target": "file:src/hooks/useOrderManager.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Dashboard uses order manager hook"
+    },
+    {
+      "source": "file:src/components/Dashboard.tsx",
+      "target": "file:src/hooks/useDataFeed.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Dashboard uses data feed hook"
+    },
+    {
+      "source": "file:src/components/Dashboard.tsx",
+      "target": "file:src/hooks/useSupabaseData.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Dashboard uses Supabase data hook"
+    },
+    {
+      "source": "file:src/components/Backtesting.tsx",
+      "target": "file:src/services/backtestService.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Backtesting uses backtest service"
+    },
+    {
+      "source": "file:src/components/Backtesting.tsx",
+      "target": "file:src/hooks/useBacktest.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Backtesting uses useBacktest hook"
+    },
+    {
+      "source": "file:src/components/Backtesting.tsx",
+      "target": "file:src/hooks/useComparisonBacktest.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Backtesting uses useComparisonBacktest hook for multi-provider comparison"
+    },
+    {
+      "source": "file:src/components/Backtesting.tsx",
+      "target": "file:src/context/AuthContext.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Backtesting uses auth context"
+    },
+    {
+      "source": "file:src/components/Backtesting.tsx",
+      "target": "file:src/components/backtest/BacktestConfig.tsx",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Backtesting renders BacktestConfig"
+    },
+    {
+      "source": "file:src/components/Backtesting.tsx",
+      "target": "file:src/components/backtest/BacktestResults.tsx",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Backtesting renders BacktestResults"
+    },
+    {
+      "source": "file:src/components/AIEngine.tsx",
+      "target": "file:src/hooks/useAIEngine.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "AIEngine uses useAIEngine hook"
+    },
+    {
+      "source": "file:src/components/AIEngine.tsx",
+      "target": "file:src/services/aiProviderService.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "AIEngine uses AI provider service"
+    },
+    {
+      "source": "file:src/components/AIEngine.tsx",
+      "target": "file:src/components/ai/AIProviderModal.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "AIEngine renders AIProviderModal"
+    },
+    {
+      "source": "file:src/components/MarketWatch.tsx",
+      "target": "file:src/hooks/useSupabaseData.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "MarketWatch uses Supabase data"
+    },
+    {
+      "source": "file:src/components/MarketWatch.tsx",
+      "target": "file:src/hooks/useMarketData.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "MarketWatch uses market data hook"
+    },
+    {
+      "source": "file:src/components/ChartPage.tsx",
+      "target": "file:src/services/patternDetection.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "ChartPage uses pattern detection"
+    },
+    {
+      "source": "file:src/components/ChartPage.tsx",
+      "target": "file:src/components/chart/CandleChart.tsx",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "ChartPage renders CandleChart"
+    },
+    {
+      "source": "file:src/components/ChartPage.tsx",
+      "target": "file:src/hooks/usePaperTrading.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "ChartPage uses paper trading hook"
+    },
+    {
+      "source": "file:src/components/ChartPage.tsx",
+      "target": "file:src/services/indicators.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "ChartPage uses indicator calculations"
+    },
+    {
+      "source": "file:src/components/BrokerDemo.tsx",
+      "target": "file:src/services/oandaService.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "BrokerDemo uses OANDA service"
+    },
+    {
+      "source": "file:src/components/BrokerDemo.tsx",
+      "target": "file:src/services/brokerService.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "BrokerDemo uses broker service"
+    },
+    {
+      "source": "file:src/components/BrokerDemo.tsx",
+      "target": "file:src/lib/supabase.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "BrokerDemo uses supabase client"
+    },
+    {
+      "source": "file:src/components/DataFeedConfig.tsx",
+      "target": "file:src/services/dataFeedService.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "DataFeedConfig uses data feed service"
+    },
+    {
+      "source": "file:src/components/DataFeedConfig.tsx",
+      "target": "file:src/services/oandaService.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "DataFeedConfig uses OANDA service for configuration"
+    },
+    {
+      "source": "file:src/components/DataFeedConfig.tsx",
+      "target": "file:src/lib/supabase.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "DataFeedConfig uses supabase client"
+    },
+    {
+      "source": "file:src/components/OrderManagement.tsx",
+      "target": "file:src/hooks/useOrderManager.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "OrderManagement uses order manager hook"
+    },
+    {
+      "source": "file:src/components/OrderManagement.tsx",
+      "target": "file:src/hooks/useSupabaseData.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "OrderManagement uses Supabase data"
+    },
+    {
+      "source": "file:src/components/RiskMonitor.tsx",
+      "target": "file:src/services/tradingService.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "RiskMonitor uses trading service"
+    },
+    {
+      "source": "file:src/components/RiskMonitor.tsx",
+      "target": "file:src/hooks/useSupabaseData.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "RiskMonitor uses Supabase data"
+    },
+    {
+      "source": "file:src/components/Settings.tsx",
+      "target": "file:src/context/AuthContext.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Settings uses auth context"
+    },
+    {
+      "source": "file:src/components/Settings.tsx",
+      "target": "file:src/components/DataFeedConfig.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Settings includes DataFeedConfig"
+    },
+    {
+      "source": "file:src/components/Strategies.tsx",
+      "target": "file:src/hooks/useSupabaseData.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Strategies uses Supabase data"
+    },
+    {
+      "source": "file:src/components/PaperPositions.tsx",
+      "target": "file:src/hooks/usePaperTrading.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "PaperPositions uses paper trading hook"
+    },
+    {
+      "source": "file:src/components/PaperPositions.tsx",
+      "target": "file:src/hooks/useMarketData.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "PaperPositions uses market data"
+    },
+    {
+      "source": "file:src/components/PaperHistory.tsx",
+      "target": "file:src/hooks/usePaperTrading.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "PaperHistory uses paper trading hook"
+    },
+    {
+      "source": "file:src/components/PaperHistory.tsx",
+      "target": "file:src/services/paperTradingService.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "PaperHistory uses paper trading service"
+    },
+    {
+      "source": "file:src/hooks/useAIEngine.ts",
+      "target": "file:src/services/aiProviderService.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "useAIEngine uses AI provider service"
+    },
+    {
+      "source": "file:src/hooks/useAIEngine.ts",
+      "target": "file:src/context/AuthContext.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "useAIEngine uses auth context"
+    },
+    {
+      "source": "file:src/hooks/useComparisonBacktest.ts",
+      "target": "file:src/services/backtestEngine.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "useComparisonBacktest uses backtest engine"
+    },
+    {
+      "source": "file:src/hooks/useComparisonBacktest.ts",
+      "target": "file:src/services/dataFetchers/fetchOHLCV.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "useComparisonBacktest fetches OHLCV data"
+    },
+    {
+      "source": "file:src/hooks/useDataFeed.ts",
+      "target": "file:src/services/dataFeedService.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "useDataFeed uses data feed service"
+    },
+    {
+      "source": "file:src/hooks/useOrderManager.ts",
+      "target": "file:src/services/orderManagerService.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "useOrderManager uses order manager service"
+    },
+    {
+      "source": "file:src/hooks/useOrderManager.ts",
+      "target": "file:src/services/riskManagerService.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "useOrderManager uses risk manager service"
+    },
+    {
+      "source": "file:src/hooks/usePaperTrading.ts",
+      "target": "file:src/services/paperTradingService.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "usePaperTrading uses paper trading service"
+    },
+    {
+      "source": "file:src/hooks/useSupabaseData.ts",
+      "target": "file:src/services/tradingService.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "useSupabaseData uses trading service"
+    },
+    {
+      "source": "file:src/hooks/useSupabaseData.ts",
+      "target": "file:src/context/AuthContext.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "useSupabaseData uses auth context"
+    },
+    {
+      "source": "file:src/services/backtestEngine.ts",
+      "target": "file:src/services/backtestStrategies.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "backtestEngine executes strategies"
+    },
+    {
+      "source": "file:src/services/backtestService.ts",
+      "target": "file:src/lib/supabase.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "backtestService uses supabase client"
+    },
+    {
+      "source": "file:src/services/orderManagerService.ts",
+      "target": "file:src/lib/supabase.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "orderManagerService uses supabase client"
+    },
+    {
+      "source": "file:src/services/orderManagerService.ts",
+      "target": "file:src/services/riskManagerService.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "orderManagerService uses risk manager"
+    },
+    {
+      "source": "file:src/services/orderManagerService.ts",
+      "target": "file:src/services/brokerService.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "orderManagerService uses broker service"
+    },
+    {
+      "source": "file:src/services/paperTradingService.ts",
+      "target": "file:src/lib/supabase.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "paperTradingService uses supabase client"
+    },
+    {
+      "source": "file:src/services/tradingService.ts",
+      "target": "file:src/lib/supabase.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "tradingService uses supabase client"
+    },
+    {
+      "source": "file:src/services/aiProviderService.ts",
+      "target": "file:src/lib/supabase.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "aiProviderService uses supabase client"
+    },
+    {
+      "source": "file:src/services/dataFetchers/fetchOHLCV.ts",
+      "target": "file:src/services/dataFetchers/eodhd.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "fetchOHLCV uses EODHD fetcher"
+    },
+    {
+      "source": "file:src/services/dataFetchers/fetchOHLCV.ts",
+      "target": "file:src/services/dataFetchers/tiingo.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "fetchOHLCV uses Tiingo fetcher"
+    },
+    {
+      "source": "file:src/services/dataFetchers/fetchOHLCV.ts",
+      "target": "file:src/services/dataFetchers/synthetic.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "fetchOHLCV uses synthetic fetcher"
+    },
+    {
+      "source": "file:src/services/dataFetchers/fetchOHLCV.ts",
+      "target": "file:src/services/cache.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "fetchOHLCV uses cache service"
+    },
+    {
+      "source": "file:src/services/dataFetchers/fetchOHLCV.ts",
+      "target": "file:src/services/normalize.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "fetchOHLCV normalizes data"
+    },
+    {
+      "source": "file:src/services/dataFetchers/eodhd.ts",
+      "target": "file:src/services/dataFetchers/types.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "EODHD fetcher uses types"
+    },
+    {
+      "source": "file:src/services/dataFetchers/tiingo.ts",
+      "target": "file:src/services/dataFetchers/types.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Tiingo fetcher uses types"
+    },
+    {
+      "source": "file:src/services/dataFetchers/synthetic.ts",
+      "target": "file:src/services/dataFetchers/types.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Synthetic fetcher uses types"
+    },
+    {
+      "source": "file:src/services/cache.ts",
+      "target": "file:src/services/dataFetchers/types.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Cache uses data types"
+    },
+    {
+      "source": "file:src/services/normalize.ts",
+      "target": "file:src/services/dataFetchers/types.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Normalize uses data types"
+    },
+    {
+      "source": "file:src/workers/backtestWorker.ts",
+      "target": "file:src/services/backtestEngine.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Backtest worker uses backtestEngine"
+    },
+    {
+      "source": "file:src/workers/backtestWorker.ts",
+      "target": "file:src/services/backtestStrategies.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Backtest worker uses strategies"
+    },
+    {
+      "source": "file:src/pages/Settings/DataProviders.tsx",
+      "target": "file:src/context/DataProviderContext.tsx",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "DataProviders settings uses context"
+    },
+    {
+      "source": "file:src/pages/Settings/DataProviders.tsx",
+      "target": "file:src/services/cache.ts",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "DataProviders settings uses cache"
+    },
+    {
+      "source": "file:tests/components/Backtesting.handleRun.test.ts",
+      "target": "file:src/components/Backtesting.tsx",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Test imports Backtesting component"
+    },
+    {
+      "source": "file:tests/components/Backtesting.handleRun.test.ts",
+      "target": "file:src/services/dataFetchers/fetchOHLCV.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Test mocks fetchOHLCV"
+    },
+    {
+      "source": "file:tests/services/cache.test.ts",
+      "target": "file:src/services/cache.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Test imports cache service"
+    },
+    {
+      "source": "file:tests/services/normalize.test.ts",
+      "target": "file:src/services/normalize.ts",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Test imports normalize service"
+    },
+    {
+      "source": "file:e2e/anjuna-dashboard.spec.ts",
+      "target": "file:src/App.tsx",
+      "type": "tests",
+      "weight": 0.9,
+      "description": "E2E tests verify App functionality"
+    },
+    {
+      "source": "file:package.json",
+      "target": "file:vite.config.ts",
+      "type": "configures",
+      "weight": 0.8,
+      "description": "Package.json defines build tool"
+    },
+    {
+      "source": "file:package.json",
+      "target": "file:vitest.config.ts",
+      "type": "configures",
+      "weight": 0.8,
+      "description": "Package.json defines test runner"
+    },
+    {
+      "source": "file:package.json",
+      "target": "file:playwright.config.ts",
+      "type": "configures",
+      "weight": 0.8,
+      "description": "Package.json defines E2E test framework"
+    },
+    {
+      "source": "file:vite.config.ts",
+      "target": "file:src/main.tsx",
+      "type": "configures",
+      "weight": 0.8,
+      "description": "Vite configured to build React app"
+    },
+    {
+      "source": "file:index.html",
+      "target": "file:src/main.tsx",
+      "type": "references",
+      "weight": 0.9,
+      "description": "HTML loads React app entry point"
+    },
+    {
+      "source": "file:tailwind.config.js",
+      "target": "file:src/index.css",
+      "type": "configures",
+      "weight": 0.8,
+      "description": "Tailwind configured in CSS layers"
+    },
+    {
+      "source": "file:trading_system/backtester.py",
+      "target": "file:trading_system/broker.py",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Backtester uses virtual broker"
+    },
+    {
+      "source": "file:trading_system/backtester.py",
+      "target": "file:trading_system/models.py",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Backtester uses data models"
+    },
+    {
+      "source": "file:trading_system/broker.py",
+      "target": "file:trading_system/models.py",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Broker uses data models"
+    },
+    {
+      "source": "file:trading_system/signal_engine.py",
+      "target": "file:trading_system/indicators.py",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Signal engine uses indicators"
+    },
+    {
+      "source": "file:trading_system/signal_engine.py",
+      "target": "file:trading_system/models.py",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Signal engine uses models"
+    },
+    {
+      "source": "file:trading_system/main.py",
+      "target": "file:trading_system/backtester.py",
+      "type": "imports",
+      "weight": 0.85,
+      "description": "Main entry point uses backtester"
+    },
+    {
+      "source": "file:trading_system/main.py",
+      "target": "file:trading_system/supabase_client.py",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Main uses Supabase client"
+    },
+    {
+      "source": "file:trading_system/prompt_parser.py",
+      "target": "file:trading_system/models.py",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Prompt parser uses models"
+    },
+    {
+      "source": "file:trading_system/generator.py",
+      "target": "file:trading_system/models.py",
+      "type": "imports",
+      "weight": 0.8,
+      "description": "Generator uses models"
+    },
+    {
+      "source": "file:trading_system/tests/test_backtester.py",
+      "target": "file:trading_system/backtester.py",
+      "type": "tests",
+      "weight": 0.85,
+      "description": "Tests verify backtester"
+    },
+    {
+      "source": "file:trading_system/tests/test_prompt_parser.py",
+      "target": "file:trading_system/prompt_parser.py",
+      "type": "tests",
+      "weight": 0.85,
+      "description": "Tests verify prompt parser"
+    }
+  ]
+}

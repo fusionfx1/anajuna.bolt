@@ -1,0 +1,227 @@
+[
+  {
+    "id": "layer:presentation",
+    "name": "Presentation",
+    "description": "React UI components including pages, layouts, and modal dialogs for user interaction",
+    "nodeIds": [
+      "file:src/components/Layout.tsx",
+      "file:src/components/Dashboard.tsx",
+      "file:src/components/MarketWatch.tsx",
+      "file:src/components/Strategies.tsx",
+      "file:src/components/Backtesting.tsx",
+      "file:src/components/AIEngine.tsx",
+      "file:src/components/OrderManagement.tsx",
+      "file:src/components/RiskMonitor.tsx",
+      "file:src/components/SystemHealth.tsx",
+      "file:src/components/Settings.tsx",
+      "file:src/components/TradeHistory.tsx",
+      "file:src/components/BrokerDemo.tsx",
+      "file:src/components/ChartPage.tsx",
+      "file:src/components/PaperPositions.tsx",
+      "file:src/components/PaperHistory.tsx",
+      "file:src/components/NewsCalendar.tsx",
+      "file:src/components/SessionClock.tsx",
+      "file:src/components/DataFeedConfig.tsx",
+      "file:src/components/auth/LoginScreen.tsx",
+      "file:src/components/ai/AIProviderModal.tsx",
+      "file:src/components/ai/AISignalPanel.tsx",
+      "file:src/components/backtest/BacktestConfig.tsx",
+      "file:src/components/backtest/BacktestDataSource.tsx",
+      "file:src/components/backtest/BacktestResults.tsx",
+      "file:src/components/backtest/BacktestEquityCurve.tsx",
+      "file:src/components/backtest/BacktestTradeLog.tsx",
+      "file:src/components/backtest/BacktestRunHistory.tsx",
+      "file:src/components/backtest/BacktestProgress.tsx",
+      "file:src/components/backtest/ComparisonResults.tsx",
+      "file:src/components/chart/CandleChart.tsx",
+      "file:src/components/chart/IndicatorControls.tsx",
+      "file:src/components/chart/PatternControls.tsx",
+      "file:src/components/paper/TradeModal.tsx",
+      "file:src/components/strategies/NewStrategyModal.tsx",
+      "file:src/components/strategies/ConfigEditorModal.tsx",
+      "file:src/components/ui/StatCard.tsx",
+      "file:src/components/news/NextNewsWidget.tsx",
+      "file:src/pages/Settings/DataProviders.tsx",
+      "file:src/index.css"
+    ]
+  },
+  {
+    "id": "layer:state-management",
+    "name": "State Management",
+    "description": "React Context providers and custom hooks for managing application state (auth, data providers, form state)",
+    "nodeIds": [
+      "file:src/context/AuthContext.tsx",
+      "file:src/context/DataProviderContext.tsx",
+      "file:src/hooks/useAIEngine.ts",
+      "file:src/hooks/useBacktest.ts",
+      "file:src/hooks/useComparisonBacktest.ts",
+      "file:src/hooks/useDataFeed.ts",
+      "file:src/hooks/useMarketData.ts",
+      "file:src/hooks/useNewsData.ts",
+      "file:src/hooks/useOrderManager.ts",
+      "file:src/hooks/usePaperTrading.ts",
+      "file:src/hooks/useSupabaseData.ts"
+    ]
+  },
+  {
+    "id": "layer:business-logic",
+    "name": "Business Logic",
+    "description": "Services for trading, backtesting, data management, risk management, and order execution",
+    "nodeIds": [
+      "file:src/services/backtestEngine.ts",
+      "file:src/services/backtestService.ts",
+      "file:src/services/backtestStrategies.ts",
+      "file:src/services/dataFeedService.ts",
+      "file:src/services/cache.ts",
+      "file:src/services/normalize.ts",
+      "file:src/services/candleService.ts",
+      "file:src/services/indicators.ts",
+      "file:src/services/patternDetection.ts",
+      "file:src/services/oandaService.ts",
+      "file:src/services/brokerService.ts",
+      "file:src/services/tradingService.ts",
+      "file:src/services/orderManagerService.ts",
+      "file:src/services/riskManagerService.ts",
+      "file:src/services/paperTradingService.ts",
+      "file:src/services/aiProviderService.ts"
+    ]
+  },
+  {
+    "id": "layer:data-access",
+    "name": "Data Access",
+    "description": "Multi-provider data fetching abstraction with support for EODHD, Tiingo, and synthetic data sources",
+    "nodeIds": [
+      "file:src/services/dataFetchers/fetchOHLCV.ts",
+      "file:src/services/dataFetchers/eodhd.ts",
+      "file:src/services/dataFetchers/tiingo.ts",
+      "file:src/services/dataFetchers/synthetic.ts",
+      "file:src/services/dataFetchers/types.ts"
+    ]
+  },
+  {
+    "id": "layer:backend-integration",
+    "name": "Backend Integration",
+    "description": "Supabase client initialization and Edge Functions for proxying external APIs and ingesting data",
+    "nodeIds": [
+      "file:src/lib/supabase.ts",
+      "file:supabase/functions/ai-signal-proxy/index.ts",
+      "file:supabase/functions/candle-ingest/index.ts",
+      "file:supabase/functions/news-proxy/index.ts"
+    ]
+  },
+  {
+    "id": "layer:database",
+    "name": "Database",
+    "description": "PostgreSQL schema migrations defining tables for trading data, backtesting, AI signals, and paper trading",
+    "nodeIds": [
+      "file:supabase/migrations/20260412082411_create_forex_trading_schema.sql",
+      "file:supabase/migrations/20260412094030_add_account_settings_and_seed_support.sql",
+      "file:supabase/migrations/20260412180521_add_data_feed_and_order_management.sql",
+      "file:supabase/migrations/20260412211702_add_oanda_credentials_to_data_feed_configs.sql",
+      "file:supabase/migrations/20260412224612_add_circuit_breakers_to_user_settings.sql",
+      "file:supabase/migrations/20260419224350_add_ai_engine_tables.sql",
+      "file:supabase/migrations/20260419224445_add_ai_provider_api_keys_table.sql",
+      "file:supabase/migrations/20260424234712_create_paper_trading_tables.sql",
+      "file:supabase/migrations/20260426214256_create_backtest_tables.sql"
+    ]
+  },
+  {
+    "id": "layer:trading-engine",
+    "name": "Trading Engine",
+    "description": "Python backtesting engine with broker simulation, strategy execution, and signal generation",
+    "nodeIds": [
+      "file:trading_system/backtester.py",
+      "file:trading_system/broker.py",
+      "file:trading_system/models.py",
+      "file:trading_system/indicators.py",
+      "file:trading_system/signal_engine.py",
+      "file:trading_system/generator.py",
+      "file:trading_system/prompt_parser.py",
+      "file:trading_system/supabase_client.py",
+      "file:trading_system/main.py",
+      "file:trading_system/examples.py",
+      "file:trading_system/__init__.py"
+    ]
+  },
+  {
+    "id": "layer:type-definitions",
+    "name": "Type Definitions",
+    "description": "TypeScript type definitions for trading domain, backtesting, data feeds, and AI providers",
+    "nodeIds": [
+      "file:src/types/trading.ts",
+      "file:src/types/backtest.ts",
+      "file:src/types/dataFeed.ts",
+      "file:src/types/paper.ts",
+      "file:src/types/news.ts",
+      "file:src/types/aiProvider.ts"
+    ]
+  },
+  {
+    "id": "layer:utilities",
+    "name": "Utilities",
+    "description": "Constants, helpers, and template definitions used across the application",
+    "nodeIds": [
+      "file:src/lib/constants.ts",
+      "file:src/components/strategies/strategyTemplates.ts"
+    ]
+  },
+  {
+    "id": "layer:workers",
+    "name": "Web Workers",
+    "description": "Background workers for offloading expensive computations like backtesting",
+    "nodeIds": [
+      "file:src/workers/backtestWorker.ts"
+    ]
+  },
+  {
+    "id": "layer:testing",
+    "name": "Testing",
+    "description": "Unit tests, integration tests, and E2E tests across the application",
+    "nodeIds": [
+      "file:tests/services/cache.test.ts",
+      "file:tests/services/normalize.test.ts",
+      "file:tests/components/Backtesting.handleRun.test.ts",
+      "file:e2e/anjuna-dashboard.spec.ts",
+      "file:e2e/data-providers.spec.ts",
+      "file:e2e/setup-test-user.ts",
+      "file:trading_system/tests/test_backtester.py",
+      "file:trading_system/tests/test_prompt_parser.py",
+      "file:setup-auth.ts"
+    ]
+  },
+  {
+    "id": "layer:infrastructure",
+    "name": "Infrastructure",
+    "description": "Build, test, and development configuration files (Vite, Vitest, Playwright, TypeScript, ESLint, Tailwind)",
+    "nodeIds": [
+      "file:package.json",
+      "file:tsconfig.json",
+      "file:vite.config.ts",
+      "file:vitest.config.ts",
+      "file:playwright.config.ts",
+      "file:tailwind.config.js",
+      "file:postcss.config.js",
+      "file:eslint.config.js",
+      "file:index.html"
+    ]
+  },
+  {
+    "id": "layer:documentation",
+    "name": "Documentation",
+    "description": "Project documentation, quickstart guides, and API documentation",
+    "nodeIds": [
+      "document:doc:CLAUDE.md",
+      "document:doc:QUICKSTART.md",
+      "document:doc:trading_system/README.md"
+    ]
+  },
+  {
+    "id": "layer:entry-point",
+    "name": "Entry Point",
+    "description": "Application root component and main entry module",
+    "nodeIds": [
+      "file:src/main.tsx",
+      "file:src/App.tsx"
+    ]
+  }
+]

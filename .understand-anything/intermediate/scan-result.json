@@ -1,0 +1,1770 @@
+{
+  "projectName": "Anjuna Bolt",
+  "projectDescription": "Trading dashboard for backtesting strategies across multiple data providers (EODHD, Tiingo, Synthetic)",
+  "languages": [
+    "CSS",
+    "HTML",
+    "JSON",
+    "JavaScript",
+    "Markdown",
+    "Python",
+    "SQL",
+    "Text",
+    "TypeScript"
+  ],
+  "frameworks": [
+    "Playwright",
+    "React",
+    "Supabase",
+    "TailwindCSS",
+    "TypeScript",
+    "Vite",
+    "Vitest"
+  ],
+  "files": [
+    {
+      "path": "CLAUDE.md",
+      "sizeLines": 5,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "MOCK_ACCOUNT_INVESTIGATION.md",
+      "sizeLines": 370,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "QUICKSTART.md",
+      "sizeLines": 73,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "bolt/config.json",
+      "sizeLines": 3,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "bolt/mcp.json",
+      "sizeLines": 13,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "bolt/prompt",
+      "sizeLines": 5,
+      "fileCategory": "other",
+      "language": "Unknown"
+    },
+    {
+      "path": "claude/claude-code-chat-images/.gitignore",
+      "sizeLines": 1,
+      "fileCategory": "other",
+      "language": "Unknown"
+    },
+    {
+      "path": "claude/claude-code-chat-images/image_1777395068060.png",
+      "sizeLines": 415,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "claude/rules/openwolf.md",
+      "sizeLines": 15,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "claude/settings.json",
+      "sizeLines": 94,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "claude/settings.local.json",
+      "sizeLines": 14,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-04-29-multi-source-real-data-backtester.md",
+      "sizeLines": 2553,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-04-29-multi-source-real-data-backtester.md",
+      "sizeLines": 489,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "e2e-screenshots/dashboard-devmode.png",
+      "sizeLines": 466,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "e2e-screenshots/login-debug.png",
+      "sizeLines": 421,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "e2e-screenshots/login-real.png",
+      "sizeLines": 129,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "e2e-screenshots/login-result.png",
+      "sizeLines": 118,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "e2e-screenshots/page-check.png",
+      "sizeLines": 466,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "e2e/anjuna-dashboard.spec.ts",
+      "sizeLines": 658,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "e2e/check-page-content.spec.ts",
+      "sizeLines": 44,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "e2e/dashboard-devmode.spec.ts",
+      "sizeLines": 38,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "e2e/data-providers.spec.ts",
+      "sizeLines": 206,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "e2e/login-debug.spec.ts",
+      "sizeLines": 46,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "e2e/login-real.spec.ts",
+      "sizeLines": 33,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "e2e/login-with-setup.spec.ts",
+      "sizeLines": 95,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "e2e/setup-test-user.ts",
+      "sizeLines": 55,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "e2e/setup-user.spec.ts",
+      "sizeLines": 103,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "env.local",
+      "sizeLines": 2,
+      "fileCategory": "other",
+      "language": "Unknown"
+    },
+    {
+      "path": "eslint.config.js",
+      "sizeLines": 28,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "gitignore",
+      "sizeLines": 23,
+      "fileCategory": "other",
+      "language": "Unknown"
+    },
+    {
+      "path": "index.html",
+      "sizeLines": 16,
+      "fileCategory": "markup",
+      "language": "HTML"
+    },
+    {
+      "path": "package-lock.json",
+      "sizeLines": 6225,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "package.json",
+      "sizeLines": 50,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "planning/debug/knowledge-base.md",
+      "sizeLines": 13,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "planning/debug/resolved/rsi-pnl-overflow.md",
+      "sizeLines": 37,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "playwright-report/data/1765f3a4ccdad523deb11ab903d7526c0470635b.zip",
+      "sizeLines": 5948,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/data/1f687af611f1384cd4eea8985097acc1e2cd7f44.png",
+      "sizeLines": 130,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/data/2025f01c0e9b9d77421a697e8a157d677d80c3b6.md",
+      "sizeLines": 353,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "playwright-report/data/25ef279c0ad1b5e9d7384d4cf32565fa50631341.md",
+      "sizeLines": 262,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "playwright-report/data/33788a1ce61233a9f4d48360403e8d377b92cbc4.zip",
+      "sizeLines": 2152,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/data/35b401931d323a81a742a59b10c3c8d23a713cda.png",
+      "sizeLines": 460,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/data/4e6c5b81f6e95e1910cd8c1cc5f0f894ad5debba.zip",
+      "sizeLines": 56458,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/data/653af654f0296b4b18cd1dd22099a96bcbe9b427.md",
+      "sizeLines": 262,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "playwright-report/data/77fad8f6512ce6e3d66b9001f55417709ea7ff42.zip",
+      "sizeLines": 1906,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/data/87c6cb60f4b3c45e5c484db9354933c5a2982619.png",
+      "sizeLines": 125,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/data/dcef3d1da94f8310c3101f671bae757c6f4e745d.png",
+      "sizeLines": 139,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/data/eed660d588e273c47cffbef8bb20fbf39f2e51d0.md",
+      "sizeLines": 262,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "playwright-report/index.html",
+      "sizeLines": 90,
+      "fileCategory": "markup",
+      "language": "HTML"
+    },
+    {
+      "path": "playwright-report/trace/assets/codeMirrorModule-DS0FLvoc.js",
+      "sizeLines": 32,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "playwright-report/trace/assets/defaultSettingsView-GTWI-W_B.js",
+      "sizeLines": 262,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "playwright-report/trace/codeMirrorModule.DYBRYzYX.css",
+      "sizeLines": 1,
+      "fileCategory": "code",
+      "language": "CSS"
+    },
+    {
+      "path": "playwright-report/trace/codicon.DCmgc-ay.ttf",
+      "sizeLines": 2144,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/trace/defaultSettingsView.B4dS75f0.css",
+      "sizeLines": 1,
+      "fileCategory": "code",
+      "language": "CSS"
+    },
+    {
+      "path": "playwright-report/trace/index.C5466mMT.js",
+      "sizeLines": 2,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "playwright-report/trace/index.CzXZzn5A.css",
+      "sizeLines": 1,
+      "fileCategory": "code",
+      "language": "CSS"
+    },
+    {
+      "path": "playwright-report/trace/index.html",
+      "sizeLines": 43,
+      "fileCategory": "markup",
+      "language": "HTML"
+    },
+    {
+      "path": "playwright-report/trace/manifest.webmanifest",
+      "sizeLines": 16,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/trace/playwright-logo.svg",
+      "sizeLines": 9,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "playwright-report/trace/snapshot.html",
+      "sizeLines": 21,
+      "fileCategory": "markup",
+      "language": "HTML"
+    },
+    {
+      "path": "playwright-report/trace/sw.bundle.js",
+      "sizeLines": 5,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "playwright-report/trace/uiMode.Btcz36p_.css",
+      "sizeLines": 1,
+      "fileCategory": "code",
+      "language": "CSS"
+    },
+    {
+      "path": "playwright-report/trace/uiMode.Vipi55dB.js",
+      "sizeLines": 6,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "playwright-report/trace/uiMode.html",
+      "sizeLines": 17,
+      "fileCategory": "markup",
+      "language": "HTML"
+    },
+    {
+      "path": "playwright-report/trace/xtermModule.DYP7pi_n.css",
+      "sizeLines": 32,
+      "fileCategory": "code",
+      "language": "CSS"
+    },
+    {
+      "path": "playwright.config.ts",
+      "sizeLines": 28,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "postcss.config.js",
+      "sizeLines": 6,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "setup-auth.ts",
+      "sizeLines": 70,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/App.tsx",
+      "sizeLines": 84,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/AIEngine.tsx",
+      "sizeLines": 528,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/BacktestDataSource.tsx",
+      "sizeLines": 105,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/Backtesting.tsx",
+      "sizeLines": 306,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/BrokerDemo.tsx",
+      "sizeLines": 688,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/ChartPage.tsx",
+      "sizeLines": 387,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/ComparisonResults.tsx",
+      "sizeLines": 211,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/Dashboard.tsx",
+      "sizeLines": 320,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/DataFeedConfig.tsx",
+      "sizeLines": 590,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/Layout.tsx",
+      "sizeLines": 299,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/MarketWatch.tsx",
+      "sizeLines": 226,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/NewsCalendar.tsx",
+      "sizeLines": 240,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/OrderManagement.tsx",
+      "sizeLines": 532,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/PaperHistory.tsx",
+      "sizeLines": 303,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/PaperPositions.tsx",
+      "sizeLines": 304,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/RiskMonitor.tsx",
+      "sizeLines": 321,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/SessionClock.tsx",
+      "sizeLines": 139,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/Settings.tsx",
+      "sizeLines": 237,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/Strategies.tsx",
+      "sizeLines": 298,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/SystemHealth.tsx",
+      "sizeLines": 374,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/TradeHistory.tsx",
+      "sizeLines": 303,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/ai/AIProviderModal.tsx",
+      "sizeLines": 274,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/ai/AISignalPanel.tsx",
+      "sizeLines": 134,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/auth/LoginScreen.tsx",
+      "sizeLines": 140,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/backtest/BacktestConfig.tsx",
+      "sizeLines": 366,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/backtest/BacktestDataSource.tsx",
+      "sizeLines": 72,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/backtest/BacktestEquityCurve.tsx",
+      "sizeLines": 114,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/backtest/BacktestProgress.tsx",
+      "sizeLines": 55,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/backtest/BacktestResults.tsx",
+      "sizeLines": 177,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/backtest/BacktestRunHistory.tsx",
+      "sizeLines": 121,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/backtest/BacktestTradeLog.tsx",
+      "sizeLines": 170,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/backtest/ComparisonResults.tsx",
+      "sizeLines": 177,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/chart/CandleChart.tsx",
+      "sizeLines": 378,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/chart/IndicatorControls.tsx",
+      "sizeLines": 160,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/chart/PatternControls.tsx",
+      "sizeLines": 142,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/news/NextNewsWidget.tsx",
+      "sizeLines": 71,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/paper/TradeModal.tsx",
+      "sizeLines": 224,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/strategies/ConfigEditorModal.tsx",
+      "sizeLines": 265,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/strategies/NewStrategyModal.tsx",
+      "sizeLines": 369,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/strategies/strategyTemplates.ts",
+      "sizeLines": 136,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/components/ui/StatCard.tsx",
+      "sizeLines": 54,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/context/AuthContext.tsx",
+      "sizeLines": 92,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/context/DataProviderContext.tsx",
+      "sizeLines": 133,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/hooks/useAIEngine.ts",
+      "sizeLines": 152,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/hooks/useBacktest.ts",
+      "sizeLines": 85,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/hooks/useComparisonBacktest.ts",
+      "sizeLines": 226,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/hooks/useDataFeed.ts",
+      "sizeLines": 143,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/hooks/useMarketData.ts",
+      "sizeLines": 91,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/hooks/useNewsData.ts",
+      "sizeLines": 95,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/hooks/useOrderManager.ts",
+      "sizeLines": 105,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/hooks/usePaperTrading.ts",
+      "sizeLines": 96,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/hooks/useSupabaseData.ts",
+      "sizeLines": 192,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/index.css",
+      "sizeLines": 13,
+      "fileCategory": "code",
+      "language": "CSS"
+    },
+    {
+      "path": "src/lib/constants.ts",
+      "sizeLines": 38,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/lib/supabase.ts",
+      "sizeLines": 12,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/main.tsx",
+      "sizeLines": 10,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/pages/Settings/DataProviders.tsx",
+      "sizeLines": 242,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/aiProviderService.ts",
+      "sizeLines": 142,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/backtestEngine.ts",
+      "sizeLines": 336,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/backtestService.ts",
+      "sizeLines": 258,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/backtestStrategies.ts",
+      "sizeLines": 331,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/brokerService.ts",
+      "sizeLines": 248,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/cache.ts",
+      "sizeLines": 265,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/candleService.ts",
+      "sizeLines": 140,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/dataFeedService.ts",
+      "sizeLines": 470,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/dataFetchers/eodhd.ts",
+      "sizeLines": 158,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/dataFetchers/fetchOHLCV.ts",
+      "sizeLines": 207,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/dataFetchers/synthetic.ts",
+      "sizeLines": 88,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/dataFetchers/tiingo.ts",
+      "sizeLines": 158,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/dataFetchers/types.ts",
+      "sizeLines": 143,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/indicators.ts",
+      "sizeLines": 164,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/normalize.ts",
+      "sizeLines": 123,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/oandaService.ts",
+      "sizeLines": 291,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/orderManagerService.ts",
+      "sizeLines": 325,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/paperTradingService.ts",
+      "sizeLines": 238,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/patternDetection.ts",
+      "sizeLines": 255,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/riskManagerService.ts",
+      "sizeLines": 175,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/services/tradingService.ts",
+      "sizeLines": 296,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/types/aiProvider.ts",
+      "sizeLines": 101,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/types/backtest.ts",
+      "sizeLines": 145,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/types/dataFeed.ts",
+      "sizeLines": 129,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/types/news.ts",
+      "sizeLines": 61,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/types/paper.ts",
+      "sizeLines": 89,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/types/trading.ts",
+      "sizeLines": 133,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "sizeLines": 1,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/workers/backtestWorker.ts",
+      "sizeLines": 36,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "supabase/functions/ai-signal-proxy/index.ts",
+      "sizeLines": 318,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "supabase/functions/candle-ingest/index.ts",
+      "sizeLines": 209,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "supabase/functions/news-proxy/index.ts",
+      "sizeLines": 98,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "supabase/migrations/20260412082411_create_forex_trading_schema.sql",
+      "sizeLines": 199,
+      "fileCategory": "code",
+      "language": "SQL"
+    },
+    {
+      "path": "supabase/migrations/20260412094030_add_account_settings_and_seed_support.sql",
+      "sizeLines": 83,
+      "fileCategory": "code",
+      "language": "SQL"
+    },
+    {
+      "path": "supabase/migrations/20260412180521_add_data_feed_and_order_management.sql",
+      "sizeLines": 163,
+      "fileCategory": "code",
+      "language": "SQL"
+    },
+    {
+      "path": "supabase/migrations/20260412211702_add_oanda_credentials_to_data_feed_configs.sql",
+      "sizeLines": 47,
+      "fileCategory": "code",
+      "language": "SQL"
+    },
+    {
+      "path": "supabase/migrations/20260412224612_add_circuit_breakers_to_user_settings.sql",
+      "sizeLines": 56,
+      "fileCategory": "code",
+      "language": "SQL"
+    },
+    {
+      "path": "supabase/migrations/20260419224350_add_ai_engine_tables.sql",
+      "sizeLines": 111,
+      "fileCategory": "code",
+      "language": "SQL"
+    },
+    {
+      "path": "supabase/migrations/20260419224445_add_ai_provider_api_keys_table.sql",
+      "sizeLines": 41,
+      "fileCategory": "code",
+      "language": "SQL"
+    },
+    {
+      "path": "supabase/migrations/20260424234712_create_paper_trading_tables.sql",
+      "sizeLines": 109,
+      "fileCategory": "code",
+      "language": "SQL"
+    },
+    {
+      "path": "supabase/migrations/20260426214256_create_backtest_tables.sql",
+      "sizeLines": 116,
+      "fileCategory": "code",
+      "language": "SQL"
+    },
+    {
+      "path": "tailwind.config.js",
+      "sizeLines": 8,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "test-results/.last-run.json",
+      "sizeLines": 8,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-0-Ap-8fddf-e-env-vars-and-logs-warning-chromium-retry1/error-context.md",
+      "sizeLines": 262,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-0-Ap-8fddf-e-env-vars-and-logs-warning-chromium-retry1/test-failed-1.png",
+      "sizeLines": 130,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-0-Ap-8fddf-e-env-vars-and-logs-warning-chromium-retry1/trace.zip",
+      "sizeLines": 1906,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-0-Ap-8fddf-e-env-vars-and-logs-warning-chromium/error-context.md",
+      "sizeLines": 262,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-0-Ap-8fddf-e-env-vars-and-logs-warning-chromium/test-failed-1.png",
+      "sizeLines": 130,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-1-Au-584f5--never-resolves-UI-freezes--chromium-retry1/error-context.md",
+      "sizeLines": 262,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-1-Au-584f5--never-resolves-UI-freezes--chromium-retry1/test-failed-1.png",
+      "sizeLines": 139,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-1-Au-584f5--never-resolves-UI-freezes--chromium-retry1/trace.zip",
+      "sizeLines": 5948,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-1-Au-584f5--never-resolves-UI-freezes--chromium/error-context.md",
+      "sizeLines": 262,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-1-Au-584f5--never-resolves-UI-freezes--chromium/test-failed-1.png",
+      "sizeLines": 139,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-1-Au-f8518--Supabase-response-behavior-chromium-retry1/error-context.md",
+      "sizeLines": 262,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-1-Au-f8518--Supabase-response-behavior-chromium-retry1/test-failed-1.png",
+      "sizeLines": 125,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-1-Au-f8518--Supabase-response-behavior-chromium-retry1/trace.zip",
+      "sizeLines": 2152,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-1-Au-f8518--Supabase-response-behavior-chromium/error-context.md",
+      "sizeLines": 262,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "test-results/anjuna-dashboard-Flow-1-Au-f8518--Supabase-response-behavior-chromium/test-failed-1.png",
+      "sizeLines": 125,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "test-results/setup-user-Setup-Create-and-confirm-user-account-chromium-retry1/trace.zip",
+      "sizeLines": 56458,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "test-results/setup-user-Setup-Create-and-confirm-user-account-chromium/error-context.md",
+      "sizeLines": 353,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "test-results/setup-user-Setup-Create-and-confirm-user-account-chromium/test-failed-1.png",
+      "sizeLines": 460,
+      "fileCategory": "data",
+      "language": "Unknown"
+    },
+    {
+      "path": "tests/components/Backtesting.handleRun.test.ts",
+      "sizeLines": 344,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "tests/services/cache.test.ts",
+      "sizeLines": 192,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "tests/services/normalize.test.ts",
+      "sizeLines": 207,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "tests/setup.ts",
+      "sizeLines": 1,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "trading_system.log",
+      "sizeLines": 65,
+      "fileCategory": "other",
+      "language": "Unknown"
+    },
+    {
+      "path": "trading_system/README.md",
+      "sizeLines": 242,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "trading_system/__init__.py",
+      "sizeLines": 11,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/backtester.py",
+      "sizeLines": 350,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/broker.py",
+      "sizeLines": 485,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/examples.py",
+      "sizeLines": 242,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/generator.py",
+      "sizeLines": 347,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/indicators.py",
+      "sizeLines": 189,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/main.py",
+      "sizeLines": 164,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/models.py",
+      "sizeLines": 201,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/prompt_parser.py",
+      "sizeLines": 330,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/requirements.txt",
+      "sizeLines": 8,
+      "fileCategory": "docs",
+      "language": "Text"
+    },
+    {
+      "path": "trading_system/signal_engine.py",
+      "sizeLines": 184,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/supabase_client.py",
+      "sizeLines": 309,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/tests/__init__.py",
+      "sizeLines": 0,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/tests/test_backtester.py",
+      "sizeLines": 185,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "trading_system/tests/test_prompt_parser.py",
+      "sizeLines": 123,
+      "fileCategory": "code",
+      "language": "Python"
+    },
+    {
+      "path": "tsconfig.app.json",
+      "sizeLines": 24,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "tsconfig.json",
+      "sizeLines": 7,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "tsconfig.node.json",
+      "sizeLines": 22,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "understand-anything/.understandignore",
+      "sizeLines": 38,
+      "fileCategory": "other",
+      "language": "Unknown"
+    },
+    {
+      "path": "understand-anything/intermediate/scan-result.json",
+      "sizeLines": 0,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "vite.config.ts",
+      "sizeLines": 51,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sizeLines": 12,
+      "fileCategory": "code",
+      "language": "TypeScript"
+    },
+    {
+      "path": "windsurf/workflows/clear.md",
+      "sizeLines": 0,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/OPENWOLF.md",
+      "sizeLines": 135,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/PHASE_3_PR_TEMPLATE.md",
+      "sizeLines": 114,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/PHASE_3_SHIPPING_SUMMARY.md",
+      "sizeLines": 135,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/QA_REPORT.md",
+      "sizeLines": 167,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/anatomy.md",
+      "sizeLines": 675,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/backtesting-integration-template.md",
+      "sizeLines": 153,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/buglog.json",
+      "sizeLines": 258,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "wolf/cerebrum.md",
+      "sizeLines": 36,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/config.json",
+      "sizeLines": 73,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "wolf/cron-manifest.json",
+      "sizeLines": 97,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "wolf/cron-state.json",
+      "sizeLines": 7,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "wolf/designqc-report.json",
+      "sizeLines": 6,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "wolf/hooks/_session.json",
+      "sizeLines": 23,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "wolf/hooks/package.json",
+      "sizeLines": 3,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "wolf/hooks/post-read.js",
+      "sizeLines": 69,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "wolf/hooks/post-write.js",
+      "sizeLines": 503,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "wolf/hooks/pre-read.js",
+      "sizeLines": 80,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "wolf/hooks/pre-write.js",
+      "sizeLines": 121,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "wolf/hooks/session-start.js",
+      "sizeLines": 77,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "wolf/hooks/shared.js",
+      "sizeLines": 614,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "wolf/hooks/stop.js",
+      "sizeLines": 147,
+      "fileCategory": "code",
+      "language": "JavaScript"
+    },
+    {
+      "path": "wolf/identity.md",
+      "sizeLines": 9,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/memory.md",
+      "sizeLines": 117,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/reframe-frameworks.md",
+      "sizeLines": 597,
+      "fileCategory": "docs",
+      "language": "Markdown"
+    },
+    {
+      "path": "wolf/suggestions.json",
+      "sizeLines": 4,
+      "fileCategory": "config",
+      "language": "JSON"
+    },
+    {
+      "path": "wolf/token-ledger.json",
+      "sizeLines": 619,
+      "fileCategory": "config",
+      "language": "JSON"
+    }
+  ],
+  "filteredByIgnore": 0,
+  "fileCount": 240,
+  "complexity": {
+    "estimate": "high",
+    "reasoning": "Multi-language project (TypeScript React frontend, Python backtesting system, SQL migrations) with 240 files and 25500 lines of code. Includes trading algorithms, data feed integration, backtesting infrastructure, and Supabase backend."
+  },
+  "importMap": {
+    "wolf/hooks/post-read.js": [
+      ".wolf/hooks/shared.js"
+    ],
+    "wolf/hooks/post-write.js": [
+      ".wolf/hooks/shared.js"
+    ],
+    "wolf/hooks/pre-read.js": [
+      ".wolf/hooks/shared.js"
+    ],
+    "wolf/hooks/pre-write.js": [
+      ".wolf/hooks/shared.js"
+    ],
+    "wolf/hooks/session-start.js": [
+      ".wolf/hooks/shared.js"
+    ],
+    "wolf/hooks/stop.js": [
+      ".wolf/hooks/shared.js"
+    ],
+    "src/App.tsx": [
+      "src/components/RiskMonitor.tsx",
+      "src/components/BrokerDemo.tsx",
+      "src/components/AIEngine.tsx",
+      "src/components/NewsCalendar.tsx",
+      "src/components/Layout.tsx",
+      "src/components/Backtesting.tsx",
+      "src/components/OrderManagement.tsx",
+      "src/components/PaperPositions.tsx",
+      "src/context/AuthContext.tsx",
+      "src/context/DataProviderContext.tsx",
+      "src/components/PaperHistory.tsx",
+      "src/components/Dashboard.tsx",
+      "src/components/auth/LoginScreen.tsx",
+      "src/components/SystemHealth.tsx",
+      "src/components/MarketWatch.tsx",
+      "src/components/Settings.tsx",
+      "src/components/TradeHistory.tsx",
+      "src/components/Strategies",
+      "src/components/ChartPage.tsx"
+    ],
+    "src/main.tsx": [
+      "src/App.tsx"
+    ],
+    "src/components/AIEngine.tsx": [
+      "src/hooks/useAIEngine.ts",
+      "src/context/AuthContext.tsx",
+      "src/components/ai/AISignalPanel.tsx",
+      "src/lib/constants.ts",
+      "src/components/ai/AIProviderModal.tsx",
+      "src/services/aiProviderService.ts",
+      "src/types/aiProvider.ts"
+    ],
+    "src/components/BacktestDataSource.tsx": [
+      "src/services/dataFetchers/types.ts",
+      "src/context/DataProviderContext.tsx"
+    ],
+    "src/components/Backtesting.tsx": [
+      "src/components/backtest/BacktestConfig.tsx",
+      "src/components/backtest/BacktestDataSource.tsx",
+      "src/components/backtest/BacktestResults.tsx",
+      "src/components/backtest/BacktestEquityCurve.tsx",
+      "src/context/AuthContext.tsx",
+      "src/components/backtest/ComparisonResults.tsx",
+      "src/services/backtestService.ts",
+      "src/services/dataFetchers/fetchOHLCV.ts",
+      "src/components/backtest/BacktestTradeLog.tsx",
+      "src/components/backtest/BacktestRunHistory.tsx",
+      "src/components/backtest/BacktestProgress.tsx",
+      "src/hooks/useBacktest.ts",
+      "src/hooks/useComparisonBacktest.ts",
+      "src/hooks/useSupabaseData.ts"
+    ],
+    "src/components/BrokerDemo.tsx": [
+      "src/lib/supabase.ts",
+      "src/services/oandaService.ts",
+      "src/context/AuthContext.tsx",
+      "src/services/brokerService.ts"
+    ],
+    "src/components/ChartPage.tsx": [
+      "src/components/paper/TradeModal.tsx",
+      "src/services/patternDetection.ts",
+      "src/services/candleService.ts",
+      "src/components/chart/PatternControls.tsx",
+      "src/components/chart/CandleChart.tsx",
+      "src/hooks/usePaperTrading.ts",
+      "src/hooks/useMarketData.ts",
+      "src/components/chart/IndicatorControls.tsx",
+      "src/types/paper.ts",
+      "src/services/indicators.ts"
+    ],
+    "src/components/ComparisonResults.tsx": [
+      "src/services/dataFetchers/types.ts"
+    ],
+    "src/components/Dashboard.tsx": [
+      "src/components/ui/StatCard.tsx",
+      "src/hooks/useOrderManager.ts",
+      "src/hooks/useDataFeed.ts",
+      "src/hooks/useSupabaseData.ts"
+    ],
+    "src/components/DataFeedConfig.tsx": [
+      "src/context/AuthContext.tsx",
+      "src/services/brokerService.ts",
+      "src/lib/constants.ts",
+      "src/lib/supabase.ts",
+      "src/services/dataFeedService.ts",
+      "src/services/oandaService.ts"
+    ],
+    "src/components/Layout.tsx": [
+      "src/components/SessionClock.tsx",
+      "src/context/AuthContext.tsx",
+      "src/hooks/useNewsData.ts",
+      "src/lib/constants.ts",
+      "src/hooks/useDataFeed.ts",
+      "src/components/news/NextNewsWidget.tsx",
+      "src/lib/supabase.ts",
+      "src/services/dataFeedService.ts",
+      "src/hooks/useSupabaseData.ts"
+    ],
+    "src/components/MarketWatch.tsx": [
+      "src/services/tradingService.ts",
+      "src/context/AuthContext.tsx",
+      "src/hooks/useSupabaseData.ts",
+      "src/hooks/useMarketData.ts"
+    ],
+    "src/components/NewsCalendar.tsx": [
+      "src/hooks/useNewsData.ts"
+    ],
+    "src/components/OrderManagement.tsx": [
+      "src/hooks/useOrderManager.ts",
+      "src/lib/constants.ts",
+      "src/hooks/useSupabaseData.ts",
+      "src/hooks/useDataFeed.ts"
+    ],
+    "src/components/PaperHistory.tsx": [
+      "src/services/paperTradingService.ts",
+      "src/types/paper.ts",
+      "src/hooks/usePaperTrading.ts"
+    ],
+    "src/components/PaperPositions.tsx": [
+      "src/types/paper.ts",
+      "src/hooks/usePaperTrading.ts",
+      "src/hooks/useMarketData.ts"
+    ],
+    "src/components/RiskMonitor.tsx": [
+      "src/services/tradingService.ts",
+      "src/context/AuthContext.tsx",
+      "src/hooks/useSupabaseData.ts"
+    ],
+    "src/components/SessionClock.tsx": [
+      "src/types/news.ts"
+    ],
+    "src/components/Settings.tsx": [
+      "src/context/AuthContext.tsx",
+      "src/components/DataFeedConfig.tsx",
+      "src/services/tradingService.ts",
+      "src/pages/Settings/DataProviders.tsx",
+      "src/hooks/useSupabaseData.ts"
+    ],
+    "src/components/Strategies.tsx": [
+      "src/components/strategies/ConfigEditorModal.tsx",
+      "src/components/strategies/NewStrategyModal.tsx",
+      "src/context/AuthContext.tsx",
+      "src/hooks/useSupabaseData.ts"
+    ],
+    "src/components/SystemHealth.tsx": [
+      "src/hooks/useOrderManager.ts",
+      "src/context/AuthContext.tsx",
+      "src/services/brokerService.ts",
+      "src/lib/supabase.ts",
+      "src/services/dataFeedService.ts"
+    ],
+    "src/components/TradeHistory.tsx": [
+      "src/hooks/useSupabaseData.ts"
+    ],
+    "src/components/ai/AIProviderModal.tsx": [
+      "src/types/aiProvider.ts"
+    ],
+    "src/components/auth/LoginScreen.tsx": [
+      "src/context/AuthContext.tsx"
+    ],
+    "src/components/backtest/BacktestConfig.tsx": [
+      "src/types/backtest.ts",
+      "src/services/backtestStrategies.ts"
+    ],
+    "src/components/backtest/BacktestRunHistory.tsx": [
+      "src/context/AuthContext.tsx",
+      "src/services/backtestService.ts"
+    ],
+    "src/components/news/NextNewsWidget.tsx": [
+      "src/hooks/useNewsData.ts"
+    ],
+    "src/components/paper/TradeModal.tsx": [
+      "src/types/paper.ts"
+    ],
+    "src/components/strategies/ConfigEditorModal.tsx": [
+      "src/components/strategies/strategyTemplates.ts"
+    ],
+    "src/components/strategies/NewStrategyModal.tsx": [
+      "src/components/strategies/strategyTemplates.ts"
+    ],
+    "src/context/AuthContext.tsx": [
+      "src/lib/supabase.ts"
+    ],
+    "src/context/DataProviderContext.tsx": [
+      "src/services/dataFetchers/types.ts",
+      "src/services/dataFetchers/fetchOHLCV.ts"
+    ],
+    "src/hooks/useAIEngine.ts": [
+      "src/services/aiProviderService.ts",
+      "src/context/AuthContext.tsx"
+    ],
+    "src/hooks/useComparisonBacktest.ts": [
+      "src/services/backtestEngine.ts",
+      "src/services/dataFetchers/types.ts",
+      "src/services/dataFetchers/fetchOHLCV.ts"
+    ],
+    "src/hooks/useDataFeed.ts": [
+      "src/services/dataFeedService.ts"
+    ],
+    "src/hooks/useMarketData.ts": [
+      "src/lib/constants.ts"
+    ],
+    "src/hooks/useOrderManager.ts": [
+      "src/services/orderManagerService.ts",
+      "src/context/AuthContext.tsx",
+      "src/services/brokerService.ts",
+      "src/services/riskManagerService.ts"
+    ],
+    "src/hooks/usePaperTrading.ts": [
+      "src/services/paperTradingService.ts"
+    ],
+    "src/hooks/useSupabaseData.ts": [
+      "src/services/tradingService.ts",
+      "src/context/AuthContext.tsx"
+    ],
+    "src/pages/Settings/DataProviders.tsx": [
+      "src/services/cache.ts",
+      "src/services/dataFetchers/types.ts",
+      "src/context/DataProviderContext.tsx"
+    ],
+    "src/services/aiProviderService.ts": [
+      "src/lib/supabase.ts"
+    ],
+    "src/services/backtestService.ts": [
+      "src/lib/supabase.ts"
+    ],
+    "src/services/cache.ts": [
+      "src/services/dataFetchers/types.ts"
+    ],
+    "src/services/normalize.ts": [
+      "src/services/dataFetchers/types.ts"
+    ],
+    "src/services/orderManagerService.ts": [
+      "src/lib/supabase.ts",
+      "src/services/riskManagerService.ts",
+      "src/services/brokerService.ts"
+    ],
+    "src/services/paperTradingService.ts": [
+      "src/lib/supabase.ts",
+      "src/types/paper.ts"
+    ],
+    "src/services/tradingService.ts": [
+      "src/lib/supabase.ts"
+    ],
+    "src/services/dataFetchers/eodhd.ts": [
+      "src/services/dataFetchers/types.ts"
+    ],
+    "src/services/dataFetchers/fetchOHLCV.ts": [
+      "src/services/dataFetchers/eodhd.ts",
+      "src/services/cache.ts",
+      "src/services/dataFetchers/synthetic.ts",
+      "src/services/normalize.ts",
+      "src/services/dataFetchers/types.ts",
+      "src/services/dataFetchers/tiingo.ts"
+    ],
+    "src/services/dataFetchers/synthetic.ts": [
+      "src/services/dataFetchers/types.ts"
+    ],
+    "src/services/dataFetchers/tiingo.ts": [
+      "src/services/dataFetchers/types.ts"
+    ],
+    "src/workers/backtestWorker.ts": [
+      "src/services/backtestEngine.ts",
+      "src/services/backtestStrategies.ts"
+    ],
+    "tests/components/Backtesting.handleRun.test.ts": [
+      "src/services/dataFetchers/fetchOHLCV.ts",
+      "src/components/Backtesting.tsx"
+    ],
+    "tests/services/cache.test.ts": [
+      "src/services/dataFetchers/types.ts",
+      "src/services/cache.ts"
+    ],
+    "tests/services/normalize.test.ts": [
+      "src/services/dataFetchers/types.ts",
+      "src/services/normalize.ts"
+    ]
+  }
+}

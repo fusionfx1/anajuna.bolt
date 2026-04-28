@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T19:13:01.699Z
-> Files: 308 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T19:52:12.186Z
+> Files: 309 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -34,6 +34,10 @@
 ## .claude/rules/
 
 - `openwolf.md` (~313 tok)
+
+## .understand-anything/intermediate/
+
+- `layers.json` — Declares definitions (~2520 tok)
 
 ## .wolf/
 
