@@ -115,3 +115,8 @@
 | 02:33 | Addressed code-review findings: mocked useComparisonBacktest boundary, tightened date assertions, guarded helper return | tests/components/Backtesting.handleRun.test.ts | Success — re-review approved; full suite 41/41 passing | ~2500 |
 | 02:38 | Silenced expected cache warning inside error-handling test to keep npm test output clean | tests/services/cache.test.ts | Success — full suite 41/41 passing with no stderr warnings | ~800 |
 | 02:41 | Added exact warning-count assertion for provider failure test and reran verification | tests/components/Backtesting.handleRun.test.ts | Success — final npm test 41/41 clean | ~500 |
+
+## Session: 2026-04-28 20:50
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|

@@ -1,23 +1,12 @@
 {
-  "session_id": "session-2026-04-28-0224",
-  "started": "2026-04-28T19:24:37.507Z",
-  "files_read": {
-    "H:/DEV/projects/anjuna-.project/anajuna.bolt-main/.gitignore": {
-      "count": 1,
-      "tokens": 59,
-      "first_read": "2026-04-28T19:32:28.534Z"
-    },
-    "H:/DEV/projects/anjuna-.project/anajuna.bolt-main/.understand-anything/.understandignore": {
-      "count": 1,
-      "tokens": 0,
-      "first_read": "2026-04-28T19:32:28.830Z"
-    }
-  },
+  "session_id": "session-2026-04-28-2050",
+  "started": "2026-04-28T20:50:53.735Z",
+  "files_read": {},
   "files_written": [],
   "edit_counts": {},
-  "anatomy_hits": 1,
+  "anatomy_hits": 0,
   "anatomy_misses": 0,
   "repeated_reads_warned": 0,
   "cerebrum_warnings": 0,
-  "stop_count": 4
+  "stop_count": 1
 }
