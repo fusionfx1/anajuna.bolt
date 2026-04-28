@@ -108,11 +108,28 @@ export function useComparisonBacktest() {
           try {
             const backtest = runBacktest(
               fetchResults.eodhd.candles,
+              {
+                strategyId: null,
+                strategyName: 'Comparison',
+                strategyType: 'manual',
+                initialBalance: 10000,
+                instrument: symbol as any,
+                granularity: 'D1',
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                commissionPips: 2,
+                slippage: 'none',
+                slippagePips: 0,
+                positionSizing: 'fixed',
+                lotSize: 1,
+                riskPct: 2,
+                strategyConfig: {},
+              },
               strategy
             )
             newResults.eodhd = {
               fetchResult: fetchResults.eodhd,
-              metrics: calculateMetrics(backtest.signals),
+              metrics: backtest.metrics,
             }
           } catch (error) {
             console.warn('[useComparisonBacktest] EODHD backtest failed:', error)
@@ -123,11 +140,28 @@ export function useComparisonBacktest() {
           try {
             const backtest = runBacktest(
               fetchResults.tiingo.candles,
+              {
+                strategyId: null,
+                strategyName: 'Comparison',
+                strategyType: 'manual',
+                initialBalance: 10000,
+                instrument: symbol as any,
+                granularity: 'D1',
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                commissionPips: 2,
+                slippage: 'none',
+                slippagePips: 0,
+                positionSizing: 'fixed',
+                lotSize: 1,
+                riskPct: 2,
+                strategyConfig: {},
+              },
               strategy
             )
             newResults.tiingo = {
               fetchResult: fetchResults.tiingo,
-              metrics: calculateMetrics(backtest.signals),
+              metrics: backtest.metrics,
             }
           } catch (error) {
             console.warn('[useComparisonBacktest] Tiingo backtest failed:', error)
@@ -138,11 +172,28 @@ export function useComparisonBacktest() {
           try {
             const backtest = runBacktest(
               fetchResults.synthetic.candles,
+              {
+                strategyId: null,
+                strategyName: 'Comparison',
+                strategyType: 'manual',
+                initialBalance: 10000,
+                instrument: symbol as any,
+                granularity: 'D1',
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                commissionPips: 2,
+                slippage: 'none',
+                slippagePips: 0,
+                positionSizing: 'fixed',
+                lotSize: 1,
+                riskPct: 2,
+                strategyConfig: {},
+              },
               strategy
             )
             newResults.synthetic = {
               fetchResult: fetchResults.synthetic,
-              metrics: calculateMetrics(backtest.signals),
+              metrics: backtest.metrics,
             }
           } catch (error) {
             console.warn(

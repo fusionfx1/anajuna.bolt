@@ -1,4 +1,4 @@
-export type DataProvider = 'polygon' | 'alpaca' | 'simulation';
+export type DataProvider = 'eodhd' | 'tiingo' | 'synthetic';
 export type FeedStatus = 'disconnected' | 'connecting' | 'connected' | 'error' | 'reconnecting';
 export type OrderStatus = 'pending' | 'submitted' | 'partially_filled' | 'filled' | 'cancelled' | 'rejected' | 'expired';
 export type BrokerProvider = 'alpaca' | 'oanda' | 'paper';

@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T18:42:27.057Z
-> Files: 307 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T19:13:01.699Z
+> Files: 308 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -585,6 +585,7 @@
 
 - `useAIEngine.ts` — Exports useAIProviders, useAIPredictions, AIEngineState, useAIEngine (~1258 tok)
 - `useBacktest.ts` — Exports useBacktest (~670 tok)
+- `useComparisonBacktest.ts` — Exports ComparisonBacktestState, BacktestMetrics, useComparisonBacktest (~1804 tok)
 - `useDataFeed.ts` — Exports useFeedStatus, useDataFeedConnection, useLiveTicks, useLiveQuotes + 2 more (~1271 tok)
 - `useMarketData.ts` — Exports useMarketData, useAccountSummary (~847 tok)
 - `useNewsData.ts` — Format a UTC epoch ms as "HH:mm" in Asia/Bangkok (~896 tok)
@@ -618,7 +619,7 @@
 
 - `aiProvider.ts` — Exports AIProviderType, AIModelRole, AIProviderConfig, AIPrediction + 6 more (~752 tok)
 - `backtest.ts` — Exports BacktestStatus, BacktestGranularity, BacktestInstrument, BACKTEST_GRANULARITIES + 11 more (~1117 tok)
-- `dataFeed.ts` — Exports DataProvider, FeedStatus, OrderStatus, BrokerProvider + 11 more (~779 tok)
+- `dataFeed.ts` — Exports DataProvider, FeedStatus, OrderStatus, BrokerProvider + 11 more (~827 tok)
 - `news.ts` — UTC epoch ms — null for "All Day" events (~352 tok)
 - `paper.ts` — Instrument in OANDA underscore format → display label (~620 tok)
 - `trading.ts` — Exports StrategyType, StrategyStatus, PositionDirection, PositionStatus + 12 more (~978 tok)

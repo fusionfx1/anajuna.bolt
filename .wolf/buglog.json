@@ -172,6 +172,54 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-28T18:18:16.049Z"
+    },
+    {
+      "id": "bug-011",
+      "timestamp": "2026-04-28T19:11:25.798Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/types/dataFeed.ts",
+      "root_cause": "Had 'polygon'",
+      "fix": "Changed to 'eodhd'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T19:11:25.798Z"
+    },
+    {
+      "id": "bug-012",
+      "timestamp": "2026-04-28T19:12:04.767Z",
+      "error_message": "Type error",
+      "file": "src/hooks/useComparisonBacktest.ts",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T19:12:04.767Z"
+    },
+    {
+      "id": "bug-013",
+      "timestamp": "2026-04-28T19:12:47.436Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/hooks/useComparisonBacktest.ts",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 13→23 lines (2 removed) | Also: instrument: symbol,; slippageMode: 'none' as const,",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-28T19:13:01.712Z"
     }
   ]
 }

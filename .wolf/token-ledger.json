@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-04-27T15:30:31.378Z",
   "lifetime": {
-    "total_tokens_estimated": 15870,
-    "total_reads": 15,
+    "total_tokens_estimated": 29637,
+    "total_reads": 38,
     "total_writes": 8,
-    "total_sessions": 8,
-    "anatomy_hits": 7,
-    "anatomy_misses": 8,
-    "repeated_reads_blocked": 5,
-    "estimated_savings_vs_bare_cli": 5266
+    "total_sessions": 9,
+    "anatomy_hits": 12,
+    "anatomy_misses": 18,
+    "repeated_reads_blocked": 6,
+    "estimated_savings_vs_bare_cli": 6266
   },
   "sessions": [
     {
@@ -207,6 +207,208 @@
         "writes_count": 2,
         "repeated_reads_blocked": 1,
         "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-04-28-0149",
+      "started": "2026-04-28T18:49:05.094Z",
+      "ended": "2026-04-28T18:50:04.638Z",
+      "reads": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/anatomy.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/cerebrum.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/memory.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 0,
+        "reads_count": 3,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-04-28-0149",
+      "started": "2026-04-28T18:49:05.094Z",
+      "ended": "2026-04-28T18:55:07.395Z",
+      "reads": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/anatomy.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/cerebrum.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/memory.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 0,
+        "reads_count": 3,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-04-28-0149",
+      "started": "2026-04-28T18:49:05.094Z",
+      "ended": "2026-04-28T19:02:59.880Z",
+      "reads": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/anatomy.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/cerebrum.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/memory.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 0,
+        "reads_count": 3,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-04-28-0149",
+      "started": "2026-04-28T18:49:05.094Z",
+      "ended": "2026-04-28T19:06:16.291Z",
+      "reads": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/anatomy.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/cerebrum.md",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/memory.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/backtest/BacktestDataSource.tsx",
+          "tokens_estimated": 560,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/Backtesting.tsx",
+          "tokens_estimated": 3495,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/backtest/ComparisonResults.tsx",
+          "tokens_estimated": 1240,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/tests/components/Backtesting.handleRun.test.ts",
+          "tokens_estimated": 3547,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/services/backtestEngine.ts",
+          "tokens_estimated": 3105,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/types/dataFeed.ts",
+          "tokens_estimated": 779,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/services/dataFetchers/fetchOHLCV.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/services/dataFetchers/types.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/hooks/useComparisonBacktest.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/hooks/useBacktest.ts",
+          "tokens_estimated": 670,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/package.json",
+          "tokens_estimated": 371,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 13767,
+        "output_tokens_estimated": 0,
+        "reads_count": 14,
+        "writes_count": 0,
+        "repeated_reads_blocked": 1,
+        "anatomy_lookups": 5
       }
     }
   ],
