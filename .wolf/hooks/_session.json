@@ -1,100 +1,23 @@
 {
-  "session_id": "session-2026-04-28-0210",
-  "started": "2026-04-28T19:10:58.624Z",
+  "session_id": "session-2026-04-28-0224",
+  "started": "2026-04-28T19:24:37.507Z",
   "files_read": {
-    "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/types/dataFeed.ts": {
+    "H:/DEV/projects/anjuna-.project/anajuna.bolt-main/.gitignore": {
       "count": 1,
-      "tokens": 779,
-      "first_read": "2026-04-28T19:11:18.306Z"
+      "tokens": 59,
+      "first_read": "2026-04-28T19:32:28.534Z"
     },
-    "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/services/dataFetchers/types.ts": {
-      "count": 1,
-      "tokens": 0,
-      "first_read": "2026-04-28T19:11:21.574Z"
-    },
-    "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/hooks/useComparisonBacktest.ts": {
+    "H:/DEV/projects/anjuna-.project/anajuna.bolt-main/.understand-anything/.understandignore": {
       "count": 1,
       "tokens": 0,
-      "first_read": "2026-04-28T19:11:28.976Z"
-    },
-    "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/Backtesting.tsx": {
-      "count": 1,
-      "tokens": 3495,
-      "first_read": "2026-04-28T19:11:45.928Z"
-    },
-    "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/services/backtestEngine.ts": {
-      "count": 1,
-      "tokens": 3105,
-      "first_read": "2026-04-28T19:11:55.704Z"
-    },
-    "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/types/backtest.ts": {
-      "count": 2,
-      "tokens": 1117,
-      "first_read": "2026-04-28T19:12:16.776Z"
-    },
-    "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/package.json": {
-      "count": 1,
-      "tokens": 371,
-      "first_read": "2026-04-28T19:13:49.691Z"
+      "first_read": "2026-04-28T19:32:28.830Z"
     }
   },
-  "files_written": [
-    {
-      "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/types/dataFeed.ts",
-      "action": "edit",
-      "tokens": 18,
-      "at": "2026-04-28T19:11:25.797Z"
-    },
-    {
-      "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/hooks/useComparisonBacktest.ts",
-      "action": "edit",
-      "tokens": 601,
-      "at": "2026-04-28T19:12:04.766Z"
-    },
-    {
-      "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/hooks/useComparisonBacktest.ts",
-      "action": "edit",
-      "tokens": 39,
-      "at": "2026-04-28T19:12:31.158Z"
-    },
-    {
-      "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/hooks/useComparisonBacktest.ts",
-      "action": "edit",
-      "tokens": 39,
-      "at": "2026-04-28T19:12:34.863Z"
-    },
-    {
-      "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/hooks/useComparisonBacktest.ts",
-      "action": "edit",
-      "tokens": 41,
-      "at": "2026-04-28T19:12:38.400Z"
-    },
-    {
-      "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/hooks/useComparisonBacktest.ts",
-      "action": "edit",
-      "tokens": 221,
-      "at": "2026-04-28T19:12:47.435Z"
-    },
-    {
-      "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/hooks/useComparisonBacktest.ts",
-      "action": "edit",
-      "tokens": 222,
-      "at": "2026-04-28T19:12:51.979Z"
-    },
-    {
-      "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/hooks/useComparisonBacktest.ts",
-      "action": "edit",
-      "tokens": 224,
-      "at": "2026-04-28T19:13:01.710Z"
-    }
-  ],
-  "edit_counts": {
-    "src/types/dataFeed.ts": 1,
-    "src/hooks/useComparisonBacktest.ts": 7
-  },
-  "anatomy_hits": 5,
-  "anatomy_misses": 2,
-  "repeated_reads_warned": 1,
+  "files_written": [],
+  "edit_counts": {},
+  "anatomy_hits": 1,
+  "anatomy_misses": 0,
+  "repeated_reads_warned": 0,
   "cerebrum_warnings": 0,
-  "stop_count": 0
+  "stop_count": 4
 }

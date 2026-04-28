@@ -220,6 +220,39 @@
       "related_bugs": [],
       "occurrences": 3,
       "last_seen": "2026-04-28T19:13:01.712Z"
+    },
+    {
+      "id": "bug-014",
+      "timestamp": "2026-04-28T19:22:00.000Z",
+      "error_message": "'vitest' is not recognized as an internal or external command",
+      "file": "node_modules",
+      "root_cause": "Project dependencies were not installed in the workspace, so npm test could not find the local Vitest binary.",
+      "fix": "Ran npm install before executing the test suite.",
+      "tags": [
+        "test",
+        "dependency-install",
+        "vitest",
+        "node-modules"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T19:22:00.000Z"
+    },
+    {
+      "id": "bug-015",
+      "timestamp": "2026-04-28T19:22:00.000Z",
+      "error_message": "PowerShell parser error: The token '&&' is not a valid statement separator in this version.",
+      "file": "shell",
+      "root_cause": "The workspace shell is PowerShell and this environment rejected Bash-style && command chaining.",
+      "fix": "Retried the npm commands as separate shell calls.",
+      "tags": [
+        "shell",
+        "powershell",
+        "command-sequencing"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T19:22:00.000Z"
     }
   ]
 }

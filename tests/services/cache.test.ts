@@ -176,11 +176,17 @@ describe('cache.ts', () => {
 
     it('handles read errors gracefully', async () => {
       const key = 'EURUSD-eodhd-hourly-error'
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 
       localStorage.setItem(`anjuna_cache_${key}`, 'invalid json')
 
       const cached = await readCache(key, 30)
       expect(cached).toBeNull()
+      expect(warn).toHaveBeenCalledWith(
+        '[cache] localStorage read failed',
+        expect.any(SyntaxError)
+      )
+      warn.mockRestore()
     })
   })
 })

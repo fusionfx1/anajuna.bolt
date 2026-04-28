@@ -102,3 +102,16 @@
 | 01:50 | CRITICAL BUG #1: Fixed DataProvider type mismatch — changed 'polygon'/'alpaca'/'simulation' to 'eodhd'/'tiingo'/'synthetic' | src/types/dataFeed.ts | Fixed type compatibility with actual provider values | ~500 |
 | 01:52 | CRITICAL BUG #2: Fixed runBacktest() arity — added BacktestConfig object parameter (was missing), fixed backtest.metrics usage (was using .signals) | src/hooks/useComparisonBacktest.ts | Fixed function signature compliance, 3 provider calls now pass correct config | ~1200 |
 | 01:54 | CRITICAL BUG #3: Fixed BacktestConfig dates — converted Date objects to ISO strings, added all required fields (strategyId, strategyType, granularity, slippage, positionSizing, lotSize, riskPct, strategyConfig) | src/hooks/useComparisonBacktest.ts | All 3 providers now construct valid BacktestConfig | ~800 |
+| 02:15 | Session end: 8 writes across 2 files (dataFeed.ts, useComparisonBacktest.ts) | 7 reads | ~10272 tok |
+| 02:18 | Session end: 8 writes across 2 files (dataFeed.ts, useComparisonBacktest.ts) | 7 reads | ~10272 tok |
+
+## Session: 2026-04-28 02:24
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 02:20 | Phase 2 test rewrite: loaded OpenWolf guidance, inspected current fake handleRun tests and real Backtesting/fetchOHLCV/normalize APIs | .wolf/OPENWOLF.md, tests/components/Backtesting.handleRun.test.ts, src/components/Backtesting.tsx, src/services/dataFetchers/fetchOHLCV.ts | Found selectedProvider lives in Backtesting handleRun, fetcher/normalizer live under src/services | ~9000 |
+| 02:22 | Installed project dependencies and @testing-library/react after vitest was missing from node_modules | package.json, package-lock.json | Success — baseline fake suite ran 41/41 | ~1500 |
+| 02:25 | Rewrote all 12 handleRun tests to exercise real Backtesting/fetchOHLCV/normalize behavior with provider/cache/hook boundary mocks | tests/components/Backtesting.handleRun.test.ts | Success — rewritten tests 12/12; full suite 41/41 passing | ~6500 |
+| 02:33 | Addressed code-review findings: mocked useComparisonBacktest boundary, tightened date assertions, guarded helper return | tests/components/Backtesting.handleRun.test.ts | Success — re-review approved; full suite 41/41 passing | ~2500 |
+| 02:38 | Silenced expected cache warning inside error-handling test to keep npm test output clean | tests/services/cache.test.ts | Success — full suite 41/41 passing with no stderr warnings | ~800 |
+| 02:41 | Added exact warning-count assertion for provider failure test and reran verification | tests/components/Backtesting.handleRun.test.ts | Success — final npm test 41/41 clean | ~500 |

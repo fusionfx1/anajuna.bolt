@@ -1,401 +1,344 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { NormalizedCandle } from '../../src/services/dataFetchers/types'
+import React from 'react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { Backtesting } from '../../src/components/Backtesting'
+import { fetchOHLCV, setFetchConfig } from '../../src/services/dataFetchers/fetchOHLCV'
+import type { RawOHLCV } from '../../src/services/dataFetchers/types'
 import type { Candle } from '../../src/services/backtestEngine'
-import type { DataProvider } from '../../src/types/dataFeed'
 
-// Mock fetchOHLCV function
-const mockFetchOHLCV = vi.fn()
+const mocks = vi.hoisted(() => ({
+  eodhdGetCandles: vi.fn(),
+  tiingoGetDailyHistory: vi.fn(),
+  syntheticGetCandles: vi.fn(),
+  readCache: vi.fn(),
+  writeCache: vi.fn(),
+  runBacktest: vi.fn(),
+  generateHistoricalCandles: vi.fn(),
+}))
 
-// Mock backtestService functions
-const mockGenerateHistoricalCandles = vi.fn()
-const mockRun = vi.fn()
+vi.mock('../../src/services/cache', () => ({
+  readCache: mocks.readCache,
+  writeCache: mocks.writeCache,
+}))
 
-// Helper: Convert NormalizedCandle to Candle (matches handleRun conversion logic)
-function normalizedToCandle(normalized: NormalizedCandle): Candle {
-  return {
-    time: Math.floor(normalized.timestamp.getTime() / 1000),
-    open: normalized.o,
-    high: normalized.h,
-    low: normalized.l,
-    close: normalized.c,
-    volume: normalized.v,
-  }
+vi.mock('../../src/services/dataFetchers/eodhd', () => ({
+  createEodhhdClient: vi.fn(() => ({
+    getCandles: mocks.eodhdGetCandles,
+  })),
+}))
+
+vi.mock('../../src/services/dataFetchers/tiingo', () => ({
+  createTiingoClient: vi.fn(() => ({
+    getDailyHistory: mocks.tiingoGetDailyHistory,
+  })),
+}))
+
+vi.mock('../../src/services/dataFetchers/synthetic', () => ({
+  getSyntheticCandles: mocks.syntheticGetCandles,
+}))
+
+vi.mock('../../src/hooks/useSupabaseData', () => ({
+  useStrategies: () => ({ strategies: [], loading: false }),
+}))
+
+vi.mock('../../src/context/AuthContext', () => ({
+  useAuth: () => ({ user: null }),
+}))
+
+vi.mock('../../src/hooks/useBacktest', () => ({
+  useBacktest: () => ({
+    status: 'idle',
+    progress: null,
+    result: null,
+    error: null,
+    run: mocks.runBacktest,
+    cancel: vi.fn(),
+    reset: vi.fn(),
+  }),
+}))
+
+vi.mock('../../src/hooks/useComparisonBacktest', () => ({
+  useComparisonBacktest: () => ({
+    loading: false,
+    error: null,
+    results: {},
+    runComparison: vi.fn(),
+  }),
+}))
+
+vi.mock('../../src/services/backtestService', () => ({
+  generateHistoricalCandles: mocks.generateHistoricalCandles,
+  fetchHistoricalCandles: vi.fn(),
+  saveBacktestRun: vi.fn(),
+  upsertCandles: vi.fn(),
+}))
+
+function rawCandles(count: number, start = '2024-01-01T00:00:00.000Z'): RawOHLCV[] {
+  const startTime = new Date(start).getTime()
+
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(startTime + index * 86_400_000)
+    const open = 100 + index
+
+    return {
+      date: date.toISOString(),
+      open,
+      high: open + 5,
+      low: open - 5,
+      close: open + 2,
+      volume: 1_000 + index,
+    }
+  })
 }
 
-// Create sample normalized candles
-function createNormalizedCandles(count: number, startDate: Date = new Date('2025-01-01')): NormalizedCandle[] {
-  const candles: NormalizedCandle[] = []
-  for (let i = 0; i < count; i++) {
-    const timestamp = new Date(startDate.getTime() + i * 3600000) // 1 hour apart
-    candles.push({
-      timestamp,
-      o: 100 + i * 0.1,
-      h: 100.5 + i * 0.1,
-      l: 99.5 + i * 0.1,
-      c: 100.25 + i * 0.1,
-      v: 1000000,
-    })
+function backtestCandles(count: number): Candle[] {
+  return Array.from({ length: count }, (_, index) => ({
+    time: Math.floor(new Date('2024-06-01T00:00:00.000Z').getTime() / 1000) + index * 86_400,
+    open: 200 + index,
+    high: 205 + index,
+    low: 195 + index,
+    close: 202 + index,
+    volume: 2_000 + index,
+  }))
+}
+
+async function renderAndRun(provider: 'eodhd' | 'tiingo' | 'synthetic') {
+  render(React.createElement(Backtesting))
+
+  fireEvent.click(screen.getByRole('button', { name: providerLabel(provider) }))
+  fireEvent.click(screen.getByRole('button', { name: /run backtest/i }))
+
+  await waitFor(() => expect(mocks.runBacktest).toHaveBeenCalled())
+  const candles = mocks.runBacktest.mock.calls.at(-1)?.[1] as
+    | Candle[]
+    | undefined
+  if (!candles) {
+    throw new Error('Expected Backtesting.handleRun to call useBacktest().run')
   }
   return candles
 }
 
-describe('Backtesting.handleRun - Phase 3 Integration', () => {
+function providerLabel(provider: 'eodhd' | 'tiingo' | 'synthetic'): RegExp {
+  if (provider === 'eodhd') return /eodhd/i
+  if (provider === 'tiingo') return /tiingo/i
+  return /synthetic/i
+}
+
+describe('Backtesting.handleRun - real code integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
+    setFetchConfig({
+      eodhd_api_key: 'test-eodhd-key',
+      tiingo_api_key: 'test-tiingo-key',
+      primary_provider: 'synthetic',
+      cache_ttl_days: 30,
+    })
+    mocks.readCache.mockResolvedValue(null)
+    mocks.writeCache.mockResolvedValue(undefined)
+    mocks.eodhdGetCandles.mockResolvedValue(rawCandles(60))
+    mocks.tiingoGetDailyHistory.mockResolvedValue(rawCandles(60))
+    mocks.syntheticGetCandles.mockResolvedValue(rawCandles(60))
+    mocks.generateHistoricalCandles.mockReturnValue(backtestCandles(251))
   })
 
-  describe('fetchOHLCV integration with selectedProvider', () => {
-    it('calls fetchOHLCV with correct provider parameter from selectedProvider state', () => {
-      // Arrange
-      const selectedProvider: DataProvider = 'eodhd'
-      const instrument = 'EUR_USD'
-      const granularity = 'H1'
-      const startDate = '2025-01-01'
-      const endDate = '2025-12-31'
+  afterEach(() => {
+    cleanup()
+  })
 
-      const normalizedCandles = createNormalizedCandles(100)
-      mockFetchOHLCV.mockResolvedValue({
-        candles: normalizedCandles,
-        provider: selectedProvider,
-        fromCache: false,
-        fetchedAt: new Date(),
-        count: 100,
-      })
+  it('uses the selected EODHD provider when handleRun fetches candles', async () => {
+    const candles = await renderAndRun('eodhd')
 
-      // Act: Simulate handleRun calling fetchOHLCV
-      const config = {
-        instrument: instrument as any,
-        granularity: granularity as any,
-        startDate,
-        endDate,
-      }
+    expect(mocks.eodhdGetCandles).toHaveBeenCalledWith(
+      'EUR_USD',
+      expect.any(Date),
+      expect.any(Date)
+    )
+    const [, startDate, endDate] = mocks.eodhdGetCandles.mock.calls[0]
+    expect(startDate.getTime()).toBeLessThan(endDate.getTime())
+    expect(mocks.tiingoGetDailyHistory).not.toHaveBeenCalled()
+    expect(candles).toHaveLength(60)
+  })
 
-      // This is what handleRun does internally
-      const startDateObj = new Date(startDate)
-      const endDateObj = new Date(endDate)
+  it('fetchOHLCV processes EODHD API data through the real normalizer', async () => {
+    const [raw] = rawCandles(1)
+    mocks.eodhdGetCandles.mockResolvedValue([raw])
 
-      mockFetchOHLCV({
-        symbol: config.instrument,
-        startDate: startDateObj,
-        endDate: endDateObj,
-        provider: selectedProvider,
-        useCache: true,
-      })
-
-      // Assert
-      expect(mockFetchOHLCV).toHaveBeenCalledWith({
-        symbol: instrument,
-        startDate: startDateObj,
-        endDate: endDateObj,
-        provider: 'eodhd',
-        useCache: true,
-      })
+    const result = await fetchOHLCV({
+      symbol: 'EUR_USD',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2024-01-02'),
+      provider: 'eodhd',
+      useCache: true,
     })
 
-    it('uses tiingo provider when selectedProvider is tiingo', () => {
-      const selectedProvider: DataProvider = 'tiingo'
-      const normalizedCandles = createNormalizedCandles(100)
+    expect(result.provider).toBe('eodhd')
+    expect(result.candles[0]).toMatchObject({
+      o: raw.open,
+      h: raw.high,
+      l: raw.low,
+      c: raw.close,
+      v: raw.volume,
+    })
+    expect(result.candles[0].timestamp).toBeInstanceOf(Date)
+  })
 
-      mockFetchOHLCV.mockResolvedValue({
-        candles: normalizedCandles,
-        provider: selectedProvider,
-        fromCache: false,
-        fetchedAt: new Date(),
-        count: 100,
-      })
+  it('fetchOHLCV processes Tiingo API data through the real normalizer', async () => {
+    const [raw] = rawCandles(1, '2024-02-01T12:30:00.000Z')
+    mocks.tiingoGetDailyHistory.mockResolvedValue([raw])
 
-      mockFetchOHLCV({
-        symbol: 'GBP_USD',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        provider: selectedProvider,
-        useCache: true,
-      })
-
-      expect(mockFetchOHLCV).toHaveBeenCalledWith(
-        expect.objectContaining({ provider: 'tiingo' })
-      )
+    const result = await fetchOHLCV({
+      symbol: 'GBP_USD',
+      startDate: new Date('2024-02-01'),
+      endDate: new Date('2024-02-02'),
+      provider: 'tiingo',
+      useCache: true,
     })
 
-    it('uses synthetic provider when selectedProvider is synthetic', () => {
-      const selectedProvider: DataProvider = 'synthetic'
-      const normalizedCandles = createNormalizedCandles(100)
+    expect(result.provider).toBe('tiingo')
+    expect(result.candles[0].timestamp.toISOString()).toBe(raw.date)
+    expect(result.candles[0].c).toBe(raw.close)
+  })
 
-      mockFetchOHLCV.mockResolvedValue({
-        candles: normalizedCandles,
-        provider: selectedProvider,
-        fromCache: false,
-        fetchedAt: new Date(),
-        count: 100,
-      })
+  it('fetchOHLCV processes synthetic data through the real normalizer', async () => {
+    const [raw] = rawCandles(1, '2024-03-01T00:00:00.000Z')
+    mocks.syntheticGetCandles.mockResolvedValue([raw])
 
-      mockFetchOHLCV({
-        symbol: 'USD_JPY',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
-        provider: selectedProvider,
-        useCache: true,
-      })
+    const result = await fetchOHLCV({
+      symbol: 'USD_JPY',
+      startDate: new Date('2024-03-01'),
+      endDate: new Date('2024-03-02'),
+      provider: 'synthetic',
+      useCache: true,
+    })
 
-      expect(mockFetchOHLCV).toHaveBeenCalledWith(
-        expect.objectContaining({ provider: 'synthetic' })
-      )
+    expect(result.provider).toBe('synthetic')
+    expect(result.candles[0]).toMatchObject({
+      o: raw.open,
+      h: raw.high,
+      l: raw.low,
+      c: raw.close,
+      v: raw.volume,
     })
   })
 
-  describe('NormalizedCandle to Candle conversion', () => {
-    it('preserves all data integrity when converting NormalizedCandle[] to Candle[]', () => {
-      // Arrange
-      const timestamp = new Date('2025-06-15T10:30:00Z')
-      const normalized: NormalizedCandle = {
-        timestamp,
-        o: 1.0950,
-        h: 1.0960,
-        l: 1.0940,
-        c: 1.0955,
-        v: 2500000,
-      }
+  it('preserves OHLCV values when handleRun converts normalized candles to backtest candles', async () => {
+    const [first, ...rest] = rawCandles(60)
+    first.open = 1.095
+    first.high = 1.096
+    first.low = 1.094
+    first.close = 1.0955
+    first.volume = 2_500_000
+    mocks.eodhdGetCandles.mockResolvedValue([first, ...rest])
 
-      // Act
-      const candle = normalizedToCandle(normalized)
+    const candles = await renderAndRun('eodhd')
 
-      // Assert
-      expect(candle.time).toBe(Math.floor(timestamp.getTime() / 1000))
-      expect(candle.open).toBe(1.0950)
-      expect(candle.high).toBe(1.0960)
-      expect(candle.low).toBe(1.0940)
-      expect(candle.close).toBe(1.0955)
-      expect(candle.volume).toBe(2500000)
-    })
-
-    it('converts timestamp to Unix seconds correctly', () => {
-      const timestamp = new Date('2025-01-15T14:45:30Z')
-      const expectedSeconds = Math.floor(timestamp.getTime() / 1000)
-
-      const normalized: NormalizedCandle = {
-        timestamp,
-        o: 100,
-        h: 101,
-        l: 99,
-        c: 100.5,
-        v: 1000000,
-      }
-
-      const candle = normalizedToCandle(normalized)
-
-      expect(candle.time).toBe(expectedSeconds)
-    })
-
-    it('converts multiple candles preserving chronological order', () => {
-      const candles = createNormalizedCandles(5)
-
-      const converted = candles.map(normalizedToCandle)
-
-      // Assert timestamps are in ascending order
-      for (let i = 0; i < converted.length - 1; i++) {
-        expect(converted[i].time).toBeLessThan(converted[i + 1].time)
-      }
-
-      // Assert candle data is preserved
-      for (let i = 0; i < candles.length; i++) {
-        expect(converted[i].open).toBe(candles[i].o)
-        expect(converted[i].high).toBe(candles[i].h)
-        expect(converted[i].low).toBe(candles[i].l)
-        expect(converted[i].close).toBe(candles[i].c)
-        expect(converted[i].volume).toBe(candles[i].v)
-      }
+    expect(candles[0]).toMatchObject({
+      open: 1.095,
+      high: 1.096,
+      low: 1.094,
+      close: 1.0955,
+      volume: 2_500_000,
     })
   })
 
-  describe('Fallback to synthetic data', () => {
-    it('falls back to generateHistoricalCandles when fetchOHLCV returns < 50 candles', () => {
-      // Arrange
-      const normalizedCandles = createNormalizedCandles(30) // Less than 50
-      mockFetchOHLCV.mockResolvedValue({
-        candles: normalizedCandles,
-        provider: 'eodhd' as DataProvider,
-        fromCache: false,
-        fetchedAt: new Date(),
-        count: 30,
-      })
+  it('converts normalized Date timestamps to Unix seconds for the backtest engine', async () => {
+    const [first, ...rest] = rawCandles(60, '2024-04-15T14:45:30.000Z')
+    mocks.eodhdGetCandles.mockResolvedValue([first, ...rest])
 
-      const syntheticCandles = createNormalizedCandles(200).map(normalizedToCandle)
-      mockGenerateHistoricalCandles.mockReturnValue(syntheticCandles)
+    const candles = await renderAndRun('eodhd')
 
-      // Act: Simulate handleRun logic
-      const fetchedCandles = normalizedCandles.map(normalizedToCandle)
-      let finalCandles = fetchedCandles
-      let isSynthetic = false
-
-      if (finalCandles.length < 50) {
-        finalCandles = mockGenerateHistoricalCandles('EUR_USD', 'H1', '2025-01-01', '2025-12-31')
-        isSynthetic = true
-      }
-
-      // Assert
-      expect(isSynthetic).toBe(true)
-      expect(finalCandles).toEqual(syntheticCandles)
-      expect(mockGenerateHistoricalCandles).toHaveBeenCalledWith(
-        'EUR_USD', 'H1', '2025-01-01', '2025-12-31'
-      )
-    })
-
-    it('does not fall back when fetchOHLCV returns >= 50 candles', () => {
-      // Arrange
-      const normalizedCandles = createNormalizedCandles(100) // More than 50
-      mockFetchOHLCV.mockResolvedValue({
-        candles: normalizedCandles,
-        provider: 'eodhd' as DataProvider,
-        fromCache: false,
-        fetchedAt: new Date(),
-        count: 100,
-      })
-
-      // Act
-      const fetchedCandles = normalizedCandles.map(normalizedToCandle)
-      let finalCandles = fetchedCandles
-      let isSynthetic = false
-
-      if (finalCandles.length < 50) {
-        finalCandles = mockGenerateHistoricalCandles('EUR_USD', 'H1', '2025-01-01', '2025-12-31')
-        isSynthetic = true
-      }
-
-      // Assert
-      expect(isSynthetic).toBe(false)
-      expect(finalCandles).toHaveLength(100)
-      expect(mockGenerateHistoricalCandles).not.toHaveBeenCalled()
-    })
-
-    it('does not generate synthetic data if at least 50 real candles are fetched', () => {
-      const normalizedCandles = createNormalizedCandles(50)
-      mockFetchOHLCV.mockResolvedValue({
-        candles: normalizedCandles,
-        provider: 'synthetic' as DataProvider,
-        fromCache: false,
-        fetchedAt: new Date(),
-        count: 50,
-      })
-
-      const fetchedCandles = normalizedCandles.map(normalizedToCandle)
-      let isSynthetic = false
-
-      if (fetchedCandles.length < 50) {
-        isSynthetic = true
-      }
-
-      expect(isSynthetic).toBe(false)
-    })
+    expect(candles[0].time).toBe(
+      Math.floor(new Date(first.date as string).getTime() / 1000)
+    )
   })
 
-  describe('Error handling', () => {
-    it('handles fetchOHLCV rejection and falls back to synthetic', () => {
-      // Arrange
-      const error = new Error('Network error')
-      mockFetchOHLCV.mockRejectedValue(error)
+  it('preserves chronological order after fetchOHLCV sorts provider data', async () => {
+    const unsorted = [
+      rawCandles(1, '2024-05-03T00:00:00.000Z')[0],
+      rawCandles(1, '2024-05-01T00:00:00.000Z')[0],
+      rawCandles(1, '2024-05-02T00:00:00.000Z')[0],
+      ...rawCandles(57, '2024-05-04T00:00:00.000Z'),
+    ]
+    mocks.eodhdGetCandles.mockResolvedValue(unsorted)
 
-      const syntheticCandles = createNormalizedCandles(200).map(normalizedToCandle)
-      mockGenerateHistoricalCandles.mockReturnValue(syntheticCandles)
+    const candles = await renderAndRun('eodhd')
 
-      // Act: Simulate handleRun error handling
-      let candles: Candle[] = []
-      let isSynthetic = false
-
-      try {
-        mockFetchOHLCV({
-          symbol: 'EUR_USD',
-          startDate: new Date('2025-01-01'),
-          endDate: new Date('2025-12-31'),
-          provider: 'eodhd',
-          useCache: true,
-        }).catch(() => {
-          candles = []
-        })
-      } catch {
-        candles = []
-      }
-
-      // Fallback to synthetic
-      if (candles.length < 50) {
-        candles = mockGenerateHistoricalCandles('EUR_USD', 'H1', '2025-01-01', '2025-12-31')
-        isSynthetic = true
-      }
-
-      // Assert
-      expect(isSynthetic).toBe(true)
-      expect(candles).toHaveLength(200)
-    })
-
-    it('sets error message when insufficient data available after fallback', () => {
-      // Arrange
-      mockFetchOHLCV.mockResolvedValue({
-        candles: [],
-        provider: 'eodhd' as DataProvider,
-        fromCache: false,
-        fetchedAt: new Date(),
-        count: 0,
-      })
-
-      mockGenerateHistoricalCandles.mockReturnValue([])
-
-      // Act: Simulate handleRun logic
-      let candles: Candle[] = []
-      let downloadMsg: string | null = null
-
-      // First try: fetchOHLCV
-      candles = []
-
-      // Fallback: synthetic
-      if (candles.length < 50) {
-        candles = mockGenerateHistoricalCandles('EUR_USD', 'H1', '2025-01-01', '2025-12-31')
-      }
-
-      // Check minimum
-      if (candles.length < 2) {
-        downloadMsg = 'Not enough candle data for this date range.'
-      }
-
-      // Assert
-      expect(downloadMsg).toBe('Not enough candle data for this date range.')
-    })
+    expect(candles[0].time).toBeLessThan(candles[1].time)
+    expect(candles[1].time).toBeLessThan(candles[2].time)
+    expect(candles[0].time).toBe(
+      Math.floor(new Date('2024-05-01T00:00:00.000Z').getTime() / 1000)
+    )
   })
 
-  describe('selectedProvider dependency', () => {
-    it('includes selectedProvider in callback dependency array to trigger re-creation on change', () => {
-      // This test verifies that when selectedProvider changes, a new callback is created
-      // In React, this is critical to ensure the closure captures the current selectedProvider value
+  it('falls back to generated synthetic candles when the selected provider returns fewer than 50 candles', async () => {
+    mocks.eodhdGetCandles.mockResolvedValue(rawCandles(30))
+    mocks.generateHistoricalCandles.mockReturnValue(backtestCandles(251))
 
-      const providers: DataProvider[] = ['eodhd', 'tiingo', 'synthetic']
-      const callCounts = new Map<DataProvider, number>()
+    const candles = await renderAndRun('eodhd')
 
-      providers.forEach(provider => {
-        callCounts.set(provider, 0)
-      })
+    expect(mocks.generateHistoricalCandles).toHaveBeenCalledWith(
+      'EUR_USD',
+      'H1',
+      expect.any(String),
+      expect.any(String)
+    )
+    const [, , startDate, endDate] = mocks.generateHistoricalCandles.mock.calls[0]
+    expect(new Date(startDate).getTime()).toBeLessThan(new Date(endDate).getTime())
+    expect(candles).toHaveLength(251)
+    expect(screen.getByText(/backtesting with simulated data/i)).toBeTruthy()
+  })
 
-      // Simulate: each time selectedProvider changes, a new callback should be created
-      // and that callback should capture the current selectedProvider value
+  it('uses exactly 50 fetched candles without falling back', async () => {
+    mocks.eodhdGetCandles.mockResolvedValue(rawCandles(50))
 
-      const createCallback = (selectedProvider: DataProvider) => {
-        return () => {
-          const current = callCounts.get(selectedProvider) || 0
-          callCounts.set(selectedProvider, current + 1)
-          return selectedProvider
-        }
-      }
+    const candles = await renderAndRun('eodhd')
 
-      const eodhdCallback = createCallback('eodhd')
-      const tiingoCallback = createCallback('tiingo')
-      const syntheticCallback = createCallback('synthetic')
+    expect(mocks.generateHistoricalCandles).not.toHaveBeenCalled()
+    expect(candles).toHaveLength(50)
+  })
 
-      // Act: Call each callback
-      expect(eodhdCallback()).toBe('eodhd')
-      expect(tiingoCallback()).toBe('tiingo')
-      expect(syntheticCallback()).toBe('synthetic')
+  it('uses all fetched candles when the selected provider returns more than 50 candles', async () => {
+    mocks.eodhdGetCandles.mockResolvedValue(rawCandles(100))
 
-      // Assert: Each callback captured its own provider value
-      expect(callCounts.get('eodhd')).toBe(1)
-      expect(callCounts.get('tiingo')).toBe(1)
-      expect(callCounts.get('synthetic')).toBe(1)
-    })
+    const candles = await renderAndRun('eodhd')
+
+    expect(mocks.generateHistoricalCandles).not.toHaveBeenCalled()
+    expect(candles).toHaveLength(100)
+  })
+
+  it('logs provider failures and still runs with generated synthetic candles', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    mocks.eodhdGetCandles.mockRejectedValue(new Error('EODHD network error'))
+    mocks.tiingoGetDailyHistory.mockRejectedValue(new Error('Tiingo network error'))
+    mocks.syntheticGetCandles.mockRejectedValue(new Error('Synthetic unavailable'))
+    mocks.generateHistoricalCandles.mockReturnValue(backtestCandles(251))
+
+    const candles = await renderAndRun('eodhd')
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('[fetchOHLCV] Primary provider eodhd failed:'),
+      expect.any(Error)
+    )
+    expect(warn).toHaveBeenCalledTimes(3)
+    expect(mocks.generateHistoricalCandles).toHaveBeenCalled()
+    expect(candles).toHaveLength(251)
+
+    warn.mockRestore()
+  })
+
+  it('uses the latest selectedProvider value on subsequent handleRun calls', async () => {
+    render(React.createElement(Backtesting))
+
+    fireEvent.click(screen.getByRole('button', { name: /eodhd/i }))
+    fireEvent.click(screen.getByRole('button', { name: /run backtest/i }))
+    await waitFor(() => expect(mocks.runBacktest).toHaveBeenCalledTimes(1))
+
+    fireEvent.click(screen.getByRole('button', { name: /tiingo/i }))
+    fireEvent.click(screen.getByRole('button', { name: /run backtest/i }))
+    await waitFor(() => expect(mocks.runBacktest).toHaveBeenCalledTimes(2))
+
+    expect(mocks.eodhdGetCandles).toHaveBeenCalledTimes(1)
+    expect(mocks.tiingoGetDailyHistory).toHaveBeenCalledTimes(1)
   })
 })

@@ -4,7 +4,11 @@
       "Bash(node -e ' *)",
       "Bash(xxd)",
       "mcp__claude_ai_Supabase__deploy_edge_function",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(python3)",
+      "Bash(cat C:\\\\Users\\\\Barbara\\\\.claude\\\\projects\\\\H--DEV-projects-anjuna--project-anajuna-bolt-main\\\\6b67daeb-176b-48a4-a9c4-6db1d8a2948b\\\\tool-results\\\\b1ram7cl5.txt)",
+      "Bash(mkdir -p \"/H/DEV/projects/anjuna-.project/anajuna.bolt-main/.understand-anything/intermediate\")",
+      "Bash(cp /tmp/scan_result.json \"/H/DEV/projects/anjuna-.project/anajuna.bolt-main/.understand-anything/intermediate/scan-result.json\")"
     ]
   }
 }
