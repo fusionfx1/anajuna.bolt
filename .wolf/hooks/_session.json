@@ -1,0 +1,23 @@
+{
+  "session_id": "session-2026-04-28-0149",
+  "started": "2026-04-28T18:49:05.094Z",
+  "files_read": {
+    "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/anatomy.md": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-28T18:49:09.893Z"
+    },
+    "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/cerebrum.md": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-28T18:49:10.117Z"
+    }
+  },
+  "files_written": [],
+  "edit_counts": {},
+  "anatomy_hits": 0,
+  "anatomy_misses": 1,
+  "repeated_reads_warned": 0,
+  "cerebrum_warnings": 0,
+  "stop_count": 0
+}

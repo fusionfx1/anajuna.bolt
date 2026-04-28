@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "bugs": [
+    {
+      "id": "bug-001",
+      "timestamp": "2026-04-27T20:30:00Z",
+      "error_message": "RSI example backtest shows impossible PnL (-$21M on $10k balance)",
+      "file": "trading_system/backtester.py",
+      "root_cause": "Position sizing for FIXED_FRACTION was returning units instead of lots, causing PnL calculation to be 100,000x larger than intended.",
+      "fix": "Divided unit size by 100,000 in _calculate_lot_size to return standard lots.",
+      "tags": [
+        "pnl",
+        "backtest",
+        "python",
+        "position-sizing"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-27T20:30:00Z"
+    },
+    {
+      "id": "bug-002",
+      "timestamp": "2026-04-28T00:00:00Z",
+      "error_message": "Login button freezes indefinitely when Supabase auth request has no network response (DNS timeout domain)",
+      "file": "src/components/auth/LoginScreen.tsx",
+      "root_cause": "Supabase JS SDK has no request timeout for signInWithPassword. When the email domain causes DNS to hang (e.g. notareal.domain), the loading=true state never resolves, leaving the button permanently disabled with no error shown.",
+      "fix": "Known issue — no fix applied yet. Workaround: use real email domains. Long-term fix: wrap supabase.auth.signInWithPassword in a Promise.race with a 15s AbortController timeout.",
+      "tags": [
+        "auth",
+        "login",
+        "supabase",
+        "timeout",
+        "ux-freeze"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T00:00:00Z"
+    },
+    {
+      "id": "bug-003",
+      "timestamp": "2026-04-28T00:00:00Z",
+      "error_message": "Supabase project requires email confirmation — new signups get confirmation_sent_at but no session. E2E tests cannot authenticate programmatically.",
+      "file": "src/context/AuthContext.tsx",
+      "root_cause": "The Supabase project (pmwlukvixofqqjehlokj) has email confirmation enabled. signUp returns a user object but no access_token, so onAuthStateChange never fires a SIGNED_IN event and app stays on login screen.",
+      "fix": "For E2E testing: temporarily bypass login guard in App.tsx (if (false && !session)) or disable email confirmation in Supabase Auth settings for the test project.",
+      "tags": [
+        "auth",
+        "supabase",
+        "e2e",
+        "email-confirmation",
+        "testing"
+      ],
+      "related_bugs": [
+        "bug-002"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T00:00:00Z"
+    },
+    {
+      "id": "bug-004",
+      "timestamp": "2026-04-28T00:00:00Z",
+      "error_message": "Dashboard shows $0.00 for all account metrics (balance, equity, P&L) — no real broker connection",
+      "file": "src/components/Dashboard.tsx",
+      "root_cause": "No broker API credentials configured (OANDA/Alpaca). App uses paper trading mode with simulation feed. Data feed shows 'Disconnected' in System Health. Account data is empty until credentials are set in Settings.",
+      "fix": "Expected state for unconfigured demo. User must configure API keys in Settings > MT5 / Broker Connection to see real data.",
+      "tags": [
+        "dashboard",
+        "account-data",
+        "broker",
+        "configuration"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T00:00:00Z"
+    },
+    {
+      "id": "bug-005",
+      "timestamp": "2026-04-28T00:00:00Z",
+      "error_message": "System Health shows 'Incident' status — Data Feed is Disconnected, Broker API shows 'Not configured'",
+      "file": "src/components/SystemHealth.tsx",
+      "root_cause": "No data feed or broker credentials configured. dataFeedService defaults to 'simulation' but simulation only starts when a user session is present and data_feed_configs table has a row. Without auth, feed stays disconnected.",
+      "fix": "Configure OANDA or Alpaca credentials in Settings and save. The feed will auto-connect. Also: Broker API warning is expected until API keys are entered.",
+      "tags": [
+        "system-health",
+        "data-feed",
+        "broker",
+        "incident"
+      ],
+      "related_bugs": [
+        "bug-004"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T00:00:00Z"
+    },
+    {
+      "id": "bug-006",
+      "timestamp": "2026-04-28T00:00:00Z",
+      "error_message": "Backtesting uses synthetic/simulated candle data instead of real OANDA historical data",
+      "file": "src/components/Backtesting.tsx",
+      "root_cause": "No OANDA credentials set, so fetchHistoricalCandles returns empty array. Code falls back to generateHistoricalCandles which creates synthetic price data. This produces unreliable backtest results.",
+      "fix": "Configure OANDA API credentials in Settings. The backtest will then pull real H1 historical candles. Warning banner is correctly shown when synthetic data is used.",
+      "tags": [
+        "backtesting",
+        "candle-data",
+        "oanda",
+        "synthetic"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T00:00:00Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-04-28T18:11:12.925Z",
+      "error_message": "CSS fix: eodhd, tiingo, synthetic",
+      "file": "src/components/backtest/ComparisonResults.tsx",
+      "root_cause": "eodhd: 'bg-sky-500/20 text-sky-300', → { bg: 'bg-sky-500/10 border-sky-500/30', badge: 'bg-sky-500/20 text-sky-300'; tiingo: 'bg-purple-500/20 text-purple-300', → { bg: 'bg-purple-500/10 border-purple-500/30', badge: 'bg-purple-500/20 text-purple-300'; synthetic: 'bg-amber-500/20 text-amber-300', → { bg: 'bg-amber-500/10 border-amber-500/30', badge: 'bg-amber-500/20 text-amber-300'",
+      "fix": "Changed eodhd: 'bg-sky-500/20 text-sky-300', → { bg: 'bg-sky-500/10 border-sky-500/30', badge: 'bg-sky-500/20 text-sky-300'; tiingo: 'bg-purple-500/20 text-purple-300', → { bg: 'bg-purple-500/10 border-purple-500/30', badge: 'bg-purple-500/20 text-purple-300'; synthetic: 'bg-amber-500/20 text-amber-300', → { bg: 'bg-amber-500/10 border-amber-500/30', badge: 'bg-amber-500/20 text-amber-300'",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T18:11:12.925Z"
+    },
+    {
+      "id": "bug-008",
+      "timestamp": "2026-04-28T18:11:16.477Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/components/backtest/ComparisonResults.tsx",
+      "root_cause": "Had `inline-block px-2.5 py-1 rounded text-xs font-sem",
+      "fix": "Changed to `inline-block px-2.5 py-1 rounded text-xs font-sem",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T18:11:16.477Z"
+    },
+    {
+      "id": "bug-009",
+      "timestamp": "2026-04-28T18:15:36.295Z",
+      "error_message": "CSS fix: loading",
+      "file": "src/components/Backtesting.tsx",
+      "root_cause": "loading: strategiesLoading → comparisonLoading,",
+      "fix": "Changed loading: strategiesLoading → comparisonLoading,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T18:15:36.295Z"
+    },
+    {
+      "id": "bug-010",
+      "timestamp": "2026-04-28T18:18:16.049Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/components/Backtesting.tsx",
+      "root_cause": "4 lines replaced/restructured",
+      "fix": "Rewrote 34→49 lines (4 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T18:18:16.049Z"
+    }
+  ]
+}

@@ -1,0 +1,219 @@
+{
+  "version": 1,
+  "created_at": "2026-04-27T15:30:31.378Z",
+  "lifetime": {
+    "total_tokens_estimated": 15870,
+    "total_reads": 15,
+    "total_writes": 8,
+    "total_sessions": 8,
+    "anatomy_hits": 7,
+    "anatomy_misses": 8,
+    "repeated_reads_blocked": 5,
+    "estimated_savings_vs_bare_cli": 5266
+  },
+  "sessions": [
+    {
+      "id": "session-2026-04-28-0110",
+      "started": "2026-04-28T18:10:49.583Z",
+      "ended": "2026-04-28T18:12:44.158Z",
+      "reads": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/backtest/ComparisonResults.tsx",
+          "tokens_estimated": 1850,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/Backtesting.tsx",
+          "tokens_estimated": 2487,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/memory.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/anatomy.md",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/backtest/BacktestDataSource.tsx",
+          "tokens_estimated": 694,
+          "action": "edit"
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/backtest/ComparisonResults.tsx",
+          "tokens_estimated": 156,
+          "action": "edit"
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/backtest/ComparisonResults.tsx",
+          "tokens_estimated": 31,
+          "action": "edit"
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/backtest/ComparisonResults.tsx",
+          "tokens_estimated": 43,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 4337,
+        "output_tokens_estimated": 924,
+        "reads_count": 4,
+        "writes_count": 4,
+        "repeated_reads_blocked": 2,
+        "anatomy_lookups": 2
+      }
+    },
+    {
+      "id": "session-2026-04-28-0116",
+      "started": "2026-04-28T18:16:59.208Z",
+      "ended": "2026-04-28T18:18:47.650Z",
+      "reads": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/cerebrum.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/buglog.json",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/Backtesting.tsx",
+          "tokens_estimated": 3495,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/services/dataFetchers/fetchOHLCV.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/types/backtest.ts",
+          "tokens_estimated": 1117,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/services/backtestService.ts",
+          "tokens_estimated": 1899,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/services/dataFetchers/types.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/services/backtestEngine.ts",
+          "tokens_estimated": 3105,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/memory.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/Backtesting.tsx",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/src/components/Backtesting.tsx",
+          "tokens_estimated": 376,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 9616,
+        "output_tokens_estimated": 432,
+        "reads_count": 9,
+        "writes_count": 2,
+        "repeated_reads_blocked": 2,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-04-28-0120",
+      "started": "2026-04-28T18:20:31.768Z",
+      "ended": "2026-04-28T18:21:18.501Z",
+      "reads": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/.wolf/memory.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 0,
+        "reads_count": 1,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-04-28-0133",
+      "started": "2026-04-28T18:33:26.899Z",
+      "ended": "2026-04-28T18:43:43.890Z",
+      "reads": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/package.json",
+          "tokens_estimated": 371,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/package.json",
+          "tokens_estimated": 91,
+          "action": "edit"
+        },
+        {
+          "file": "h:/DEV/projects/anjuna-.project/anajuna.bolt-main/package.json",
+          "tokens_estimated": 99,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 371,
+        "output_tokens_estimated": 190,
+        "reads_count": 1,
+        "writes_count": 2,
+        "repeated_reads_blocked": 1,
+        "anatomy_lookups": 1
+      }
+    }
+  ],
+  "daemon_usage": [],
+  "waste_flags": [],
+  "optimization_report": {
+    "last_generated": null,
+    "patterns": []
+  }
+}
