@@ -121,3 +121,48 @@
 | Time | Action | File(s) | Outcome | ~Tokens |
 |------|--------|---------|---------|--------|
 | 02:52 | Created .understand-anything/intermediate/layers.json | — | ~2520 |
+
+## Session: 2026-04-28 04:36
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 05:53 | Created C:/Users/Barbara/.claude/plans/wiggly-mixing-planet.md | — | ~1188 |
+
+## Session: 2026-04-28 05:54
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-29
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 06:00 | Phase 1 agent framework: trading_system/agents (stubs, fusion, Kronos, CrewAI tools), signal_providers, SIGNAL_MODE wiring in generator, crewai dep, tests | trading_system/agents/*, signal_providers.py, generator.py, requirements.txt, tests/test_agent_framework.py, .wolf/anatomy.md | pytest trading_system 47 passed | ~4500 |
+| 06:01 | Edited src/services/normalize.ts | modified validateCandle() | ~636 |
+| 06:02 | Edited tests/services/normalize.test.ts | expanded (+101 lines) | ~1146 |
+| 06:02 | Edited tests/services/normalize.test.ts | expanded (+39 lines) | ~1596 |
+| 06:03 | Edited src/services/dataFetchers/types.ts | 6→11 lines | ~86 |
+| 06:03 | Edited src/services/dataFetchers/types.ts | expanded (+8 lines) | ~121 |
+| 06:03 | Edited src/services/cache.ts | modified getDB() | ~297 |
+| 06:03 | Edited src/services/cache.ts | added 1 condition(s) | ~1660 |
+| 06:03 | Edited tests/services/cache.test.ts | 192→194 lines | ~1516 |
+| 06:04 | Edited src/services/dataFetchers/types.ts | 2→6 lines | ~55 |
+| 06:10 | Edited vitest.config.ts | 2→2 lines | ~22 |
+
+## Session: 2026-04-28 06:11
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 06:36 | Edited src/services/normalize.ts | added 1 condition(s) | ~287 |
+| 06:36 | Edited tests/services/normalize.test.ts | 3→3 lines | ~72 |
+| 06:36 | Edited tests/services/normalize.test.ts | expanded (+140 lines) | ~1087 |
+| 06:36 | Edited src/services/dataFetchers/fetchOHLCV.ts | 5→5 lines | ~75 |
+| 06:36 | Edited src/services/dataFetchers/fetchOHLCV.ts | 8→8 lines | ~77 |
+| 06:37 | Edited src/services/cache.ts | modified readCache() | ~170 |
+| 06:43 | Edited src/services/cache.ts | added 1 condition(s) | ~92 |
+| 06:43 | Edited vite.config.ts | 9→9 lines | ~106 |
+
+## Session: 2026-04-28 06:44
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|

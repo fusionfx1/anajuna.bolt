@@ -1,207 +1,487 @@
 import { describe, it, expect } from 'vitest'
-import {
-  normalizeCandles,
-  normalizeCandle,
-  validateCandle,
-  dedupAndSortCandles,
-} from '../../src/services/normalize'
-import { NormalizedCandle } from '../../src/services/dataFetchers/types'
+import { normalizeCandles, validateCandle, normalizeCandle, dedupAndSortCandles } from '../../src/services/normalize'
+import type { RawOHLCV, NormalizedCandle } from '../../src/services/dataFetchers/types'
 
-describe('normalize.ts', () => {
-  const mockEodhhdCandle = {
-    date: '2026-04-29',
-    open: 1.0850,
-    high: 1.0860,
-    low: 1.0840,
-    close: 1.0855,
-    volume: 1000000,
-  }
+describe('normalize service', () => {
+  describe('validateCandle', () => {
+    it('should accept valid candles', () => {
+      const valid: RawOHLCV = {
+        timestamp: 1609459200000,
+        open: 100.5,
+        high: 105.0,
+        low: 99.0,
+        close: 102.0,
+        volume: 1000000,
+      }
+      expect(validateCandle(valid)).toBe(true)
+    })
 
-  const mockTiingoCandle = {
-    date: '2026-04-29',
-    time: '00:00:00',
-    close: 1.0855,
-    high: 1.0860,
-    low: 1.0840,
-    open: 1.0850,
-    volume: 1000000,
-  }
+    it('should reject null or non-objects', () => {
+      expect(validateCandle(null)).toBe(false)
+      expect(validateCandle(undefined)).toBe(false)
+      expect(validateCandle('string')).toBe(false)
+      expect(validateCandle(123)).toBe(false)
+    })
 
-  const mockSyntheticCandle = {
-    date: 1714435200000,
-    timestamp: 1714435200000,
-    open: 1.0850,
-    high: 1.0860,
-    low: 1.0840,
-    close: 1.0855,
-    volume: 1000000,
-  }
+    it('should reject candles with missing fields', () => {
+      const missing = { timestamp: 1609459200000, open: 100, high: 105 } as unknown
+      expect(validateCandle(missing)).toBe(false)
+    })
+
+    it('should reject candles with non-numeric fields', () => {
+      const nonNumeric = {
+        timestamp: 'not-a-number',
+        open: 100,
+        high: 105,
+        low: 99,
+        close: 102,
+        volume: 1000000,
+      }
+      expect(validateCandle(nonNumeric)).toBe(false)
+    })
+
+    it('should reject candles with NaN values', () => {
+      const withNaN = {
+        timestamp: 1609459200000,
+        open: NaN,
+        high: 105,
+        low: 99,
+        close: 102,
+        volume: 1000000,
+      }
+      expect(validateCandle(withNaN)).toBe(false)
+    })
+
+    it('should reject candles with Infinity values', () => {
+      const withInfinity = {
+        timestamp: 1609459200000,
+        open: Infinity,
+        high: 105,
+        low: 99,
+        close: 102,
+        volume: 1000000,
+      }
+      expect(validateCandle(withInfinity)).toBe(false)
+    })
+
+    it('should reject candles with negative prices', () => {
+      const negativePrices = {
+        timestamp: 1609459200000,
+        open: -100,
+        high: 105,
+        low: 99,
+        close: 102,
+        volume: 1000000,
+      }
+      expect(validateCandle(negativePrices)).toBe(false)
+    })
+
+    it('should reject candles with negative volume', () => {
+      const negativeVolume = {
+        timestamp: 1609459200000,
+        open: 100,
+        high: 105,
+        low: 99,
+        close: 102,
+        volume: -1000,
+      }
+      expect(validateCandle(negativeVolume)).toBe(false)
+    })
+
+    it('should reject candles where low > high', () => {
+      const inverted = {
+        timestamp: 1609459200000,
+        open: 100,
+        high: 99,
+        low: 105,
+        close: 102,
+        volume: 1000000,
+      }
+      expect(validateCandle(inverted)).toBe(false)
+    })
+
+    it('should reject candles where close > high', () => {
+      const closeTooHigh = {
+        timestamp: 1609459200000,
+        open: 100,
+        high: 105,
+        low: 99,
+        close: 110,
+        volume: 1000000,
+      }
+      expect(validateCandle(closeTooHigh)).toBe(false)
+    })
+
+    it('should reject candles where close < low', () => {
+      const closeTooLow = {
+        timestamp: 1609459200000,
+        open: 100,
+        high: 105,
+        low: 99,
+        close: 95,
+        volume: 1000000,
+      }
+      expect(validateCandle(closeTooLow)).toBe(false)
+    })
+
+    it('should accept zero volume', () => {
+      const zeroVolume = {
+        timestamp: 1609459200000,
+        open: 100,
+        high: 105,
+        low: 99,
+        close: 102,
+        volume: 0,
+      }
+      expect(validateCandle(zeroVolume)).toBe(true)
+    })
+
+    it('should allow small floating point tolerance', () => {
+      // Close slightly above high due to floating point errors
+      const tolerance = {
+        timestamp: 1609459200000,
+        open: 100,
+        high: 105.00009,
+        low: 99,
+        close: 105,
+        volume: 1000000,
+      }
+      expect(validateCandle(tolerance)).toBe(true)
+    })
+  })
 
   describe('normalizeCandle', () => {
-    it('normalizes EODHD candle correctly', () => {
-      const result = normalizeCandle(mockEodhhdCandle, 'eodhd')
-      expect(result.o).toBe(1.0850)
-      expect(result.h).toBe(1.0860)
-      expect(result.l).toBe(1.0840)
-      expect(result.c).toBe(1.0855)
-      expect(result.v).toBe(1000000)
-      expect(result.timestamp).toBeInstanceOf(Date)
+    it('should convert raw candle to normalized form', () => {
+      const raw: RawOHLCV = {
+        timestamp: 1609459200000,
+        open: 100.5,
+        high: 105.0,
+        low: 99.0,
+        close: 102.0,
+        volume: 1000000,
+      }
+
+      const result = normalizeCandle(raw, 'EURUSD', 'synthetic')
+
+      expect(result).toEqual({
+        timestamp: 1609459200000,
+        open: 100.5,
+        high: 105.0,
+        low: 99.0,
+        close: 102.0,
+        volume: 1000000,
+        symbol: 'EURUSD',
+        provider: 'synthetic',
+      })
     })
 
-    it('normalizes Tiingo candle correctly', () => {
-      const result = normalizeCandle(mockTiingoCandle, 'tiingo')
-      expect(result.o).toBe(1.0850)
-      expect(result.h).toBe(1.0860)
-      expect(result.l).toBe(1.0840)
-      expect(result.c).toBe(1.0855)
-      expect(result.v).toBe(1000000)
-      expect(result.timestamp).toBeInstanceOf(Date)
+    it('should preserve all numeric fields', () => {
+      const raw: RawOHLCV = {
+        timestamp: 1234567890000,
+        open: 1.234567,
+        high: 1.456789,
+        low: 1.123456,
+        close: 1.345678,
+        volume: 5000000,
+      }
+
+      const result = normalizeCandle(raw, 'GBPUSD', 'eodhd')
+
+      expect(result.timestamp).toBe(1234567890000)
+      expect(result.open).toBe(1.234567)
+      expect(result.high).toBe(1.456789)
+      expect(result.low).toBe(1.123456)
+      expect(result.close).toBe(1.345678)
+      expect(result.volume).toBe(5000000)
+      expect(result.symbol).toBe('GBPUSD')
+      expect(result.provider).toBe('eodhd')
     })
 
-    it('normalizes Synthetic candle correctly', () => {
-      const result = normalizeCandle(mockSyntheticCandle, 'synthetic')
-      expect(result.o).toBe(1.0850)
-      expect(result.h).toBe(1.0860)
-      expect(result.l).toBe(1.0840)
-      expect(result.c).toBe(1.0855)
-      expect(result.v).toBe(1000000)
-      expect(result.timestamp).toBeInstanceOf(Date)
+    it('should support different providers', () => {
+      const raw: RawOHLCV = {
+        timestamp: 1609459200000,
+        open: 100,
+        high: 105,
+        low: 99,
+        close: 102,
+        volume: 1000000,
+      }
+
+      const eodhd = normalizeCandle(raw, 'EURUSD', 'eodhd')
+      expect(eodhd.provider).toBe('eodhd')
+
+      const tiingo = normalizeCandle(raw, 'EURUSD', 'tiingo')
+      expect(tiingo.provider).toBe('tiingo')
+
+      const synthetic = normalizeCandle(raw, 'EURUSD', 'synthetic')
+      expect(synthetic.provider).toBe('synthetic')
     })
   })
 
   describe('normalizeCandles', () => {
-    it('normalizes array of EODHD candles', () => {
-      const input = [mockEodhhdCandle, mockEodhhdCandle]
-      const result = normalizeCandles(input, 'eodhd')
+    it('should normalize array of valid candles', () => {
+      const raw: RawOHLCV[] = [
+        {
+          timestamp: 1609459200000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1000000,
+        },
+        {
+          timestamp: 1609545600000,
+          open: 102,
+          high: 107,
+          low: 101,
+          close: 104,
+          volume: 1200000,
+        },
+      ]
+
+      const result = normalizeCandles(raw, 'EURUSD', 'synthetic')
+
       expect(result).toHaveLength(2)
-      expect(result[0].c).toBe(1.0855)
+      expect(result[0].symbol).toBe('EURUSD')
+      expect(result[0].provider).toBe('synthetic')
+      expect(result[1].symbol).toBe('EURUSD')
+      expect(result[1].provider).toBe('synthetic')
     })
 
-    it('normalizes array of Tiingo candles', () => {
-      const input = [mockTiingoCandle, mockTiingoCandle]
-      const result = normalizeCandles(input, 'tiingo')
+    it('should filter out invalid candles', () => {
+      const raw = [
+        {
+          timestamp: 1609459200000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1000000,
+        },
+        {
+          timestamp: 1609545600000,
+          open: 100,
+          high: 99, // Invalid: high < low
+          low: 99,
+          close: 102,
+          volume: 1000000,
+        },
+        {
+          timestamp: 1609632000000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1200000,
+        },
+      ] as unknown[]
+
+      const result = normalizeCandles(raw, 'EURUSD', 'synthetic')
+
       expect(result).toHaveLength(2)
-      expect(result[0].c).toBe(1.0855)
+      expect(result[0].timestamp).toBe(1609459200000)
+      expect(result[1].timestamp).toBe(1609632000000)
     })
 
-    it('normalizes array of Synthetic candles', () => {
-      const input = [mockSyntheticCandle, mockSyntheticCandle]
-      const result = normalizeCandles(input, 'synthetic')
-      expect(result).toHaveLength(2)
-      expect(result[0].c).toBe(1.0855)
+    it('should sort candles by timestamp ascending', () => {
+      const raw = [
+        {
+          timestamp: 1609632000000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1000000,
+        },
+        {
+          timestamp: 1609459200000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1000000,
+        },
+        {
+          timestamp: 1609545600000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1000000,
+        },
+      ] as unknown[]
+
+      const result = normalizeCandles(raw, 'EURUSD', 'synthetic')
+
+      expect(result[0].timestamp).toBe(1609459200000)
+      expect(result[1].timestamp).toBe(1609545600000)
+      expect(result[2].timestamp).toBe(1609632000000)
     })
 
-    it('returns empty array for empty input', () => {
-      const result = normalizeCandles([], 'eodhd')
+    it('should return empty array for null input', () => {
+      const result = normalizeCandles(null as unknown[], 'EURUSD', 'synthetic')
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array for non-array input', () => {
+      const result = normalizeCandles('not-array' as unknown[], 'EURUSD', 'synthetic')
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array for empty input', () => {
+      const result = normalizeCandles([], 'EURUSD', 'synthetic')
+      expect(result).toEqual([])
+    })
+
+    it('should handle all invalid candles', () => {
+      const raw = [
+        { timestamp: NaN, open: 100, high: 105, low: 99, close: 102, volume: 1000000 },
+        { timestamp: 1609459200000, open: -100, high: 105, low: 99, close: 102, volume: 1000000 },
+      ] as unknown[]
+
+      const result = normalizeCandles(raw, 'EURUSD', 'synthetic')
+
       expect(result).toHaveLength(0)
-    })
-  })
-
-  describe('validateCandle', () => {
-    const validCandle: NormalizedCandle = {
-      timestamp: new Date('2026-04-29'),
-      o: 1.0850,
-      h: 1.0860,
-      l: 1.0840,
-      c: 1.0855,
-      v: 1000000,
-    }
-
-    it('validates correct candle', () => {
-      expect(validateCandle(validCandle)).toBe(true)
-    })
-
-    it('rejects candle with negative open price', () => {
-      const invalid = { ...validCandle, o: -1 }
-      expect(validateCandle(invalid)).toBe(false)
-    })
-
-    it('rejects candle with high < open', () => {
-      const invalid = { ...validCandle, h: 1.0800 }
-      expect(validateCandle(invalid)).toBe(false)
-    })
-
-    it('rejects candle with low > close', () => {
-      const invalid = { ...validCandle, l: 1.0900 }
-      expect(validateCandle(invalid)).toBe(false)
-    })
-
-    it('rejects candle with negative volume', () => {
-      const invalid = { ...validCandle, v: -1000 }
-      expect(validateCandle(invalid)).toBe(false)
-    })
-
-    it('rejects candle with invalid timestamp', () => {
-      const invalid = { ...validCandle, timestamp: new Date('invalid') }
-      expect(validateCandle(invalid)).toBe(false)
     })
   })
 
   describe('dedupAndSortCandles', () => {
-    it('deduplicates and sorts candles by timestamp', () => {
+    it('should remove duplicate candles by timestamp', () => {
       const candles: NormalizedCandle[] = [
         {
-          timestamp: new Date('2026-04-29T03:00:00'),
-          open: 1.0850,
-          high: 1.0860,
-          low: 1.0840,
-          close: 1.0855,
+          timestamp: 1609459200000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
           volume: 1000000,
+          symbol: 'EURUSD',
+          provider: 'eodhd',
         },
         {
-          timestamp: new Date('2026-04-29T01:00:00'),
-          open: 1.0840,
-          high: 1.0850,
-          low: 1.0830,
-          close: 1.0845,
-          volume: 1000000,
+          timestamp: 1609459200000,
+          open: 100.5,
+          high: 105.5,
+          low: 99.5,
+          close: 102.5,
+          volume: 1000500,
+          symbol: 'EURUSD',
+          provider: 'tiingo',
         },
         {
-          timestamp: new Date('2026-04-29T01:00:00'),
-          open: 1.0840,
-          high: 1.0850,
-          low: 1.0830,
-          close: 1.0845,
-          volume: 1000000,
+          timestamp: 1609545600000,
+          open: 102,
+          high: 107,
+          low: 101,
+          close: 104,
+          volume: 1200000,
+          symbol: 'EURUSD',
+          provider: 'eodhd',
         },
       ]
 
       const result = dedupAndSortCandles(candles)
+
       expect(result).toHaveLength(2)
-      expect(result[0].timestamp).toEqual(new Date('2026-04-29T01:00:00'))
-      expect(result[1].timestamp).toEqual(new Date('2026-04-29T03:00:00'))
+      expect(result[0].timestamp).toBe(1609459200000)
+      expect(result[1].timestamp).toBe(1609545600000)
     })
 
-    it('preserves candle data integrity after dedup', () => {
-      const candle: NormalizedCandle = {
-        timestamp: new Date('2026-04-29'),
-        open: 1.0850,
-        high: 1.0860,
-        low: 1.0840,
-        close: 1.0855,
-        volume: 1000000,
-      }
-      const result = dedupAndSortCandles([candle, candle])
+    it('should keep first occurrence when duplicates exist', () => {
+      const candles: NormalizedCandle[] = [
+        {
+          timestamp: 1609459200000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1000000,
+          symbol: 'EURUSD',
+          provider: 'eodhd',
+        },
+        {
+          timestamp: 1609459200000,
+          open: 200,
+          high: 205,
+          low: 199,
+          close: 202,
+          volume: 2000000,
+          symbol: 'EURUSD',
+          provider: 'tiingo',
+        },
+      ]
+
+      const result = dedupAndSortCandles(candles)
+
       expect(result).toHaveLength(1)
-      expect(result[0]).toEqual(candle)
+      expect(result[0].open).toBe(100)
+      expect(result[0].provider).toBe('eodhd')
     })
 
-    it('handles single candle', () => {
-      const candle: NormalizedCandle = {
-        timestamp: new Date('2026-04-29'),
-        open: 1.0850,
-        high: 1.0860,
-        low: 1.0840,
-        close: 1.0855,
-        volume: 1000000,
-      }
-      const result = dedupAndSortCandles([candle])
-      expect(result).toHaveLength(1)
+    it('should sort by timestamp ascending', () => {
+      const candles: NormalizedCandle[] = [
+        {
+          timestamp: 1609632000000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1000000,
+          symbol: 'EURUSD',
+          provider: 'eodhd',
+        },
+        {
+          timestamp: 1609459200000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1000000,
+          symbol: 'EURUSD',
+          provider: 'eodhd',
+        },
+        {
+          timestamp: 1609545600000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1000000,
+          symbol: 'EURUSD',
+          provider: 'eodhd',
+        },
+      ]
+
+      const result = dedupAndSortCandles(candles)
+
+      expect(result[0].timestamp).toBe(1609459200000)
+      expect(result[1].timestamp).toBe(1609545600000)
+      expect(result[2].timestamp).toBe(1609632000000)
     })
 
-    it('handles empty array', () => {
+    it('should handle empty array', () => {
       const result = dedupAndSortCandles([])
-      expect(result).toHaveLength(0)
+      expect(result).toEqual([])
+    })
+
+    it('should handle single candle', () => {
+      const candles: NormalizedCandle[] = [
+        {
+          timestamp: 1609459200000,
+          open: 100,
+          high: 105,
+          low: 99,
+          close: 102,
+          volume: 1000000,
+          symbol: 'EURUSD',
+          provider: 'eodhd',
+        },
+      ]
+
+      const result = dedupAndSortCandles(candles)
+
+      expect(result).toHaveLength(1)
+      expect(result[0].timestamp).toBe(1609459200000)
     })
   })
 })

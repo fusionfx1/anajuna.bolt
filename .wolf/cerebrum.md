@@ -10,6 +10,7 @@
 
 ## Key Learnings
 
+- **Trading live loop:** `SIGNAL_MODE` env selects signal source — `rules` (default) uses `get_latest_signal`; `agent` uses CrewAI stub tools + fusion via `signal_providers.signal_provider_from_env()`.
 - **Test Configuration:** vitest + jsdom requires fake-indexeddb setup in tests/setup.ts and vitest.config.ts setupFiles. E2E tests must be excluded from unit test runner with `exclude: ['e2e/**/*']` to prevent Playwright conflicts.
 - **Backtesting Tests:** `selectedProvider` is owned by `src/components/Backtesting.tsx` inside the `handleRun` callback, not by `useComparisonBacktest`. Real handleRun tests should render `Backtesting` and inspect the `useBacktest().run` candle argument while mocking only provider/cache/auth/backtest boundaries.
 - **Data Fetcher Paths:** The real OHLCV fetcher and normalizer live at `src/services/dataFetchers/fetchOHLCV.ts` and `src/services/normalize.ts`; there is no `src/dataFetchers/fetchOHLCV.ts` or `src/normalization/normalize.ts` in this repo.

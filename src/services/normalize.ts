@@ -1,123 +1,111 @@
-import { NormalizedCandle, RawOHLCV, ProviderType } from './dataFetchers/types'
+import { RawOHLCV, NormalizedCandle } from './dataFetchers/types'
 
-export function normalizeCandles(
-  rawData: RawOHLCV[],
-  provider: ProviderType
-): NormalizedCandle[] {
-  return rawData.map((raw) => normalizeCandle(raw, provider))
-}
+/**
+ * Validates a single candle object for data integrity
+ * Checks: all fields present, positive values, low <= close <= high
+ */
+export function validateCandle(candle: unknown): boolean {
+  if (!candle || typeof candle !== 'object') return false
 
-export function normalizeCandle(
-  raw: RawOHLCV,
-  provider: ProviderType
-): NormalizedCandle {
-  let timestamp: Date
-  let o: number
-  let h: number
-  let l: number
-  let c: number
-  let v: number
+  const c = candle as Record<string, unknown>
 
-  if (provider === 'eodhd') {
-    // EODHD format: { date: "YYYY-MM-DD", open, high, low, close, volume }
-    timestamp = new Date(raw.date as string)
-    o = raw.open
-    h = raw.high
-    l = raw.low
-    c = raw.close
-    v = raw.volume
-  } else if (provider === 'tiingo') {
-    // Tiingo format: { date: "YYYY-MM-DDTHH:mm:ss.000Z", open, high, low, close, volume }
-    timestamp = new Date(raw.date as string)
-    o = raw.open
-    h = raw.high
-    l = raw.low
-    c = raw.close
-    v = raw.volume
-  } else if (provider === 'synthetic') {
-    // Synthetic format: already close to standard, just ensure Date object
-    timestamp = raw.date instanceof Date ? raw.date : new Date(raw.date as string)
-    o = raw.open
-    h = raw.high
-    l = raw.low
-    c = raw.close
-    v = raw.volume
-  } else {
-    throw new Error(`Unknown provider: ${provider}`)
-  }
-
-  // Validate the candle
-  if (!validateCandle({ timestamp, o, h, l, c, v })) {
-    console.warn(
-      `[normalize] Invalid candle from ${provider}: ${timestamp.toISOString()}`
-    )
-  }
-
-  return {
-    timestamp,
-    o: parseFloat(o.toFixed(8)),
-    h: parseFloat(h.toFixed(8)),
-    l: parseFloat(l.toFixed(8)),
-    c: parseFloat(c.toFixed(8)),
-    v: Math.floor(v),
-  }
-}
-
-export function validateCandle(candle: NormalizedCandle): boolean {
-  const { o, h, l, c, v, timestamp } = candle
-
-  // All prices must be positive
-  if (o <= 0 || h <= 0 || l <= 0 || c <= 0) {
+  // Check all fields exist and are numbers
+  if (
+    typeof c.timestamp !== 'number' ||
+    typeof c.open !== 'number' ||
+    typeof c.high !== 'number' ||
+    typeof c.low !== 'number' ||
+    typeof c.close !== 'number' ||
+    typeof c.volume !== 'number'
+  ) {
     return false
   }
 
-  // Volume must be non-negative
-  if (v < 0) {
+  // Check for NaN or Infinity
+  if (
+    !Number.isFinite(c.timestamp) ||
+    !Number.isFinite(c.open) ||
+    !Number.isFinite(c.high) ||
+    !Number.isFinite(c.low) ||
+    !Number.isFinite(c.close) ||
+    !Number.isFinite(c.volume)
+  ) {
     return false
   }
 
-  // OHLC logic: High must be >= all others, Low must be <= all others
-  // Allow small tolerance for floating point errors
+  // All prices must be positive, volume can be 0 but not negative
+  if (c.open <= 0 || c.high <= 0 || c.low <= 0 || c.close <= 0 || c.volume < 0) {
+    return false
+  }
+
+  // Check low <= close <= high relationship
   const tolerance = 0.0001
-  if (h < o - tolerance || h < l - tolerance || h < c - tolerance) {
-    return false
-  }
-  if (l > o + tolerance || l > h + tolerance || l > c + tolerance) {
-    return false
-  }
-
-  // Timestamp must be a valid Date
-  if (isNaN(timestamp.getTime())) {
+  if (
+    c.low > c.close + tolerance ||
+    c.close > c.high + tolerance ||
+    c.low > c.high + tolerance
+  ) {
     return false
   }
 
   return true
 }
 
-export function sortCandlesByTimestamp(
-  candles: NormalizedCandle[]
-): NormalizedCandle[] {
-  return [...candles].sort(
-    (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
-  )
+/**
+ * Converts a raw candle to normalized form with symbol and provider info
+ */
+export function normalizeCandle(
+  candle: RawOHLCV,
+  symbol: string,
+  provider: 'eodhd' | 'tiingo' | 'synthetic'
+): NormalizedCandle {
+  return {
+    timestamp: candle.timestamp,
+    open: candle.open,
+    high: candle.high,
+    low: candle.low,
+    close: candle.close,
+    volume: candle.volume,
+    symbol,
+    provider,
+  }
 }
 
-export function removeDuplicateCandlesByTimestamp(
-  candles: NormalizedCandle[]
+/**
+ * Normalizes an array of raw candles, filtering out invalid entries
+ * Returns sorted by timestamp ascending
+ */
+export function normalizeCandles(
+  raw: unknown[],
+  symbol: string,
+  provider: 'eodhd' | 'tiingo' | 'synthetic'
 ): NormalizedCandle[] {
-  const seen = new Set<number>()
-  return candles.filter((candle) => {
-    const timestamp = candle.timestamp.getTime()
-    if (seen.has(timestamp)) {
-      return false
-    }
-    seen.add(timestamp)
-    return true
-  })
+  if (!Array.isArray(raw)) {
+    return []
+  }
+
+  return raw
+    .filter((candle): candle is RawOHLCV => validateCandle(candle))
+    .map((candle) => normalizeCandle(candle, symbol, provider))
+    .sort((a, b) => a.timestamp - b.timestamp)
 }
 
+/**
+ * Deduplicates candles by timestamp and sorts by timestamp ascending
+ * Keeps the first occurrence when duplicates are found
+ */
 export function dedupAndSortCandles(
   candles: NormalizedCandle[]
 ): NormalizedCandle[] {
-  return sortCandlesByTimestamp(removeDuplicateCandlesByTimestamp(candles))
+  const seen = new Set<number>()
+  const deduped: NormalizedCandle[] = []
+
+  for (const candle of candles) {
+    if (!seen.has(candle.timestamp)) {
+      seen.add(candle.timestamp)
+      deduped.push(candle)
+    }
+  }
+
+  return deduped.sort((a, b) => a.timestamp - b.timestamp)
 }

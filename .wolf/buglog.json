@@ -253,6 +253,102 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-28T19:22:00.000Z"
+    },
+    {
+      "id": "bug-016",
+      "timestamp": "2026-04-28T23:01:44.993Z",
+      "error_message": "Missing guard clause",
+      "file": "src/services/normalize.ts",
+      "root_cause": "No early return/throw for edge case: !candle || typeof candle !== 'object'",
+      "fix": "Added guard clause: if (!candle || typeof candle !== 'object')",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T23:01:44.993Z"
+    },
+    {
+      "id": "bug-017",
+      "timestamp": "2026-04-28T23:02:21.897Z",
+      "error_message": "Type error",
+      "file": "tests/services/normalize.test.ts",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation | Also: describe('normalizeCandle', () => {; it('should convert raw candle to normalized form', () => {",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-28T23:02:43.863Z"
+    },
+    {
+      "id": "bug-018",
+      "timestamp": "2026-04-28T23:03:04.638Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/services/dataFetchers/types.ts",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 6→14 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T23:03:04.639Z"
+    },
+    {
+      "id": "bug-019",
+      "timestamp": "2026-04-28T23:10:34.917Z",
+      "error_message": "Incorrect value in code",
+      "file": "vitest.config.ts",
+      "root_cause": "Had 'vitest/config'",
+      "fix": "Changed to 'vite'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T23:10:34.917Z"
+    },
+    {
+      "id": "bug-020",
+      "timestamp": "2026-04-28T23:37:42.947Z",
+      "error_message": "Missing await",
+      "file": "src/services/cache.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T23:37:42.947Z"
+    },
+    {
+      "id": "bug-021",
+      "timestamp": "2026-04-28T23:43:28.947Z",
+      "error_message": "Missing await",
+      "file": "src/services/cache.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T23:43:28.947Z"
     }
   ]
 }

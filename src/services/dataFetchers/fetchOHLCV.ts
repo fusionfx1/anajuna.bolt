@@ -50,7 +50,7 @@ export async function fetchOHLCV(options: FetchOptions): Promise<FetchResult> {
   // Step 2: Try to fetch from primary provider
   try {
     const rawCandles = await fetchFromProvider(provider, symbol, startDate, endDate)
-    const normalized = normalizeCandles(rawCandles, provider)
+    const normalized = normalizeCandles(rawCandles, symbol, provider)
     const deduped = dedupAndSortCandles(normalized)
 
     // Cache the result
@@ -79,7 +79,7 @@ export async function fetchOHLCV(options: FetchOptions): Promise<FetchResult> {
           startDate,
           endDate
         )
-        const normalized = normalizeCandles(rawCandles, fallback)
+        const normalized = normalizeCandles(rawCandles, symbol, fallback)
         const deduped = dedupAndSortCandles(normalized)
 
         // Don't cache fallback data with original provider key

@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T19:52:12.186Z
-> Files: 309 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T23:43:56.214Z
+> Files: 324 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -18,8 +18,8 @@
 - `tsconfig.app.json` (~158 tok)
 - `tsconfig.json` — TypeScript configuration (~34 tok)
 - `tsconfig.node.json` (~137 tok)
-- `vite.config.ts` — Vite build configuration (~63 tok)
-- `vitest.config.ts` — Vitest configuration for unit tests, excludes e2e/ (~60 tok)
+- `vite.config.ts` — https://vitejs.dev/config/ (~413 tok)
+- `vitest.config.ts` — /*', 'node_modules/**/*'], (~80 tok)
 
 ## .bolt/
 
@@ -42,6 +42,10 @@
 ## .wolf/
 
 - `backtesting-integration-template.md` — Multi-provider integration: imports, state, handleRun pattern, JSX structure (~680 tok)
+
+## C:/Users/Barbara/.claude/plans/
+
+- `wiggly-mixing-planet.md` — Multi-Source Real Data Backtester Implementation Plan (~1114 tok)
 
 ## claude-code-best-practice-main/
 
@@ -609,15 +613,22 @@
 - `backtestService.ts` — Exports fetchHistoricalCandles, fetchCandleCoverage, upsertCandles, saveBacktestRun + 3 more (~1899 tok)
 - `backtestStrategies.ts` — --- Incremental EMA helper --- (~3332 tok)
 - `brokerService.ts` — Exports BrokerConfig, BrokerAccount, BrokerOrderResponse, brokerService (~1953 tok)
+- `cache.ts` — Exports CacheService, cacheService, readCache, writeCache + 3 more (~2174 tok)
 - `candleService.ts` — Exports Instrument, Granularity, OHLCVCandle, fetchCandles, fetchLatestCandles (~1277 tok)
 - `dataFeedService.ts` — Declares TickHandler (~4167 tok)
 - `indicators.ts` — Exports TimeValue, MACDPoint, BollingerPoint, calcEMA + 5 more (~1229 tok)
+- `normalize.ts` — Validates a single candle object for data integrity (~781 tok)
 - `oandaService.ts` — Exports OandaConfig, OandaAccount, OandaOrderResponse, oandaService (~2348 tok)
 - `orderManagerService.ts` — Exports orderManager (~2395 tok)
 - `paperTradingService.ts` — Given the current bid and ask prices, check if any open trade should be (~1965 tok)
 - `patternDetection.ts` — ATR-normalised confidence (0–1) (~2310 tok)
 - `riskManagerService.ts` — Exports RiskParameters, AccountState, riskManager (~1627 tok)
 - `tradingService.ts` — Exports fetchStrategies, updateStrategyStatus, createStrategy, updateStrategyConfig + 8 more (~3046 tok)
+
+## src/services/dataFetchers/
+
+- `fetchOHLCV.ts` — Exports FetchOHLCVConfig, setFetchConfig, fetchOHLCV, fetchAndBacktestCompare (~1541 tok)
+- `types.ts` — Shared types for data fetcher services (~468 tok)
 
 ## src/types/
 
@@ -656,6 +667,11 @@
 
 - `Backtesting.handleRun.test.ts` — Mock fetchOHLCV function (~3547 tok)
 
+## tests/services/
+
+- `cache.test.ts` — API routes: GET (1 endpoints) (~1517 tok)
+- `normalize.test.ts` — Declares valid (~3618 tok)
+
 ## trading_system/
 
 - `backtester.py` — from: run_backtest (~3303 tok)
@@ -670,10 +686,21 @@
 - `README.md` — Project documentation (~1610 tok)
 - `requirements.txt` — Python dependencies (~33 tok)
 - `signal_engine.py` — generate_signals, get_latest_signal (~1761 tok)
+- `signal_providers.py` — SignalProvider, RuleBasedSignalProvider, AgentSignalProvider, signal_provider_from_env (~280 tok)
 - `supabase_client.py` — SupabaseClient: save_strategy, update_strategy_stats, save_backtest_trades, save_equity_snapshots + 4 more (~2762 tok)
+
+## trading_system/agents/
+
+- `crew_runner.py` — CrewAI tools + parallel tool execution + build_trading_crew (~520 tok)
+- `fusion.py` — fuse_agent_signals (~220 tok)
+- `__init__.py` — agent framework exports (~120 tok)
+- `orchestrator.py` — KronosOrchestrator (~140 tok)
+- `schemas.py` — AgentSignalContribution, FusedSignal (~120 tok)
+- `stub_agents.py` — NewsAgent, FredAgent, SentimentAgent; evaluate_all_stubs_parallel (~380 tok)
 
 ## trading_system/tests/
 
 - `__init__.py` (~0 tok)
+- `test_agent_framework.py` — fusion, providers, Kronos mock, Crew structure (~420 tok)
 - `test_backtester.py` — Tests: rsi_column_added, rsi_range, macd_columns, ema_cross_columns + 17 more (~1825 tok)
 - `test_prompt_parser.py` — Tests: thai_indicator_detected, thai_buy_threshold, thai_sell_threshold, thai_stop_loss + 15 more (~1147 tok)

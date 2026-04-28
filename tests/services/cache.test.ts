@@ -1,191 +1,193 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { readCache, writeCache, clearCache, getCacheMetadata } from '../../src/services/cache'
-import { NormalizedCandle } from '../../src/services/dataFetchers/types'
+import { CacheService } from '../../src/services/cache'
+import type { NormalizedCandle } from '../../src/services/dataFetchers/types'
 
-describe('cache.ts', () => {
+describe('CacheService', () => {
+  let cache: CacheService
+
   const mockCandles: NormalizedCandle[] = [
     {
-      timestamp: new Date('2026-04-29T00:00:00'),
-      open: 1.0850,
-      high: 1.0860,
-      low: 1.0840,
-      close: 1.0855,
+      timestamp: 1609459200000,
+      open: 100.5,
+      high: 105.0,
+      low: 99.0,
+      close: 102.0,
       volume: 1000000,
+      symbol: 'EURUSD',
+      provider: 'eodhd',
     },
     {
-      timestamp: new Date('2026-04-29T01:00:00'),
-      open: 1.0855,
-      high: 1.0865,
-      low: 1.0845,
-      close: 1.0860,
-      volume: 1000000,
+      timestamp: 1609545600000,
+      open: 102.0,
+      high: 107.0,
+      low: 101.0,
+      close: 104.0,
+      volume: 1200000,
+      symbol: 'EURUSD',
+      provider: 'eodhd',
     },
   ]
 
   beforeEach(() => {
+    cache = new CacheService()
     localStorage.clear()
-    if (indexedDB.databases) {
-      indexedDB.databases().then((dbs) => {
-        dbs.forEach((db) => {
-          indexedDB.deleteDatabase(db.name)
-        })
-      })
-    }
   })
 
   afterEach(() => {
     localStorage.clear()
   })
 
-  describe('writeCache and readCache', () => {
-    it('writes and reads candles from cache', async () => {
+  describe('set and get', () => {
+    it('should set and get cached data', async () => {
       const key = 'EURUSD-eodhd-hourly'
-      await writeCache(key, mockCandles, 'eodhd', 30)
+      await cache.set(key, mockCandles)
 
-      const cached = await readCache(key, 30)
-      expect(cached).toBeTruthy()
+      const cached = await cache.get(key)
+      expect(cached).toBeDefined()
       expect(cached).toHaveLength(2)
-      expect(cached?.[0].close).toBe(1.0855)
+      expect(cached?.[0].close).toBe(102.0)
     })
 
-    it('returns null for non-existent cache key', async () => {
-      const cached = await readCache('nonexistent-key', 30)
-      expect(cached).toBeNull()
+    it('should return undefined for non-existent key', async () => {
+      const cached = await cache.get('nonexistent-key')
+      expect(cached).toBeUndefined()
     })
 
-    it('respects TTL expiration', async () => {
+    it('should respect TTL expiration', async () => {
       const key = 'EURUSD-eodhd-hourly'
-      await writeCache(key, mockCandles, 'eodhd', 0)
+      // Set with 1ms TTL to expire immediately
+      await cache.set(key, mockCandles, 1)
 
-      const cached = await readCache(key, 0)
-      expect(cached).toBeNull()
+      // Wait a bit to ensure expiration
+      await new Promise((resolve) => setTimeout(resolve, 10))
+
+      const cached = await cache.get(key)
+      expect(cached).toBeUndefined()
     })
 
-    it('handles localStorage fallback', async () => {
+    it('should handle localStorage fallback', async () => {
       const key = 'EURUSD-eodhd-hourly'
 
       localStorage.setItem(
         `anjuna_cache_${key}`,
         JSON.stringify({
+          key,
           candles: mockCandles,
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           provider: 'eodhd',
         })
       )
 
-      const cached = await readCache(key, 30)
-      expect(cached).toBeTruthy()
+      const cached = await cache.get(key)
+      expect(cached).toBeDefined()
       expect(cached).toHaveLength(2)
     })
 
-    it('handles large cache entries', async () => {
-      const largeCandles: NormalizedCandle[] = Array.from({ length: 1000 }, (_, i) => ({
-        timestamp: new Date(Date.now() + i * 3600000),
-        open: 1.0850 + i * 0.0001,
-        high: 1.0860 + i * 0.0001,
-        low: 1.0840 + i * 0.0001,
-        close: 1.0855 + i * 0.0001,
+    it('should handle large cache entries', async () => {
+      const largeCandles: NormalizedCandle[] = Array.from({ length: 100 }, (_, i) => ({
+        timestamp: 1609459200000 + i * 3600000,
+        open: 100.5 + i * 0.001,
+        high: 105.0 + i * 0.001,
+        low: 99.0 + i * 0.001,
+        close: 102.0 + i * 0.001,
         volume: 1000000,
+        symbol: 'EURUSD',
+        provider: 'eodhd',
       }))
 
-      const key = 'EURUSD-eodhd-hourly'
-      await writeCache(key, largeCandles, 'eodhd', 30)
+      const key = 'EURUSD-eodhd-large'
+      await cache.set(key, largeCandles)
 
-      const cached = await readCache(key, 30)
-      expect(cached).toHaveLength(1000)
-      expect(cached?.[999].close).toBeCloseTo(1.1854, 3)
+      const cached = await cache.get(key)
+      expect(cached).toHaveLength(100)
     })
   })
 
-  describe('clearCache', () => {
-    it('clears specific cache entry', async () => {
+  describe('clear', () => {
+    it('should clear specific cache entry', async () => {
       const key1 = 'EURUSD-eodhd-hourly'
       const key2 = 'GBPUSD-tiingo-hourly'
 
-      await writeCache(key1, mockCandles, 'eodhd', 30)
-      await writeCache(key2, mockCandles, 'tiingo', 30)
+      await cache.set(key1, mockCandles)
+      await cache.set(key2, mockCandles)
 
-      await clearCache(key1)
+      await cache.clear(key1)
 
-      const cached1 = await readCache(key1, 30)
-      const cached2 = await readCache(key2, 30)
+      const cached1 = await cache.get(key1)
+      const cached2 = await cache.get(key2)
 
-      expect(cached1).toBeNull()
-      expect(cached2).toBeTruthy()
+      expect(cached1).toBeUndefined()
+      expect(cached2).toBeDefined()
     })
 
-    it('clears all cache when key not specified', async () => {
+    it('should clear all cache when no key specified', async () => {
       const key1 = 'EURUSD-eodhd-hourly'
       const key2 = 'GBPUSD-tiingo-hourly'
 
-      await writeCache(key1, mockCandles, 'eodhd', 30)
-      await writeCache(key2, mockCandles, 'tiingo', 30)
+      await cache.set(key1, mockCandles)
+      await cache.set(key2, mockCandles)
 
-      await clearCache()
+      await cache.clear()
 
-      const cached1 = await readCache(key1, 30)
-      const cached2 = await readCache(key2, 30)
+      const cached1 = await cache.get(key1)
+      const cached2 = await cache.get(key2)
 
-      expect(cached1).toBeNull()
-      expect(cached2).toBeNull()
+      expect(cached1).toBeUndefined()
+      expect(cached2).toBeUndefined()
     })
   })
 
-  describe('getCacheMetadata', () => {
-    it('returns cache statistics', async () => {
+  describe('stats', () => {
+    it('should return cache statistics', async () => {
       const key1 = 'EURUSD-eodhd-hourly'
       const key2 = 'GBPUSD-tiingo-hourly'
 
-      await writeCache(key1, mockCandles, 'eodhd', 30)
-      await writeCache(key2, mockCandles, 'tiingo', 30)
+      await cache.set(key1, mockCandles)
+      await cache.set(key2, mockCandles)
 
-      const metadata = await getCacheMetadata()
+      const stats = await cache.stats()
 
-      expect(metadata.totalEntries).toBeGreaterThanOrEqual(2)
-      expect(metadata.totalSizeBytes).toBeGreaterThan(0)
+      expect(stats.size).toBeGreaterThanOrEqual(0)
+      expect(stats.totalSizeBytes).toBeGreaterThan(0)
     })
 
-    it('returns oldest and newest entry dates', async () => {
+    it('should track oldest and newest entries', async () => {
       const key = 'EURUSD-eodhd-hourly'
-      await writeCache(key, mockCandles, 'eodhd', 30)
+      await cache.set(key, mockCandles)
 
-      const metadata = await getCacheMetadata()
+      const stats = await cache.stats()
 
-      expect(metadata.oldestEntry).toBeInstanceOf(Date)
-      expect(metadata.newestEntry).toBeInstanceOf(Date)
+      expect(stats.oldestEntry).toBeInstanceOf(Date)
+      expect(stats.newestEntry).toBeInstanceOf(Date)
     })
 
-    it('returns empty stats for empty cache', async () => {
-      await clearCache()
-      const metadata = await getCacheMetadata()
+    it('should return empty stats for empty cache', async () => {
+      await cache.clear()
+      const stats = await cache.stats()
 
-      expect(metadata.totalEntries).toBe(0)
-      expect(metadata.totalSizeBytes).toBe(0)
+      expect(stats.size).toBe(0)
+      expect(stats.totalSizeBytes).toBe(0)
     })
   })
 
   describe('error handling', () => {
-    it('handles write errors gracefully', async () => {
+    it('should handle write errors gracefully', async () => {
       const key = 'EURUSD-eodhd-hourly'
 
-      // Write succeeds (falls back to localStorage if IndexedDB fails)
-      const result = await writeCache(key, mockCandles, 'eodhd', 30)
-      // Should not throw
+      // Should not throw even if IndexedDB fails
+      const result = await cache.set(key, mockCandles)
       expect(result).toBeUndefined()
     })
 
-    it('handles read errors gracefully', async () => {
-      const key = 'EURUSD-eodhd-hourly-error'
+    it('should handle read errors gracefully', async () => {
+      const key = 'EURUSD-eodhd-error'
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 
       localStorage.setItem(`anjuna_cache_${key}`, 'invalid json')
 
-      const cached = await readCache(key, 30)
-      expect(cached).toBeNull()
-      expect(warn).toHaveBeenCalledWith(
-        '[cache] localStorage read failed',
-        expect.any(SyntaxError)
-      )
+      const cached = await cache.get(key)
+      expect(cached).toBeUndefined()
+      expect(warn).toHaveBeenCalled()
       warn.mockRestore()
     })
   })

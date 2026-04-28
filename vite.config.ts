@@ -30,12 +30,12 @@ export default defineConfig({
           
           // Data fetching & normalization
           'data-layer': [
-            'src/dataFetchers/fetchOHLCV.ts',
-            'src/dataFetchers/eodhd.ts',
-            'src/dataFetchers/tiingo.ts',
-            'src/dataFetchers/synthetic.ts',
-            'src/normalization/normalize.ts',
-            'src/normalization/cache.ts',
+            'src/services/dataFetchers/fetchOHLCV.ts',
+            'src/services/dataFetchers/eodhd.ts',
+            'src/services/dataFetchers/tiingo.ts',
+            'src/services/dataFetchers/synthetic.ts',
+            'src/services/normalize.ts',
+            'src/services/cache.ts',
           ],
         },
       },

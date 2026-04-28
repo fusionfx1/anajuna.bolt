@@ -20,7 +20,7 @@ from .backtester import run_backtest
 from .broker import BrokerConnector, CircuitBreaker, OandaConnector, OrderRequest, PaperConnector
 from .models import BacktestResult, OrderSide, SignalType, StrategyConfig, TradingSystem
 from .prompt_parser import parse_prompt
-from .signal_engine import get_latest_signal
+from .signal_providers import signal_provider_from_env
 
 load_dotenv()
 
@@ -204,6 +204,12 @@ def run_live(
     max_iterations : int, optional
         Stop after this many iterations (useful for testing). None = run forever.
 
+    Environment
+    -----------
+    SIGNAL_MODE : str, optional
+        ``rules`` (default) uses indicator rules via ``get_latest_signal``.
+        ``agent`` uses the CrewAI stub agent layer + fusion (see ``signal_providers``).
+
     Notes
     -----
     Press Ctrl+C to stop the loop gracefully.
@@ -220,6 +226,8 @@ def run_live(
             logger.warning(f"Supabase unavailable for live logging: {exc}")
 
     settings = db.get_user_settings() if db else None
+    signal_provider = signal_provider_from_env()
+
     circuit = CircuitBreaker(
         max_daily_loss_pct=float(settings.get("max_daily_loss_pct", 3.0)) / 100
         if settings
@@ -238,7 +246,7 @@ def run_live(
 
     logger.info(
         f"Live loop started: {config.name} | {symbol} | {config.timeframe} | "
-        f"interval={poll_interval_seconds}s"
+        f"interval={poll_interval_seconds}s | SIGNAL_MODE={os.environ.get('SIGNAL_MODE', 'rules')}"
     )
 
     try:
@@ -282,7 +290,7 @@ def run_live(
                     time.sleep(poll_interval_seconds)
                     continue
 
-                signal = get_latest_signal(df, config)
+                signal = signal_provider.get_latest_signal(df, config)
                 logger.info(
                     f"[{symbol}] Signal: {signal.signal_type.value} | "
                     f"{config.indicator.indicator_type.value.upper()}={signal.indicator_value:.4f} | "
