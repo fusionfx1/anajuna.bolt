@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T23:43:56.214Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-29T01:36:38.623Z
 > Files: 324 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
@@ -18,7 +18,7 @@
 - `tsconfig.app.json` (~158 tok)
 - `tsconfig.json` — TypeScript configuration (~34 tok)
 - `tsconfig.node.json` (~137 tok)
-- `vite.config.ts` — https://vitejs.dev/config/ (~413 tok)
+- `vite.config.ts` — https://vitejs.dev/config/ (~436 tok)
 - `vitest.config.ts` — /*', 'node_modules/**/*'], (~80 tok)
 
 ## .bolt/
