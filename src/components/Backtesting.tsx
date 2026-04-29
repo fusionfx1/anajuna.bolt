@@ -61,14 +61,14 @@ export function Backtesting() {
 
       // Convert NormalizedCandle[] to Candle[]
       candles = result.candles.map(c => ({
-        time: Math.floor(c.timestamp.getTime() / 1000),
-        open: c.o,
-        high: c.h,
-        low: c.l,
-        close: c.c,
-        volume: c.v,
+        time: Math.floor(c.timestamp / 1000),
+        open: c.open,
+        high: c.high,
+        low: c.low,
+        close: c.close,
+        volume: c.volume,
       }));
-    } catch {
+    } catch (e) {
       candles = [];
     }
 
