@@ -1,13 +1,10 @@
 import { FetchOptions, FetchResult, ProviderType } from './types'
 import { readCache, writeCache } from '../cache'
 import { normalizeCandles, dedupAndSortCandles } from '../normalize'
-import { createEodhhdClient } from './eodhd'
-import { createTiingoClient } from './tiingo'
 import { getSyntheticCandles } from './synthetic'
+import { supabase } from '../../lib/supabase'
 
 export interface FetchOHLCVConfig {
-  eodhd_api_key?: string
-  tiingo_api_key?: string
   primary_provider: ProviderType
   cache_ttl_days: number
 }
@@ -119,20 +116,8 @@ async function fetchFromProvider(
   startDate: Date,
   endDate: Date
 ): Promise<never[]> {
-  if (provider === 'eodhd') {
-    if (!config.eodhd_api_key) {
-      throw new Error('EODHD API key not configured')
-    }
-    const client = createEodhhdClient(config.eodhd_api_key)
-    return (await client.getCandles(symbol, startDate, endDate)) as never[]
-  }
-
-  if (provider === 'tiingo') {
-    if (!config.tiingo_api_key) {
-      throw new Error('Tiingo API key not configured')
-    }
-    const client = createTiingoClient(config.tiingo_api_key)
-    return (await client.getDailyHistory(symbol, startDate, endDate)) as never[]
+  if (provider === 'eodhd' || provider === 'tiingo') {
+    return fetchViaEdgeFunction(provider, symbol, startDate, endDate)
   }
 
   if (provider === 'synthetic') {
@@ -140,6 +125,39 @@ async function fetchFromProvider(
   }
 
   throw new Error(`Unknown provider: ${provider}`)
+}
+
+async function fetchViaEdgeFunction(
+  provider: 'eodhd' | 'tiingo',
+  symbol: string,
+  startDate: Date,
+  endDate: Date
+): Promise<never[]> {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) {
+    throw new Error(`[fetchOHLCV] Not authenticated — cannot fetch from ${provider}`)
+  }
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+  const from = startDate.toISOString().split('T')[0]
+  const to = endDate.toISOString().split('T')[0]
+
+  const res = await fetch(`${supabaseUrl}/functions/v1/data-provider-proxy`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ provider, action: 'fetch', symbol, from, to }),
+  })
+
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(`[fetchOHLCV] ${provider} proxy error ${res.status}: ${errorBody.error ?? res.statusText}`)
+  }
+
+  const data = await res.json()
+  return (data.candles ?? []) as never[]
 }
 
 function getFallbackProviders(primary: ProviderType): ProviderType[] {
