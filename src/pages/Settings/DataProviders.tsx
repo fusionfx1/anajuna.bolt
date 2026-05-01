@@ -1,7 +1,15 @@
 import React, { useState } from 'react'
+import { BarChart2, CheckCircle2, AlertCircle, Loader2, Zap, Save } from 'lucide-react'
 import { useDataProvider } from '../../context/DataProviderContext'
 import { clearCache, getCacheMetadata } from '../../services/cache'
 import { CacheStats } from '../../services/dataFetchers/types'
+import { SecretInput } from '../../components/ui/SecretInput'
+
+const PROVIDER_DESCRIPTIONS: Record<string, string> = {
+  eodhd: 'Historical OHLCV + fundamentals. Requires API key.',
+  tiingo: 'End-of-day prices and news. Requires API key.',
+  synthetic: 'Generated data. No API key needed.',
+}
 
 export function DataProvidersSettings() {
   const {
@@ -21,7 +29,9 @@ export function DataProvidersSettings() {
   const [testingProvider, setTestingProvider] = useState<string | null>(null)
   const [testResults, setTestResults] = useState<Record<string, boolean>>({})
   const [cacheStats, setCacheStats] = useState<CacheStats | null>(null)
-  const [clearingCache, setClearingCache] = useState(false)
+  const [clearState, setClearState] = useState<'idle' | 'confirming' | 'clearing' | 'done'>('idle')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   const handleTestConnection = async (provider: string) => {
     setTestingProvider(provider)
@@ -29,10 +39,10 @@ export function DataProvidersSettings() {
       const success = await testConnection(
         provider as 'eodhd' | 'tiingo' | 'synthetic'
       )
-      setTestResults((prev) => ({ ...prev, [provider]: success }))
+      setTestResults(prev => ({ ...prev, [provider]: success }))
     } catch (error) {
       console.error(`Test connection failed for ${provider}:`, error)
-      setTestResults((prev) => ({ ...prev, [provider]: false }))
+      setTestResults(prev => ({ ...prev, [provider]: false }))
     } finally {
       setTestingProvider(null)
     }
@@ -44,199 +54,263 @@ export function DataProvidersSettings() {
   }
 
   const handleClearCache = async () => {
-    if (confirm('Are you sure you want to clear all cached data?')) {
-      setClearingCache(true)
+    if (clearState === 'idle') {
+      setClearState('confirming')
+      return
+    }
+    if (clearState === 'confirming') {
+      setClearState('clearing')
       try {
         await clearCache()
         setCacheStats(null)
-        alert('Cache cleared successfully')
+        setClearState('done')
+        setTimeout(() => setClearState('idle'), 2000)
       } catch (error) {
         console.error('Failed to clear cache:', error)
-        alert('Failed to clear cache')
-      } finally {
-        setClearingCache(false)
+        setClearState('idle')
       }
+    }
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      setEodhd_api_key(eodhd_api_key)
+      setTiingo_api_key(tiingo_api_key)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } finally {
+      setSaving(false)
     }
   }
 
   const canUseProvider = (provider: string): boolean => {
     if (provider === 'eodhd') return !!eodhd_api_key
     if (provider === 'tiingo') return !!tiingo_api_key
-    return true // synthetic always available
+    return true
   }
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-4">
-        <h3 className="text-lg font-semibold">Data Providers</h3>
+    <div className="space-y-6">
+      {/* Provider selection cards */}
+      <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-label="Primary data provider">
+        {(['eodhd', 'tiingo', 'synthetic'] as const).map(provider => {
+          const selected = primaryProvider === provider
+          const disabled = provider !== 'synthetic' && !canUseProvider(provider)
+          return (
+            <button
+              key={provider}
+              role="radio"
+              aria-checked={selected}
+              onClick={() => !disabled && setPrimaryProvider(provider)}
+              disabled={disabled}
+              className={`text-left p-4 rounded-xl border transition-all ${
+                selected
+                  ? 'border-emerald-500/40 bg-emerald-500/8 ring-1 ring-emerald-500/20'
+                  : disabled
+                  ? 'border-slate-800 bg-slate-800/30 opacity-50 cursor-not-allowed'
+                  : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+              }`}
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className={`w-7 h-7 rounded-md flex items-center justify-center ${selected ? 'bg-emerald-500/15' : 'bg-slate-700'}`}>
+                  <BarChart2 size={14} className={selected ? 'text-emerald-400' : 'text-slate-400'} />
+                </div>
+                {selected && <CheckCircle2 size={13} className="text-emerald-400" />}
+              </div>
+              <p className="font-semibold text-sm text-white mb-1">{provider.toUpperCase()}</p>
+              <p className="text-xs text-slate-400">{PROVIDER_DESCRIPTIONS[provider]}</p>
+            </button>
+          )
+        })}
+      </div>
 
-        {/* Primary Provider Selection */}
-        <div className="border rounded-lg p-4 space-y-3">
-          <label className="block text-sm font-medium">Primary Provider</label>
-          <div className="space-y-2">
-            {(['eodhd', 'tiingo', 'synthetic'] as const).map((provider) => (
-              <label
-                key={provider}
-                className="flex items-center space-x-2 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name="primary-provider"
-                  value={provider}
-                  checked={primaryProvider === provider}
-                  onChange={(e) =>
-                    setPrimaryProvider(e.target.value as typeof provider)
-                  }
-                  disabled={
-                    provider !== 'synthetic' && !canUseProvider(provider)
-                  }
-                  className="w-4 h-4"
-                />
-                <span
-                  className={`text-sm ${
-                    provider !== 'synthetic' && !canUseProvider(provider)
-                      ? 'text-gray-400'
-                      : ''
-                  }`}
-                >
-                  {provider.toUpperCase()}
-                </span>
-              </label>
-            ))}
-          </div>
+      {/* No-keys warning */}
+      {!eodhd_api_key && !tiingo_api_key && (
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/8 border border-amber-500/20 text-amber-300 text-xs">
+          <AlertCircle size={13} className="shrink-0" />
+          No backtest API keys configured — backtests will use synthetic data.
         </div>
+      )}
 
-        {!eodhd_api_key && !tiingo_api_key && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
-            ⚠️ No API keys configured. Backtests will use synthetic data.
-          </div>
-        )}
-      </section>
-
-      {/* EODHD Configuration */}
-      <section className="border rounded-lg p-4 space-y-3">
-        <h4 className="font-semibold text-sm">EODHD Configuration</h4>
-
-        <div>
-          <label className="block text-xs font-medium mb-1">API Key</label>
-          <input
-            type="password"
-            value={eodhd_api_key}
-            onChange={(e) => setEodhd_api_key(e.target.value)}
-            placeholder="Enter your EODHD API key"
-            className="w-full px-3 py-2 border rounded text-sm"
-          />
+      {/* EODHD Panel */}
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">EODHD Configuration</p>
+        <SecretInput
+          id="eodhd-api-key"
+          label="EODHD API Key"
+          value={eodhd_api_key}
+          onChange={setEodhd_api_key}
+          placeholder="Enter your EODHD API key"
+          hint={!eodhd_api_key ? 'Not configured — save a key to enable this provider' : undefined}
+        />
+        <div className="flex items-center gap-3 pt-1">
+          <button
+            onClick={() => handleTestConnection('eodhd')}
+            disabled={testingProvider === 'eodhd' || !eodhd_api_key}
+            className="flex items-center gap-2 px-3 py-2 bg-sky-500/10 border border-sky-500/20 text-sky-400 rounded-lg text-xs font-semibold hover:bg-sky-500/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {testingProvider === 'eodhd' ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+            {testingProvider === 'eodhd' ? 'Testing…' : 'Test Connection'}
+          </button>
+          {testResults['eodhd'] === true && (
+            <span className="flex items-center gap-2 text-xs text-emerald-400">
+              <CheckCircle2 size={12} /> Connected
+            </span>
+          )}
+          {testResults['eodhd'] === false && (
+            <span className="flex items-center gap-2 text-xs text-red-400" role="alert">
+              <AlertCircle size={12} /> Connection failed — check your API key
+            </span>
+          )}
         </div>
+      </div>
 
-        <button
-          onClick={() => handleTestConnection('eodhd')}
-          disabled={testingProvider === 'eodhd' || !eodhd_api_key}
-          className="px-3 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-        >
-          {testingProvider === 'eodhd' ? 'Testing...' : 'Test Connection'}
-        </button>
-
-        {testResults['eodhd'] === true && (
-          <div className="text-sm text-green-600">✓ Connected</div>
-        )}
-        {testResults['eodhd'] === false && (
-          <div className="text-sm text-red-600">✗ Failed to connect</div>
-        )}
-      </section>
-
-      {/* Tiingo Configuration */}
-      <section className="border rounded-lg p-4 space-y-3">
-        <h4 className="font-semibold text-sm">Tiingo Configuration</h4>
-
-        <div>
-          <label className="block text-xs font-medium mb-1">API Key</label>
-          <input
-            type="password"
-            value={tiingo_api_key}
-            onChange={(e) => setTiingo_api_key(e.target.value)}
-            placeholder="Enter your Tiingo API key"
-            className="w-full px-3 py-2 border rounded text-sm"
-          />
+      {/* Tiingo Panel */}
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tiingo Configuration</p>
+        <SecretInput
+          id="tiingo-api-key"
+          label="Tiingo API Key"
+          value={tiingo_api_key}
+          onChange={setTiingo_api_key}
+          placeholder="Enter your Tiingo API key"
+          hint={!tiingo_api_key ? 'Not configured — save a key to enable this provider' : undefined}
+        />
+        <div className="flex items-center gap-3 pt-1">
+          <button
+            onClick={() => handleTestConnection('tiingo')}
+            disabled={testingProvider === 'tiingo' || !tiingo_api_key}
+            className="flex items-center gap-2 px-3 py-2 bg-sky-500/10 border border-sky-500/20 text-sky-400 rounded-lg text-xs font-semibold hover:bg-sky-500/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {testingProvider === 'tiingo' ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+            {testingProvider === 'tiingo' ? 'Testing…' : 'Test Connection'}
+          </button>
+          {testResults['tiingo'] === true && (
+            <span className="flex items-center gap-2 text-xs text-emerald-400">
+              <CheckCircle2 size={12} /> Connected
+            </span>
+          )}
+          {testResults['tiingo'] === false && (
+            <span className="flex items-center gap-2 text-xs text-red-400" role="alert">
+              <AlertCircle size={12} /> Connection failed — check your API key
+            </span>
+          )}
         </div>
-
-        <button
-          onClick={() => handleTestConnection('tiingo')}
-          disabled={testingProvider === 'tiingo' || !tiingo_api_key}
-          className="px-3 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-        >
-          {testingProvider === 'tiingo' ? 'Testing...' : 'Test Connection'}
-        </button>
-
-        {testResults['tiingo'] === true && (
-          <div className="text-sm text-green-600">✓ Connected</div>
-        )}
-        {testResults['tiingo'] === false && (
-          <div className="text-sm text-red-600">✗ Failed to connect</div>
-        )}
-      </section>
+      </div>
 
       {/* Cache Settings */}
-      <section className="border rounded-lg p-4 space-y-4">
-        <h4 className="font-semibold text-sm">Cache Settings</h4>
+      <div className="space-y-4">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Cache Settings</p>
 
-        <label className="flex items-center space-x-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={enableCache}
-            onChange={(e) => setEnableCache(e.target.checked)}
-            className="w-4 h-4"
-          />
-          <span className="text-sm">Enable Local Cache</span>
-        </label>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-slate-300">Enable Local Cache</p>
+            <p className="text-xs text-slate-600 mt-0.5">Cache backtest data locally to reduce API calls</p>
+          </div>
+          <button
+            role="switch"
+            aria-checked={enableCache}
+            aria-label="Enable Local Cache"
+            onClick={() => setEnableCache(!enableCache)}
+            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${enableCache ? 'bg-emerald-500' : 'bg-slate-700'}`}
+          >
+            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${enableCache ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        </div>
 
         {enableCache && (
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-medium mb-1">
-                Cache expires after (days)
+              <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                Cache TTL (days)
               </label>
               <input
                 type="number"
                 value={cacheTTLDays}
-                onChange={(e) => setCacheTTLDays(Math.max(1, parseInt(e.target.value, 10)))}
+                onChange={e => setCacheTTLDays(Math.max(1, parseInt(e.target.value, 10)))}
                 min="1"
                 max="365"
-                className="w-full px-3 py-2 border rounded text-sm"
+                className="w-24 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-slate-600"
               />
             </div>
 
-            <button
-              onClick={handleLoadCacheStats}
-              className="px-3 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600"
-            >
-              Load Cache Info
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleLoadCacheStats}
+                className="flex items-center gap-2 px-3 py-2 bg-sky-500/10 border border-sky-500/20 text-sky-400 rounded-lg text-xs font-semibold hover:bg-sky-500/15 transition-colors"
+              >
+                Load Cache Info
+              </button>
+
+              {/* Inline clear cache state machine */}
+              {clearState === 'idle' && (
+                <button
+                  onClick={handleClearCache}
+                  className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-xs font-semibold hover:bg-red-500/15 transition-colors"
+                >
+                  Clear Cache
+                </button>
+              )}
+              {clearState === 'confirming' && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleClearCache}
+                    className="flex items-center gap-2 px-3 py-2 bg-red-500/20 border border-red-500/30 text-red-300 rounded-lg text-xs font-semibold hover:bg-red-500/25 transition-colors"
+                  >
+                    Confirm Clear?
+                  </button>
+                  <button
+                    onClick={() => setClearState('idle')}
+                    className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+              {clearState === 'clearing' && (
+                <span className="flex items-center gap-2 text-xs text-slate-400">
+                  <Loader2 size={12} className="animate-spin" /> Clearing…
+                </span>
+              )}
+              {clearState === 'done' && (
+                <span className="flex items-center gap-2 text-xs text-emerald-400">
+                  <CheckCircle2 size={12} /> Cache cleared
+                </span>
+              )}
+            </div>
 
             {cacheStats && (
-              <div className="bg-gray-50 rounded p-3 space-y-2 text-xs">
-                <div>Entries: {cacheStats.totalEntries}</div>
-                <div>
-                  Size: {(cacheStats.totalSizeBytes / 1024 / 1024).toFixed(2)} MB
-                </div>
+              <div className="bg-slate-800/50 rounded-lg p-3 space-y-1 text-xs text-slate-400 border border-slate-700/50">
+                <div>Entries: <span className="text-slate-200">{cacheStats.totalEntries}</span></div>
+                <div>Size: <span className="text-slate-200">{(cacheStats.totalSizeBytes / 1024 / 1024).toFixed(2)} MB</span></div>
                 {cacheStats.oldestEntry && (
-                  <div>Oldest: {cacheStats.oldestEntry.toLocaleDateString()}</div>
+                  <div>Oldest: <span className="text-slate-200">{cacheStats.oldestEntry.toLocaleDateString()}</span></div>
                 )}
                 {cacheStats.newestEntry && (
-                  <div>Newest: {cacheStats.newestEntry.toLocaleDateString()}</div>
+                  <div>Newest: <span className="text-slate-200">{cacheStats.newestEntry.toLocaleDateString()}</span></div>
                 )}
               </div>
             )}
-
-            <button
-              onClick={handleClearCache}
-              disabled={clearingCache}
-              className="px-3 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {clearingCache ? 'Clearing...' : 'Clear All Cache'}
-            </button>
           </div>
         )}
-      </section>
+      </div>
+
+      {/* Save Provider Settings button */}
+      <div className="flex justify-end pt-4 border-t border-slate-800/50">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            saved
+              ? 'bg-emerald-500/15 border border-emerald-500/20 text-emerald-400'
+              : 'bg-emerald-500 hover:bg-emerald-400 text-slate-900 disabled:opacity-70'
+          }`}
+        >
+          {saving ? <Loader2 size={16} className="animate-spin" /> : saved ? <CheckCircle2 size={16} /> : <Save size={16} />}
+          {saving ? 'Saving…' : saved ? 'Saved' : 'Save Provider Settings'}
+        </button>
+      </div>
     </div>
   )
 }
