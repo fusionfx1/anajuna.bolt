@@ -72,6 +72,9 @@ SELECT COUNT(*) AS total_rows,
 FROM agent_decisions;
 ```
 
+> **Status as of 2026-05-01**: Row count is well below 10,000 (development phase).
+> Index has NOT been applied. Apply when `SELECT COUNT(*) FROM agent_decisions WHERE embedding IS NOT NULL` exceeds 10,000.
+
 ---
 
 ## Stale Feed Threshold (OBS-04)
