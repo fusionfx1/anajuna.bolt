@@ -12,7 +12,7 @@ Production Readiness v1 turns the existing Anjuna FX prototype into a system a s
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Settings & Secrets Unification** — Single trustworthy place for every credential, predictable Save flow, no localStorage secrets
+- [x] **Phase 1: Settings & Secrets Unification** — Single trustworthy place for every credential, predictable Save flow, no localStorage secrets (completed 2026-05-01)
 - [ ] **Phase 2: RLS Hardening + Empty-Feed Fix** — Explicit `agent_decisions` policy contract + tests so the feed never silently drops rows
 - [ ] **Phase 3: Auth Bypass + Env Failsafe** — Production-safe auth with no `localStorage` shortcut and fail-fast on missing Supabase env
 - [ ] **Phase 4: Observability & Health** — Real agent health signals, non-silent persistence, documented vector index thresholds
@@ -34,10 +34,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans across 3 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — SecretInput component extraction + data_provider_api_keys SQL migration (Wave 1)
-- [ ] 01-02-PLAN.md — Settings.tsx MT5 removal + group headers + per-section saves + DataProviders dark-theme rewrite (Wave 1, parallel)
-- [ ] 01-03-PLAN.md — DataProviderContext localStorage→Supabase migration + data-provider-proxy Edge Function (Wave 2)
-- [ ] 01-04-PLAN.md — fetchOHLCV Edge Function routing + build verification + supabase db push + smoke test (Wave 3)
+- [x] 01-01-PLAN.md — SecretInput component extraction + data_provider_api_keys SQL migration (Wave 1)
+- [x] 01-02-PLAN.md — Settings.tsx MT5 removal + group headers + per-section saves + DataProviders dark-theme rewrite (Wave 1, parallel)
+- [x] 01-03-PLAN.md — DataProviderContext localStorage→Supabase migration + data-provider-proxy Edge Function (Wave 2)
+- [x] 01-04-PLAN.md — fetchOHLCV Edge Function routing + build verification + supabase db push + smoke test (Wave 3)
 
 ### Phase 2: RLS Hardening + Empty-Feed Fix
 **Goal**: The Agent Feed shows exactly the rows the chosen RLS contract intends — no accidental empty feed, no accidental data leak — and the contract is enforced by automated tests so regressions don't ship silently.
@@ -116,7 +116,7 @@ Sequential — each phase depends on the previous one (1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Settings & Secrets Unification | 0/TBD | Not started | - |
+| 1. Settings & Secrets Unification | 4/4 | Complete    | 2026-05-01 |
 | 2. RLS Hardening + Empty-Feed Fix | 0/TBD | Not started | - |
 | 3. Auth Bypass + Env Failsafe | 0/TBD | Not started | - |
 | 4. Observability & Health | 0/TBD | Not started | - |
