@@ -19,19 +19,44 @@ import { PaperPositions } from './components/PaperPositions';
 import { PaperHistory } from './components/PaperHistory';
 import { NewsCalendar } from './components/NewsCalendar';
 import type { NavPage } from './types/trading';
+import { envError } from './lib/supabase';
 
 function AppContent() {
   const { session, loading } = useAuth();
   const [page, setPage] = useState<NavPage>('dashboard');
   const [devMode] = useState(() => {
-    // Enable dev mode if localStorage has devMode=true (for testing without auth)
-    if (typeof window !== 'undefined') {
+    // Only read devMode in development builds — Vite eliminates this block in production
+    // via dead-code elimination on import.meta.env.DEV (per D-01)
+    if (import.meta.env.DEV && typeof window !== 'undefined') {
       const dev = localStorage.getItem('devMode') === 'true';
       if (dev) console.log('[Dev Mode] Auth bypass enabled');
       return dev;
     }
     return false;
   });
+
+  // Production hard-stop: missing env vars must never silently fall through (per D-02)
+  if (envError && !import.meta.env.DEV) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="max-w-lg w-full p-8 bg-red-950 border border-red-500 rounded-lg text-center">
+          <h1 className="text-xl font-bold text-red-400 mb-4">Configuration Error</h1>
+          <p className="text-red-200 mb-4">{envError}</p>
+          <p className="text-sm text-red-300">
+            Add the missing variable to <code className="bg-red-900 px-1 rounded">.env.local</code>{' '}
+            and restart the dev server or rebuild.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Dev-only banner when env is not configured — allows UI work without a real Supabase project
+  const devEnvBanner = envError && import.meta.env.DEV ? (
+    <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-500 text-yellow-950 text-sm font-semibold px-4 py-2 text-center">
+      ⚠ DEV MODE: {envError} — Supabase calls will fail.
+    </div>
+  ) : null;
 
   if (loading) {
     return (
@@ -67,9 +92,12 @@ function AppContent() {
   };
 
   return (
-    <Layout page={page} onNavigate={setPage}>
-      {renderPage()}
-    </Layout>
+    <>
+      {devEnvBanner}
+      <Layout page={page} onNavigate={setPage}>
+        {renderPage()}
+      </Layout>
+    </>
   );
 }
 

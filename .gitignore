@@ -20,4 +20,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Environment files — all variants must be excluded
 .env
+.env.*
+.env.local
+.env.*.local
+!.env.example
+!.env.*.example
+# keep graph outputs, skip heavy/local-only files
+
+# optional: commit for shared extraction speed, skip to keep repo small
+graphify-out/cache/
+
+# mtime-based, invalid after git clone - always gitignore this
+graphify-out/manifest.json
+
+# local token tracking, not useful to share
+graphify-out/cost.json
