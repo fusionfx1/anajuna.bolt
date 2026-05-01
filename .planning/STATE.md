@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
+status: complete
 stopped_at: Phase 06 complete — all 3 plans executed
-last_updated: "2026-05-01T03:34:49.303Z"
+last_updated: "2026-05-01T10:37:00.000Z"
 last_activity: 2026-05-01
 progress:
   total_phases: 6
-  completed_phases: 5
-  total_plans: 12
+  completed_phases: 6
+  total_plans: 14
   completed_plans: 14
   percent: 100
 ---
@@ -21,16 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-01)
 
 **Core value:** An operator can configure broker/data/agent credentials once, trust where every secret lives, and see real agent decisions reach the dashboard without empty-feed or silent-failure surprises.
-**Current focus:** Phase 5 — CI/CD + Test Matrix
+**Current focus:** Milestone complete — Production Readiness v1
 
 ## Current Position
 
-Phase: 5
-Plan: Not started
-Status: Phase 4 complete — ready to plan Phase 5
+Phase: 6
+Plan: All complete
+Status: **MILESTONE COMPLETE** — Production Readiness v1 all 6 phases verified (2026-05-01)
 Last activity: 2026-05-01
 
-Progress: [████░░░░░░] 67%
+Progress: [██████████] 100%
+
+> **Milestone Completion Note (2026-05-01):** All 6 phases of Production Readiness v1 verified.
+> 27/27 requirements satisfied. CI gates green (typecheck, lint, 55 JS tests, 94 Python tests).
+> Agent Layer Hardening phase passed: USE_REAL_AGENTS feature flag wired, both orchestration paths
+> tested, embedding index runbook documented. Future Agent Layer v2 work has a solid foundation.
 
 ## Performance Metrics
 
@@ -87,7 +92,7 @@ Carried in from `.planning/codebase/CONCERNS.md` (audit 2026-05-01):
 - ~~`localStorage.devMode=true` bypasses login with no env gate~~ → **Fixed in Phase 3** ✓
 - ~~`src/lib/supabase.ts` falls back to placeholder URL/key with only a console warning~~ → **Fixed in Phase 3** ✓
 - ~~`save_decision` swallows exceptions silently~~ → **Fixed in Phase 4** ✓
-- `crew_runner.py` imports stubs while real `*_agent.py` modules exist → Phase 6
+- ~~`crew_runner.py` imports stubs while real `*_agent.py` modules exist~~ → **Fixed in Phase 6 (AGT-01)** ✓
 
 ## Session Continuity
 

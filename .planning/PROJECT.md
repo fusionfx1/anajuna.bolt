@@ -28,11 +28,11 @@ If everything else fails, that single trust loop — *"my keys are safe, the fee
 <!-- Production Readiness v1 scope. These are hypotheses until shipped and validated. -->
 
 - [x] Single, predictable Settings save flow with secrets never living in `localStorage` or mocked fields — *Validated in Phase 1: Settings & Secrets Unification (2026-05-01)*
-- [ ] Empty-feed and NULL `user_id` row visibility on `agent_decisions` resolved with explicit RLS contract + tests
-- [ ] No silent dev-mode auth bypass in production builds; fail-fast on missing Supabase env
-- [ ] Real (not heuristic) agent health surfaced in `AgentFeed` and alerted on persistence drops
-- [ ] CI pipeline runs typecheck + lint + vitest + Playwright + RLS policy tests on every PR
-- [ ] Real agent modules (`news_agent`, `fred_agent`, `sentiment_agent`) reach `crew_runner` end-to-end (no stub bypass)
+- [x] Empty-feed and NULL `user_id` row visibility on `agent_decisions` resolved with explicit RLS contract + tests — *Validated in Phase 2: RLS Hardening (2026-05-01)*
+- [x] No silent dev-mode auth bypass in production builds; fail-fast on missing Supabase env — *Validated in Phase 3: Auth Bypass + Env Failsafe (2026-05-01)*
+- [x] Real (not heuristic) agent health surfaced in `AgentFeed` and alerted on persistence drops — *Validated in Phase 4: Observability & Health (2026-05-01)*
+- [x] CI pipeline runs typecheck + lint + vitest + Playwright + RLS policy tests on every PR — *Validated in Phase 5: CI/CD + Test Matrix (2026-05-01)*
+- [x] Real agent modules (`news_agent`, `fred_agent`, `sentiment_agent`) reach `crew_runner` end-to-end (no stub bypass) — *Validated in Phase 6: Agent Layer Hardening (2026-05-01)*
 
 ### Out of Scope
 
@@ -74,11 +74,11 @@ If everything else fails, that single trust loop — *"my keys are safe, the fee
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Skip research phase in `/gsd-new-project` | Codebase audit (`.planning/codebase/*`) plus session review already cover stack, integrations, and concerns | — Pending |
-| Scope = "Production Readiness v1" instead of feature work | Original user question + CONCERNS audit both point to stability/security gaps as the binding constraint | — Pending |
-| Phase 1 = Settings & Secrets Unification | Pain point surfaced in this session and gates everything downstream (RLS, observability, CI) | — Pending |
-| Defer Agent Layer v2 to Phase 6 | Building on a fragile foundation (placeholder Supabase, silent persistence, no CI) compounds risk | — Pending |
-| Coarse granularity, sequential phases | Single operator, sequential dependencies (secrets → RLS → auth → observability → CI → agents v2) | — Pending |
+| Skip research phase in `/gsd-new-project` | Codebase audit (`.planning/codebase/*`) plus session review already cover stack, integrations, and concerns | Correct — no gaps surfaced |
+| Scope = "Production Readiness v1" instead of feature work | Original user question + CONCERNS audit both point to stability/security gaps as the binding constraint | Correct — all 6 phases complete 2026-05-01 |
+| Phase 1 = Settings & Secrets Unification | Pain point surfaced in this session and gates everything downstream (RLS, observability, CI) | Validated ✓ |
+| Defer Agent Layer v2 to Phase 6 | Building on a fragile foundation (placeholder Supabase, silent persistence, no CI) compounds risk | Validated — Phase 6 complete, foundation solid ✓ |
+| Coarse granularity, sequential phases | Single operator, sequential dependencies (secrets → RLS → auth → observability → CI → agents v2) | Validated — all 6 phases executed in order ✓ |
 
 ## Evolution
 

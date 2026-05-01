@@ -16,8 +16,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: RLS Hardening + Empty-Feed Fix** — Explicit `agent_decisions` policy contract + tests so the feed never silently drops rows (completed 2026-05-01)
 - [x] **Phase 3: Auth Bypass + Env Failsafe** — Production-safe auth with no `localStorage` shortcut and fail-fast on missing Supabase env (completed 2026-05-01)
 - [x] **Phase 4: Observability & Health** — Real agent health signals, non-silent persistence, documented vector index thresholds (completed 2026-05-01)
-- [x] **Phase 5: CI/CD + Test Matrix** — Typecheck, lint, unit, E2E, and RLS policy tests gating every PR (completed 2026-05-01)
-- [ ] **Phase 6: Agent Layer Hardening** — Real agents reach the orchestrator, both orchestration paths covered by tests, vector index applied
+- [x] **Phase 5: CI/CD + Test Matrix** — Typecheck, lint, unit, E2E, and RLS policy tests gating every PR
+ (completed 2026-05-01)
+- [x] **Phase 6: Agent Layer Hardening** — Real agents reach the orchestrator, both orchestration paths covered by tests, vector index applied (completed 2026-05-01)
 
 ## Phase Details
 
@@ -110,7 +111,8 @@ Plans:
 **Plans**: TBD (estimated 2 plans)
 
 Plans:
-- [ ] 06-01: TBD — set during `/gsd-plan-phase 6`
+- [x] 06-01: Wire real agents with USE_REAL_AGENTS feature flag (AGT-01)
+- [x] 06-02: CI tests for both orchestration paths + embedding index runbook (AGT-02, AGT-03)
 
 ## Progress
 
@@ -124,7 +126,7 @@ Sequential — each phase depends on the previous one (1 → 2 → 3 → 4 → 5
 | 3. Auth Bypass + Env Failsafe | 2/2   | Complete    | 2026-05-01 |
 | 4. Observability & Health | 2/2 | Complete    | 2026-05-01 |
 | 5. CI/CD + Test Matrix | 2/2 | Complete   | 2026-05-01 |
-| 6. Agent Layer Hardening | 0/TBD | Not started | - |
+| 6. Agent Layer Hardening | 2/2 | Complete | 2026-05-01 |
 
 ---
 *Roadmap created: 2026-05-01*
