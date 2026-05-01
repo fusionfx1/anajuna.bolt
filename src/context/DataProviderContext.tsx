@@ -1,25 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { ProviderType } from '../services/dataFetchers/types'
 import { setFetchConfig } from '../services/dataFetchers/fetchOHLCV'
+import { useAuth } from './AuthContext'
+import { supabase } from '../lib/supabase'
 
 interface DataProviderContextType {
   primaryProvider: ProviderType
   setPrimaryProvider: (provider: ProviderType) => void
-
-  eodhd_api_key: string
-  setEodhd_api_key: (key: string) => void
-
-  tiingo_api_key: string
-  setTiingo_api_key: (key: string) => void
-
+  hasEodhdKey: boolean
+  hasTiingoKey: boolean
+  saveEodhdKey: (key: string) => Promise<void>
+  saveTiingoKey: (key: string) => Promise<void>
+  deleteEodhdKey: () => Promise<void>
+  deleteTiingoKey: () => Promise<void>
   cacheTTLDays: number
   setCacheTTLDays: (days: number) => void
-
   enableCache: boolean
   setEnableCache: (enabled: boolean) => void
-
-  // Testing utilities
-  testConnection: (provider: ProviderType) => Promise<boolean>
+  testConnection: (provider: ProviderType, apiKey: string) => Promise<boolean>
 }
 
 const DataProviderContext = createContext<DataProviderContextType | undefined>(
@@ -31,44 +29,25 @@ export function DataProviderProvider({
 }: {
   children: React.ReactNode
 }) {
+  const { user } = useAuth()
+
   const [primaryProvider, setPrimaryProvider] = useState<ProviderType>(() => {
-    const stored = localStorage.getItem('anjuna_primary_provider')
-    return (stored as ProviderType) || 'synthetic'
+    return (localStorage.getItem('anjuna_primary_provider') as ProviderType) || 'synthetic'
   })
-
-  const [eodhd_api_key, setEodhd_api_key] = useState(() => {
-    return localStorage.getItem('anjuna_eodhd_key') || ''
-  })
-
-  const [tiingo_api_key, setTiingo_api_key] = useState(() => {
-    return localStorage.getItem('anjuna_tiingo_key') || ''
-  })
-
+  const [hasEodhdKey, setHasEodhdKey] = useState(false)
+  const [hasTiingoKey, setHasTiingoKey] = useState(false)
   const [cacheTTLDays, setCacheTTLDays] = useState(() => {
-    const stored = localStorage.getItem('anjuna_cache_ttl')
-    return stored ? parseInt(stored, 10) : 30
+    return parseInt(localStorage.getItem('anjuna_cache_ttl') || '30', 10)
   })
-
   const [enableCache, setEnableCache] = useState(() => {
-    const stored = localStorage.getItem('anjuna_enable_cache')
-    return stored !== 'false'
+    return localStorage.getItem('anjuna_enable_cache') !== 'false'
   })
 
-  // Persist all values to localStorage
+  // Persist non-secret prefs to localStorage
   useEffect(() => {
     localStorage.setItem('anjuna_primary_provider', primaryProvider)
     setFetchConfig({ primary_provider: primaryProvider })
   }, [primaryProvider])
-
-  useEffect(() => {
-    localStorage.setItem('anjuna_eodhd_key', eodhd_api_key)
-    setFetchConfig({ eodhd_api_key })
-  }, [eodhd_api_key])
-
-  useEffect(() => {
-    localStorage.setItem('anjuna_tiingo_key', tiingo_api_key)
-    setFetchConfig({ tiingo_api_key })
-  }, [tiingo_api_key])
 
   useEffect(() => {
     localStorage.setItem('anjuna_cache_ttl', cacheTTLDays.toString())
@@ -79,24 +58,117 @@ export function DataProviderProvider({
     localStorage.setItem('anjuna_enable_cache', enableCache.toString())
   }, [enableCache])
 
-  const testConnection = async (provider: ProviderType): Promise<boolean> => {
+  async function saveKeyToSupabase(providerId: 'eodhd' | 'tiingo', key: string) {
+    if (!user?.id) throw new Error('Not authenticated')
+    // Rotate: delete existing, then insert new (D-01: no UPDATE policy)
+    await supabase
+      .from('data_provider_api_keys')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('provider_id', providerId)
+    const { error } = await supabase
+      .from('data_provider_api_keys')
+      .insert({ provider_id: providerId, user_id: user.id, api_key: key })
+    if (error) throw error
+  }
+
+  async function refreshKeyFlags() {
+    if (!user?.id) return
+    const [eodhdResult, tiingoResult] = await Promise.all([
+      supabase
+        .from('data_provider_api_keys')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('provider_id', 'eodhd'),
+      supabase
+        .from('data_provider_api_keys')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('provider_id', 'tiingo'),
+    ])
+    setHasEodhdKey((eodhdResult.count ?? 0) > 0)
+    setHasTiingoKey((tiingoResult.count ?? 0) > 0)
+  }
+
+  // One-shot localStorage migration (D-03) + fetch key flags on user change
+  useEffect(() => {
+    if (!user?.id) return
+
+    async function initKeys() {
+      const oldEodhd = localStorage.getItem('anjuna_eodhd_key')
+      const oldTiingo = localStorage.getItem('anjuna_tiingo_key')
+
+      if (oldEodhd) {
+        try {
+          await saveKeyToSupabase('eodhd', oldEodhd)
+          localStorage.removeItem('anjuna_eodhd_key')
+        } catch (e) {
+          console.warn('[DataProvider] Failed to migrate EODHD key from localStorage:', e)
+        }
+      }
+      if (oldTiingo) {
+        try {
+          await saveKeyToSupabase('tiingo', oldTiingo)
+          localStorage.removeItem('anjuna_tiingo_key')
+        } catch (e) {
+          console.warn('[DataProvider] Failed to migrate Tiingo key from localStorage:', e)
+        }
+      }
+
+      await refreshKeyFlags()
+    }
+
+    initKeys()
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function saveEodhdKey(key: string) {
+    await saveKeyToSupabase('eodhd', key)
+    setHasEodhdKey(true)
+    setFetchConfig({ primary_provider: primaryProvider })
+  }
+
+  async function saveTiingoKey(key: string) {
+    await saveKeyToSupabase('tiingo', key)
+    setHasTiingoKey(true)
+  }
+
+  async function deleteEodhdKey() {
+    if (!user?.id) return
+    await supabase
+      .from('data_provider_api_keys')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('provider_id', 'eodhd')
+    setHasEodhdKey(false)
+  }
+
+  async function deleteTiingoKey() {
+    if (!user?.id) return
+    await supabase
+      .from('data_provider_api_keys')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('provider_id', 'tiingo')
+    setHasTiingoKey(false)
+  }
+
+  async function testConnection(provider: ProviderType, apiKey: string): Promise<boolean> {
     try {
-      // Import here to avoid circular dependencies
-      const { fetchOHLCV } = await import(
-        '../services/dataFetchers/fetchOHLCV'
-      )
-
-      const result = await fetchOHLCV({
-        symbol: 'EURUSD',
-        startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        endDate: new Date(),
-        provider,
-        useCache: false,
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return false
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+      const res = await fetch(`${supabaseUrl}/functions/v1/data-provider-proxy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ provider, action: 'test', apiKey }),
       })
-
-      return result.count > 0
-    } catch (error) {
-      console.warn(`[DataProvider] Test connection failed for ${provider}:`, error)
+      const data = await res.json()
+      return data.ok === true
+    } catch (e) {
+      console.warn(`[DataProvider] testConnection failed for ${provider}:`, e)
       return false
     }
   }
@@ -104,10 +176,12 @@ export function DataProviderProvider({
   const value: DataProviderContextType = {
     primaryProvider,
     setPrimaryProvider,
-    eodhd_api_key,
-    setEodhd_api_key,
-    tiingo_api_key,
-    setTiingo_api_key,
+    hasEodhdKey,
+    hasTiingoKey,
+    saveEodhdKey,
+    saveTiingoKey,
+    deleteEodhdKey,
+    deleteTiingoKey,
     cacheTTLDays,
     setCacheTTLDays,
     enableCache,
