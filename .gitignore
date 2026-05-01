@@ -37,3 +37,8 @@ graphify-out/manifest.json
 
 # local token tracking, not useful to share
 graphify-out/cost.json
+
+# CI / test artifacts — must not be committed
+playwright-report/
+test-results/
+.playwright/
