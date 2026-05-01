@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: complete
-stopped_at: Phase 4 complete — verification passed 2026-05-01
-last_updated: "2026-05-01T09:36:00+07:00"
+status: planning
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-05-01T02:51:08.013Z"
 last_activity: 2026-05-01
 progress:
   total_phases: 6
-  completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
-  percent: 67
+  completed_phases: 5
+  total_plans: 12
+  completed_plans: 12
+  percent: 100
 ---
 
 # Project State
@@ -70,6 +70,8 @@ Recent decisions affecting current work:
 - Phase 2: RLS SELECT policy → `USING (auth.uid() = user_id OR user_id IS NULL)` — allows system/shared rows
 - Phase 2: `supabase db push` deferred to Phase 5 CI-03 (project not yet linked)
 - Phase 2: Real-database RLS policy test deferred to Phase 5 CI-03
+- [Phase 05]: GitHub Actions CI pipeline with 5 jobs covering typecheck/lint/unit/build/e2e
+- [Phase 05]: RLS policy tested as static migration file assertion (v1, live Supabase deferred to Phase 6)
 
 ### Pending Todos
 
@@ -87,7 +89,7 @@ Carried in from `.planning/codebase/CONCERNS.md` (audit 2026-05-01):
 
 ## Session Continuity
 
-Last session: 2026-05-01 09:36 UTC+7
-Stopped at: Phase 4 verification passed — all 4 requirements (OBS-01..04) satisfied
-Resume file: [.planning/phases/04-observability-+-health/04-VERIFICATION.md](phases/04-observability-+-health/04-VERIFICATION.md)
+Last session: 2026-05-01T02:51:07.898Z
+Stopped at: Completed 05-02-PLAN.md
+Resume file: None
 Next: `/gsd-plan-phase 5` to plan CI/CD + Test Matrix

@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: RLS Hardening + Empty-Feed Fix** — Explicit `agent_decisions` policy contract + tests so the feed never silently drops rows (completed 2026-05-01)
 - [x] **Phase 3: Auth Bypass + Env Failsafe** — Production-safe auth with no `localStorage` shortcut and fail-fast on missing Supabase env (completed 2026-05-01)
 - [x] **Phase 4: Observability & Health** — Real agent health signals, non-silent persistence, documented vector index thresholds (completed 2026-05-01)
-- [ ] **Phase 5: CI/CD + Test Matrix** — Typecheck, lint, unit, E2E, and RLS policy tests gating every PR
+- [x] **Phase 5: CI/CD + Test Matrix** — Typecheck, lint, unit, E2E, and RLS policy tests gating every PR (completed 2026-05-01)
 - [ ] **Phase 6: Agent Layer Hardening** — Real agents reach the orchestrator, both orchestration paths covered by tests, vector index applied
 
 ## Phase Details
@@ -97,7 +97,7 @@ Plans:
 **Plans**: TBD (estimated 2-3 plans)
 
 Plans:
-- [ ] 05-01: TBD — set during `/gsd-plan-phase 5`
+- [x] 05-01: TBD — set during `/gsd-plan-phase 5`
 
 ### Phase 6: Agent Layer Hardening
 **Goal**: The real `news_agent`, `fred_agent`, `sentiment_agent` modules are wired into the orchestrator (no stub bypass), both orchestration paths are CI-tested, and `pgvector` is indexed when the row threshold is crossed — unblocking any future Agent Layer v2 work on a solid foundation.
@@ -123,7 +123,7 @@ Sequential — each phase depends on the previous one (1 → 2 → 3 → 4 → 5
 | 2. RLS Hardening + Empty-Feed Fix | 2/2   | Complete    | 2026-05-01 |
 | 3. Auth Bypass + Env Failsafe | 2/2   | Complete    | 2026-05-01 |
 | 4. Observability & Health | 2/2 | Complete    | 2026-05-01 |
-| 5. CI/CD + Test Matrix | 0/TBD | Not started | - |
+| 5. CI/CD + Test Matrix | 2/2 | Complete   | 2026-05-01 |
 | 6. Agent Layer Hardening | 0/TBD | Not started | - |
 
 ---

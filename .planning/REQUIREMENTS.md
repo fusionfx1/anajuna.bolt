@@ -42,11 +42,11 @@ Requirements for the v1 milestone. Each maps to exactly one phase in `ROADMAP.md
 
 ### CI/CD & Test Matrix
 
-- [ ] **CI-01**: `.github/workflows/ci.yml` (or equivalent) runs `npm run typecheck`, `npm run lint`, and `npm run test` on every PR and blocks merge on failure
-- [ ] **CI-02**: At least one Playwright E2E test covers the login → Agent Feed happy path and runs in CI against a build artifact
-- [ ] **CI-03**: An RLS-policy test job runs against a Supabase local stack (or fixture) and blocks merge when the `agent_decisions` policies regress
-- [ ] **CI-04**: `playwright-report/`, `graphify-out/cache/`, and Python `__pycache__/` are excluded from version control; `git status` is clean after a full local test run
-- [ ] **CI-05**: Production build (`npm run build`) is verified as part of CI; `dist/` size and chunk-warning regressions surface as warnings on the PR
+- [x] **CI-01**: `.github/workflows/ci.yml` (or equivalent) runs `npm run typecheck`, `npm run lint`, and `npm run test` on every PR and blocks merge on failure
+- [x] **CI-02**: At least one Playwright E2E test covers the login → Agent Feed happy path and runs in CI against a build artifact
+- [x] **CI-03**: An RLS-policy test job runs against a Supabase local stack (or fixture) and blocks merge when the `agent_decisions` policies regress
+- [x] **CI-04**: `playwright-report/`, `graphify-out/cache/`, and Python `__pycache__/` are excluded from version control; `git status` is clean after a full local test run
+- [x] **CI-05**: Production build (`npm run build`) is verified as part of CI; `dist/` size and chunk-warning regressions surface as warnings on the PR
 
 ### Agent Layer Hardening
 
@@ -109,11 +109,11 @@ Which phase covers which requirement. Updated by `gsd-roadmapper` and during pha
 | OBS-02  | Phase 4 | Complete |
 | OBS-03  | Phase 4 | Complete |
 | OBS-04  | Phase 4 | Complete |
-| CI-01   | Phase 5 | Pending |
-| CI-02   | Phase 5 | Pending |
-| CI-03   | Phase 5 | Pending |
-| CI-04   | Phase 5 | Pending |
-| CI-05   | Phase 5 | Pending |
+| CI-01   | Phase 5 | Complete |
+| CI-02   | Phase 5 | Complete |
+| CI-03   | Phase 5 | Complete |
+| CI-04   | Phase 5 | Complete |
+| CI-05   | Phase 5 | Complete |
 | AGT-01  | Phase 6 | Pending |
 | AGT-02  | Phase 6 | Pending |
 | AGT-03  | Phase 6 | Pending |
