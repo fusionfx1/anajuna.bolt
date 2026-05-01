@@ -1,0 +1,2 @@
+# Pin for reproducible graphify CLI + library (PyPI name: graphifyy)
+graphifyy>=0.5.5,<0.6

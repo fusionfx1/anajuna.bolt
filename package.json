@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "graphify:ast": "python scripts/graphify_ast_update.py",
+    "graphify:install-python": "python -m pip install -r requirements-graphify.txt"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
