@@ -19,6 +19,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     try {
       // Initialise from persisted session
       supabase.auth.getSession().then(({ data }) => {

@@ -35,22 +35,6 @@ function AppContent() {
     return false;
   });
 
-  // Production hard-stop: missing env vars must never silently fall through (per D-02)
-  if (envError && !import.meta.env.DEV) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-        <div className="max-w-lg w-full p-8 bg-red-950 border border-red-500 rounded-lg text-center">
-          <h1 className="text-xl font-bold text-red-400 mb-4">Configuration Error</h1>
-          <p className="text-red-200 mb-4">{envError}</p>
-          <p className="text-sm text-red-300">
-            Add the missing variable to <code className="bg-red-900 px-1 rounded">.env.local</code>{' '}
-            and restart the dev server or rebuild.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   // Dev-only banner when env is not configured — allows UI work without a real Supabase project
   const devEnvBanner = envError && import.meta.env.DEV ? (
     <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-500 text-yellow-950 text-sm font-semibold px-4 py-2 text-center">
@@ -102,6 +86,23 @@ function AppContent() {
 }
 
 export default function App() {
+  // Guard: if Supabase env vars are missing, block before any provider mounts.
+  // Providers call supabase.auth.* on mount — a null client crashes the app.
+  if (envError && !import.meta.env.DEV) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="max-w-lg w-full p-8 bg-red-950 border border-red-500 rounded-lg text-center">
+          <h1 className="text-xl font-bold text-red-400 mb-4">Configuration Error</h1>
+          <p className="text-red-200 mb-4">{envError}</p>
+          <p className="text-sm text-red-300">
+            Add the missing variable to <code className="bg-red-900 px-1 rounded">.env.local</code>{' '}
+            and restart the dev server or rebuild.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AuthProvider>
       <DataProviderProvider>
