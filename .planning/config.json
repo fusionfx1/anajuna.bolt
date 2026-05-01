@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "project_name": "Anjuna FX — Production Readiness v1",
+  "mode": "interactive",
+  "granularity": "coarse",
+  "parallelization": false,
+  "commit_docs": true,
+  "model_profile": "balanced",
+  "workflow": {
+    "research": false,
+    "research_before_questions": false,
+    "plan_check": true,
+    "verifier": true,
+    "nyquist_validation": false,
+    "auto_advance": false,
+    "_auto_chain_active": false
+  },
+  "milestone": "v1",
+  "planning": {
+    "skip_research": true,
+    "skip_research_reason": "Codebase already mapped (.planning/codebase/) and audited (CONCERNS.md, 2026-05-01). Concerns feed directly into REQUIREMENTS.md.",
+    "sub_repos": []
+  },
+  "created_at": "2026-05-01",
+  "last_updated": "2026-05-01"
+}

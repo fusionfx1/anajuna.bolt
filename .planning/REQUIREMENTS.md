@@ -50,9 +50,9 @@ Requirements for the v1 milestone. Each maps to exactly one phase in `ROADMAP.md
 
 ### Agent Layer Hardening
 
-- [ ] **AGT-01**: `trading_system/agents/crew_runner.py` and `trading_system/agents/__init__.py` import the real `news_agent`, `fred_agent`, `sentiment_agent` modules behind a feature flag (default = real where keys exist, fallback = stub)
-- [ ] **AGT-02**: Both orchestration paths (legacy parallel and `USE_LANGGRAPH=1` supervisor) have CI tests covering at least one success path and one failure / fallback path
-- [ ] **AGT-03**: The deferred `agent_decisions_embedding_idx` decision is documented (when to apply, how to verify) and the migration is applied once the documented row threshold is crossed
+- [x] **AGT-01**: `trading_system/agents/crew_runner.py` and `trading_system/agents/__init__.py` import the real `news_agent`, `fred_agent`, `sentiment_agent` modules behind a feature flag (default = real where keys exist, fallback = stub)
+- [x] **AGT-02**: Both orchestration paths (legacy parallel and `USE_LANGGRAPH=1` supervisor) have CI tests covering at least one success path and one failure / fallback path
+- [x] **AGT-03**: The deferred `agent_decisions_embedding_idx` decision is documented (when to apply, how to verify) and the migration is applied once the documented row threshold is crossed
 
 ## v2 Requirements
 
@@ -114,9 +114,9 @@ Which phase covers which requirement. Updated by `gsd-roadmapper` and during pha
 | CI-03   | Phase 5 | Complete |
 | CI-04   | Phase 5 | Complete |
 | CI-05   | Phase 5 | Complete |
-| AGT-01  | Phase 6 | Pending |
-| AGT-02  | Phase 6 | Pending |
-| AGT-03  | Phase 6 | Pending |
+| AGT-01  | Phase 6 | Complete |
+| AGT-02  | Phase 6 | Complete |
+| AGT-03  | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 27 total

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-05-01T02:51:08.013Z"
+stopped_at: Phase 06 complete — all 3 plans executed
+last_updated: "2026-05-01T03:34:49.303Z"
 last_activity: 2026-05-01
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 12
-  completed_plans: 12
+  completed_plans: 14
   percent: 100
 ---
 
@@ -72,6 +72,8 @@ Recent decisions affecting current work:
 - Phase 2: Real-database RLS policy test deferred to Phase 5 CI-03
 - [Phase 05]: GitHub Actions CI pipeline with 5 jobs covering typecheck/lint/unit/build/e2e
 - [Phase 05]: RLS policy tested as static migration file assertion (v1, live Supabase deferred to Phase 6)
+- [Phase 06]: USE_REAL_AGENTS env var controls agent selection: auto/true/false, defaults to auto (key-presence detection)
+- [Phase 06]: agent_decisions_embedding_idx deferred until 10,000 rows crossed; runbook in OBSERVABILITY.md
 
 ### Pending Todos
 
@@ -89,7 +91,7 @@ Carried in from `.planning/codebase/CONCERNS.md` (audit 2026-05-01):
 
 ## Session Continuity
 
-Last session: 2026-05-01T02:51:07.898Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-05-01T03:34:49.300Z
+Stopped at: Phase 06 complete — all 3 plans executed
 Resume file: None
 Next: `/gsd-plan-phase 5` to plan CI/CD + Test Matrix
