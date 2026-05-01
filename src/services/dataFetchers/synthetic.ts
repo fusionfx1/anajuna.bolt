@@ -1,5 +1,5 @@
 import { generateHistoricalCandles } from '../backtestService'
-import { FetchOptions, NormalizedCandle } from './types'
+import type { FetchOptions, NormalizedCandle } from './types'
 
 export class SyntheticClient {
   async getCandles(options: FetchOptions): Promise<NormalizedCandle[]> {
@@ -7,18 +7,19 @@ export class SyntheticClient {
 
     const rawCandles = generateHistoricalCandles(
       symbol,
-      startDate.getTime(),
-      endDate.getTime()
+      'H1',
+      startDate.toISOString(),
+      endDate.toISOString()
     )
 
     const candles: NormalizedCandle[] = rawCandles
       .map((candle) => ({
-        timestamp: candle.timestamp,
+        timestamp: (candle as { timestamp?: number; time?: number }).timestamp ?? (candle as { time?: number }).time ?? 0,
         open: candle.open,
         high: candle.high,
         low: candle.low,
         close: candle.close,
-        volume: candle.volume,
+        volume: candle.volume ?? 0,
         symbol,
         provider: 'synthetic' as const,
       }))
@@ -33,6 +34,6 @@ export function getSyntheticCandles(
   startDate: Date,
   endDate: Date
 ): Promise<NormalizedCandle[]> {
-  const client = new SyntheticDataProvider()
+  const client = new SyntheticClient()
   return client.getCandles({ symbol, startDate, endDate })
 }

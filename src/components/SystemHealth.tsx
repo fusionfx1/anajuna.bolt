@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
-  Activity, Wifi, Database, Server, Shield, Clock,
+  Activity, Database, Server, Shield, Clock,
   AlertTriangle, CheckCircle2, XCircle, RefreshCw, Zap,
   BarChart2, TrendingUp, Radio
 } from 'lucide-react';
@@ -18,7 +19,7 @@ interface HealthMetric {
   value: string;
   detail: string;
   lastUpdated: number;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
 }
 
 interface FeedLogEntry {

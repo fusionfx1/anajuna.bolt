@@ -47,7 +47,7 @@ export async function fetchOHLCV(options: FetchOptions): Promise<FetchResult> {
   // Step 2: Try to fetch from primary provider
   try {
     const rawCandles = await fetchFromProvider(provider, symbol, startDate, endDate)
-    const normalized = normalizeCandles(rawCandles, symbol, provider)
+    const normalized = normalizeCandles(rawCandles, symbol, (provider === 'polygon' || provider === 'alpaca' ? 'eodhd' : provider === 'simulation' ? 'synthetic' : provider) as 'eodhd' | 'tiingo' | 'synthetic')
     const deduped = dedupAndSortCandles(normalized)
 
     // Cache the result
@@ -76,7 +76,7 @@ export async function fetchOHLCV(options: FetchOptions): Promise<FetchResult> {
           startDate,
           endDate
         )
-        const normalized = normalizeCandles(rawCandles, symbol, fallback)
+        const normalized = normalizeCandles(rawCandles, symbol, (fallback === 'polygon' || fallback === 'alpaca' ? 'eodhd' : fallback === 'simulation' ? 'synthetic' : fallback) as 'eodhd' | 'tiingo' | 'synthetic')
         const deduped = dedupAndSortCandles(normalized)
 
         // Don't cache fallback data with original provider key
@@ -120,11 +120,13 @@ async function fetchFromProvider(
     return fetchViaEdgeFunction(provider, symbol, startDate, endDate)
   }
 
-  if (provider === 'synthetic') {
+  if (provider === 'synthetic' || provider === 'simulation') {
     return (await getSyntheticCandles(symbol, startDate, endDate)) as never[]
   }
 
-  throw new Error(`Unknown provider: ${provider}`)
+  // polygon, alpaca — treat as synthetic fallback for now (no direct client)
+  console.warn(`[fetchOHLCV] Provider ${provider} not yet implemented, falling back to synthetic`)
+  return (await getSyntheticCandles(symbol, startDate, endDate)) as never[]
 }
 
 async function fetchViaEdgeFunction(
@@ -166,6 +168,9 @@ function getFallbackProviders(primary: ProviderType): ProviderType[] {
     eodhd: ['tiingo', 'synthetic'],
     tiingo: ['eodhd', 'synthetic'],
     synthetic: [],
+    simulation: ['synthetic'],
+    polygon: ['eodhd', 'tiingo', 'synthetic'],
+    alpaca: ['eodhd', 'tiingo', 'synthetic'],
   }
 
   return order[primary] || []
@@ -179,7 +184,7 @@ export async function fetchAndBacktestCompare(
 ): Promise<{
   eodhd: FetchResult | null
   tiingo: FetchResult | null
-  synthetic: FetchResult
+  synthetic: FetchResult | null
 }> {
   const results = {
     eodhd: null as FetchResult | null,

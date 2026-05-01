@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { BarChart2, CheckCircle2, AlertCircle, Loader2, Zap, Save } from 'lucide-react'
 import { useDataProvider } from '../../context/DataProviderContext'
 import { clearCache, getCacheMetadata } from '../../services/cache'
@@ -310,7 +310,7 @@ export function DataProvidersSettings() {
             {cacheStats && (
               <div className="bg-slate-800/50 rounded-lg p-3 space-y-1 text-xs text-slate-400 border border-slate-700/50">
                 <div>Entries: <span className="text-slate-200">{cacheStats.totalEntries}</span></div>
-                <div>Size: <span className="text-slate-200">{(cacheStats.totalSizeBytes / 1024 / 1024).toFixed(2)} MB</span></div>
+                <div>Size: <span className="text-slate-200">{((cacheStats.totalSizeBytes ?? 0) / 1024 / 1024).toFixed(2)} MB</span></div>
                 {cacheStats.oldestEntry && (
                   <div>Oldest: <span className="text-slate-200">{cacheStats.oldestEntry.toLocaleDateString()}</span></div>
                 )}

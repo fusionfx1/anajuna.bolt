@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, TrendingUp, TrendingDown, Star } from 'lucide-react';
 import { useMarketData } from '../hooks/useMarketData';
 import { useUserSettings } from '../hooks/useSupabaseData';

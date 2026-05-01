@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { ProviderType } from '../services/dataFetchers/types'
 import { setFetchConfig } from '../services/dataFetchers/fetchOHLCV'
 import { useAuth } from './AuthContext'
@@ -27,7 +28,7 @@ const DataProviderContext = createContext<DataProviderContextType | undefined>(
 export function DataProviderProvider({
   children,
 }: {
-  children: React.ReactNode
+  children: ReactNode
 }) {
   const { user } = useAuth()
 

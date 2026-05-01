@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, TrendingUp, TrendingDown, AlertCircle, CheckCircle } from 'lucide-react';
 import type { TradeSide, PaperAccount } from '../../types/paper';
 import { priceDp, PAPER_INSTRUMENTS } from '../../types/paper';

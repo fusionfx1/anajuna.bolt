@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
   Plus, X, RefreshCw, CheckCircle2, XCircle, Clock,
-  AlertCircle, TrendingUp, TrendingDown, Filter, ChevronDown,
+  AlertCircle, TrendingUp, TrendingDown, Filter,
   Shield, Loader2, ArrowUpDown, BookOpen
 } from 'lucide-react';
 import type { ManagedOrder, OrderStatus, RiskCheckResult } from '../types/dataFeed';
@@ -11,7 +12,7 @@ import { useAccountData } from '../hooks/useSupabaseData';
 import { FOREX_SYMBOLS } from '../lib/constants';
 
 const SYMBOLS = FOREX_SYMBOLS.slice(0, 8);
-const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; bg: string; icon: React.ComponentType<{ size?: number }> }> = {
+const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; bg: string; icon: LucideIcon }> = {
   pending: { label: 'Pending', color: 'text-amber-400', bg: 'bg-amber-500/10', icon: Clock },
   submitted: { label: 'Submitted', color: 'text-blue-400', bg: 'bg-blue-500/10', icon: Loader2 },
   partially_filled: { label: 'Partial', color: 'text-cyan-400', bg: 'bg-cyan-500/10', icon: ArrowUpDown },
@@ -480,10 +481,10 @@ export function OrderManagement() {
 
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     {!order.riskApproved && order.status !== 'rejected' && (
-                      <AlertCircle size={13} className="text-amber-400" title="Risk check pending" />
+                      <AlertCircle size={13} className="text-amber-400" aria-label="Risk check pending" />
                     )}
                     {order.riskApproved && (
-                      <Shield size={13} className="text-emerald-400/60" title="Risk approved" />
+                      <Shield size={13} className="text-emerald-400/60" aria-label="Risk approved" />
                     )}
                     {isOpen && (
                       <>

@@ -1,6 +1,6 @@
 // Shared types for data fetcher services
 
-export type Provider = 'eodhd' | 'tiingo' | 'synthetic'
+export type Provider = 'eodhd' | 'tiingo' | 'synthetic' | 'polygon' | 'alpaca' | 'simulation'
 export type ProviderType = Provider // Alias for compatibility
 
 export interface RawOHLCV {
@@ -20,7 +20,7 @@ export interface NormalizedCandle {
   close: number
   volume: number
   symbol: string
-  provider: 'eodhd' | 'tiingo' | 'synthetic'
+  provider: Provider
 }
 
 export interface FetchOptions {
@@ -28,14 +28,19 @@ export interface FetchOptions {
   startDate: Date
   endDate: Date
   timeframe?: '1m' | '5m' | '15m' | '1h' | '1d'
+  provider?: Provider
+  useCache?: boolean
 }
 
 export interface FetchResult {
-  symbol: string
-  provider: 'eodhd' | 'tiingo' | 'synthetic'
+  symbol?: string
+  provider: Provider
   candles: NormalizedCandle[]
-  fetchedAt: number // Unix timestamp when data was fetched
-  cacheHit: boolean
+  fetchedAt: number | Date
+  cacheHit?: boolean
+  fromCache?: boolean
+  cachedAt?: Date
+  count?: number
   error?: string
 }
 

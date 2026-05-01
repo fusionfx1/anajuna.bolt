@@ -1,4 +1,3 @@
-import React from 'react'
 import { ProviderType } from '../services/dataFetchers/types'
 import { useDataProvider } from '../context/DataProviderContext'
 

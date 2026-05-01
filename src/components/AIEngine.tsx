@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Brain, Plus, Trash2, Play, Square, CheckCircle2,
   AlertCircle, Zap, Clock, Activity, Cpu, RefreshCw,
@@ -10,7 +10,7 @@ import { AIProviderModal } from './ai/AIProviderModal';
 import { AISignalPanel } from './ai/AISignalPanel';
 import { useAuth } from '../context/AuthContext';
 import type { AIProviderConfig } from '../types/aiProvider';
-import { ROLE_LABELS, PROVIDER_DEFAULTS } from '../types/aiProvider';
+import { ROLE_LABELS } from '../types/aiProvider';
 import { INITIAL_MARKET_PRICES, FOREX_SYMBOLS } from '../lib/constants';
 
 function ProviderCard({
@@ -224,7 +224,7 @@ function EngineStatusBar({
 
 function ManualSignalTester({ providers }: { providers: AIProviderConfig[] }) {
   const [symbol, setSymbol] = useState('EURUSD');
-  const [providerId, setProviderId] = useState('');
+  const [providerId] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     signal: string; confidence: number; reasoning: string; key_factors: string[]; latency_ms: number
@@ -400,8 +400,8 @@ function ManualSignalTester({ providers }: { providers: AIProviderConfig[] }) {
 
 export function AIEngine() {
   const { user } = useAuth();
-  const { providers, loading: providersLoading, refresh: refreshProviders, setProviders } = useAIProviders();
-  const { predictions, loading: predictionsLoading, refresh: refreshPredictions } = useAIPredictions(100);
+  const { providers, loading: providersLoading, setProviders } = useAIProviders();
+  const { predictions, loading: predictionsLoading } = useAIPredictions(100);
   const { state, activeProvider, start, stop, testProvider } = useAIEngine();
   const [showAddModal, setShowAddModal] = useState(false);
 

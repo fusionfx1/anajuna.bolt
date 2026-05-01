@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, Eye, EyeOff, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { PROVIDER_DEFAULTS, ROLE_LABELS, type AIProviderFormData, type AIProviderType, type AIModelRole } from '../../types/aiProvider';
 

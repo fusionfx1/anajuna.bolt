@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   WifiOff, Zap, AlertCircle, CheckCircle2,
-  Eye, EyeOff, Loader2, Radio, Save,
+  Loader2, Radio, Save,
 } from 'lucide-react';
 import type { DataFeedConfig, DataProvider, BrokerProvider, ConnectionStats } from '../types/dataFeed';
 import { dataFeedService } from '../services/dataFeedService';
@@ -12,7 +12,8 @@ import { useAuth } from '../context/AuthContext';
 import { FOREX_SYMBOLS } from '../lib/constants';
 import { SecretInput } from './ui/SecretInput';
 
-const PROVIDER_INFO: Record<DataProvider, { label: string; description: string; cost: string }> = {
+// PROVIDER_INFO uses legacy provider names for backward compatibility
+const PROVIDER_INFO: Record<string, { label: string; description: string; cost: string }> = {
   polygon: {
     label: 'Polygon.io',
     description: 'Real-time forex & stocks. Recommended for production.',
@@ -159,7 +160,7 @@ export function DataFeedConfig() {
     }
   };
 
-  const connectListenerRef = React.useRef<(() => void) | null>(null);
+  const connectListenerRef = useRef<(() => void) | null>(null);
 
   const handleConnect = () => {
     setConnecting(true);

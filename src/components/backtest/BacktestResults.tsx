@@ -1,4 +1,4 @@
-import React from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
   TrendingUp, Target, BarChart3, Activity, Award, Flame,
   Clock, ArrowUpDown, Gauge,
@@ -14,7 +14,7 @@ function MetricCard({
   label, value, sub, color, icon: Icon,
 }: {
   label: string; value: string; sub?: string; color: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
 }) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">

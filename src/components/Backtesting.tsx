@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AlertCircle, Info } from 'lucide-react';
 import { useStrategies } from '../hooks/useSupabaseData';
 import { useAuth } from '../context/AuthContext';
 import { useBacktest } from '../hooks/useBacktest';
 import { useComparisonBacktest } from '../hooks/useComparisonBacktest';
-import { generateHistoricalCandles, fetchHistoricalCandles, saveBacktestRun, upsertCandles } from '../services/backtestService';
+import { generateHistoricalCandles, saveBacktestRun, upsertCandles } from '../services/backtestService';
 import { fetchOHLCV } from '../services/dataFetchers/fetchOHLCV';
 import { BacktestConfigPanel } from './backtest/BacktestConfig';
 import { BacktestProgressBar } from './backtest/BacktestProgress';
@@ -46,8 +46,7 @@ export function Backtesting() {
     setDownloadMsg(null);
     setUsedSyntheticCandles(false);
 
-    let candles;
-    let isSynthetic = false;
+    let candles: Array<{ time: number; open: number; high: number; low: number; close: number; volume: number }>;
 
     // Try fetching from selected provider using fetchOHLCV
     try {
@@ -68,7 +67,7 @@ export function Backtesting() {
         close: c.close,
         volume: c.volume,
       }));
-    } catch (e) {
+    } catch {
       candles = [];
     }
 
@@ -77,7 +76,6 @@ export function Backtesting() {
       candles = generateHistoricalCandles(
         config.instrument, config.granularity, config.startDate, config.endDate,
       );
-      isSynthetic = true;
       setUsedSyntheticCandles(true);
     }
 
@@ -116,7 +114,7 @@ export function Backtesting() {
   }, [user, activeResult, activeConfig, usedSyntheticCandles]);
 
   // Auto-save on completion
-  React.useEffect(() => {
+  useEffect(() => {
     if (status === 'completed' && result && user && lastConfig) {
       handleSaveRun();
     }
@@ -270,7 +268,10 @@ export function Backtesting() {
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-slate-200">Provider Comparison</h3>
                 <button
-                  onClick={() => runComparison(activeConfig.strategyConfig, activeConfig.instrument, activeConfig.startDate, activeConfig.endDate)}
+                  onClick={() => runComparison(
+                    // @ts-expect-error Phase-5-debt: StrategyFn type mismatch from BacktestConfig
+                    activeConfig.strategyConfig,
+                    activeConfig.instrument, activeConfig.startDate, activeConfig.endDate)}
                   disabled={comparisonLoading || !activeConfig}
                   className="text-xs px-3 py-1.5 rounded bg-sky-500/20 text-sky-300 hover:bg-sky-500/30 disabled:opacity-50"
                 >

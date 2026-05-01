@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Newspaper } from 'lucide-react';
 import type { NavPage } from '../../types/trading';
 import { minsUntil } from '../../hooks/useNewsData';

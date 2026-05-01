@@ -1,4 +1,3 @@
-import React from 'react'
 import { TrendingUp, AlertCircle, Loader2 } from 'lucide-react'
 import type { ComparisonBacktestState, BacktestMetrics } from '../../hooks/useComparisonBacktest'
 
@@ -13,12 +12,6 @@ const PROVIDER_LABELS = {
   tiingo: 'Tiingo',
   synthetic: 'Synthetic',
 }
-
-const PROVIDER_COLORS = {
-  eodhd: 'sky',
-  tiingo: 'purple',
-  synthetic: 'amber',
-} as const
 
 function MetricCard({
   label,

@@ -1,5 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { createChart, LineSeries, AreaSeries } from 'lightweight-charts';
+import type { UTCTimestamp } from 'lightweight-charts';
 import type { EquityCurvePoint } from '../../types/backtest';
 
 interface Props {
@@ -49,7 +50,7 @@ export function BacktestEquityCurve({ data, height = 220 }: Props) {
     });
 
     equitySeries.setData(
-      data.map(d => ({ time: d.time as number, value: d.equity }))
+      data.map(d => ({ time: d.time as UTCTimestamp, value: d.equity }))
     );
 
     // Drawdown area (inverted, shown below)
@@ -68,7 +69,7 @@ export function BacktestEquityCurve({ data, height = 220 }: Props) {
     });
 
     drawdownSeries.setData(
-      data.map(d => ({ time: d.time as number, value: d.drawdownPct }))
+      data.map(d => ({ time: d.time as UTCTimestamp, value: d.drawdownPct }))
     );
 
     chart.timeScale().fitContent();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { Zap, Loader2, AlertCircle, Activity } from 'lucide-react';
 import { useAgentDecisions } from '../hooks/useAgentDecisions';
 import type { AgentContribution, AgentDecision } from '../types/agentDecision';
@@ -328,7 +328,7 @@ function DecisionTable({ decisions }: { decisions: AgentDecision[] }) {
                 const isNewest = i === 0;
 
                 return (
-                  <React.Fragment key={d.id}>
+                  <Fragment key={d.id}>
                     <tr
                       onClick={() => toggleRow(d.id)}
                       onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && toggleRow(d.id)}
@@ -394,7 +394,7 @@ function DecisionTable({ decisions }: { decisions: AgentDecision[] }) {
                         </td>
                       </tr>
                     )}
-                  </React.Fragment>
+                  </Fragment>
                 );
               })}
             </tbody>

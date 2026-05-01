@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SESSIONS, OVERLAP_COLOR } from '../types/news';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

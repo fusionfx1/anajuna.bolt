@@ -41,7 +41,7 @@ interface UsePaperPositionsOptions {
 }
 
 export function usePaperPositions(opts: UsePaperPositionsOptions = {}) {
-  const { onAutoClose, getBidAsk } = opts;
+  const { getBidAsk } = opts;
   const [trades,  setTrades]  = useState<PaperTrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);

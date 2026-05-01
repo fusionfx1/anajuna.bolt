@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo, Fragment } from 'react';
 import { RefreshCw, AlertCircle, Newspaper, Filter } from 'lucide-react';
 import { useNewsData, fmtTimeBangkok, fmtDateBangkok, minsUntil } from '../hooks/useNewsData';
 import type { NewsEvent, ImpactLevel } from '../types/news';
@@ -207,12 +207,12 @@ export function NewsCalendar() {
               </thead>
               <tbody>
                 {Array.from(grouped.entries()).map(([day, dayEvents]) => (
-                  <React.Fragment key={day}>
+                  <Fragment key={day}>
                     <DayHeader label={day} />
                     {dayEvents.map((ev, i) => (
                       <NewsRow key={`${ev.title}-${ev.utcMs ?? i}`} event={ev} />
                     ))}
-                  </React.Fragment>
+                  </Fragment>
                 ))}
               </tbody>
             </table>

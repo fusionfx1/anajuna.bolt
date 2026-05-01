@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-  Zap, RefreshCw, CheckCircle2, XCircle, Clock, Loader2,
+  RefreshCw, CheckCircle2, XCircle, Clock, Loader2,
   TrendingUp, TrendingDown, AlertCircle, Shield, Wallet,
-  ArrowUpDown, BarChart3, X, ChevronRight, Activity,
+  BarChart3, X, ChevronRight, Activity,
   Radio
 } from 'lucide-react';
 import { brokerService } from '../services/brokerService';
@@ -11,7 +11,6 @@ import type { BrokerAccount } from '../services/brokerService';
 import type { OandaAccount } from '../services/oandaService';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import type { DataFeedConfig } from '../types/dataFeed';
 
 type BrokerTab = 'alpaca' | 'oanda';
 
@@ -160,7 +159,6 @@ function AccountCard({
 function TickerRow({ pair, onClick }: { pair: FXPair; onClick: () => void }) {
   const isJpy = pair.symbol.includes('JPY');
   const dec = isJpy ? 3 : 5;
-  const changing = Math.abs(pair.change) > 0;
   return (
     <button
       onClick={onClick}

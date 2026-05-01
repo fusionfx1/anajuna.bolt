@@ -1,4 +1,3 @@
-import React from 'react'
 import { Database, AlertCircle } from 'lucide-react'
 import type { DataProvider } from '../../types/dataFeed'
 
@@ -8,12 +7,18 @@ const PROVIDER_DESCRIPTIONS: Record<DataProvider, string> = {
   eodhd: 'Global market data, 30+ years historical',
   tiingo: 'Tiingo data for US equities and crypto',
   synthetic: 'Simulated data for testing strategies',
+  polygon: 'Polygon.io real-time data',
+  alpaca: 'Alpaca Markets streaming data',
+  simulation: 'Simulation mode',
 }
 
 const PROVIDER_LABELS: Record<DataProvider, string> = {
   eodhd: 'EODHD',
   tiingo: 'Tiingo',
   synthetic: 'Synthetic',
+  polygon: 'Polygon',
+  alpaca: 'Alpaca',
+  simulation: 'Simulation',
 }
 
 interface BacktestDataSourceProps {

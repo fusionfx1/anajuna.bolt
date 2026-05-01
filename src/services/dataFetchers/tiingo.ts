@@ -28,7 +28,7 @@ export class TiingoClient {
     throw lastError || new Error('Failed to fetch Tiingo data after max retries')
   }
 
-  private async fetchWithRetry(options: FetchOptions, attempt: number): Promise<NormalizedCandle[]> {
+  private async fetchWithRetry(options: FetchOptions, _attempt: number): Promise<NormalizedCandle[]> {
     const { symbol, startDate, endDate } = options
 
     const params = {
@@ -47,17 +47,20 @@ export class TiingoClient {
       }
 
       const candles: NormalizedCandle[] = response.data
-        .filter((candle: any) => candle && typeof candle === 'object')
-        .map((candle: any) => ({
-          timestamp: new Date(candle.date).getTime(),
-          open: Number(candle.open),
-          high: Number(candle.high),
-          low: Number(candle.low),
-          close: Number(candle.close),
-          volume: Number(candle.volume),
+        .filter((candle: unknown) => candle && typeof candle === 'object')
+        .map((candle: unknown) => {
+          const c = candle as Record<string, unknown>
+          return {
+          timestamp: new Date(c.date as string).getTime(),
+          open: Number(c.open),
+          high: Number(c.high),
+          low: Number(c.low),
+          close: Number(c.close),
+          volume: Number(c.volume),
           symbol,
           provider: 'tiingo' as const,
-        }))
+        }
+        })
         .sort((a, b) => a.timestamp - b.timestamp)
 
       return candles

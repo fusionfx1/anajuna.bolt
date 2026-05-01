@@ -249,22 +249,23 @@ export const cacheService = new CacheService()
 // Export convenience functions for direct use
 export async function readCache(
   key: string,
-  ttlDays: number
+  _ttlDays: number
 ): Promise<NormalizedCandle[] | null> {
-  return cacheService.get(key, ttlDays)
+  const result = await cacheService.get(key)
+  return result ?? null
 }
 
 export async function writeCache(
   key: string,
   candles: NormalizedCandle[],
-  provider: string,
+  _provider: string,
   ttlDays: number
 ): Promise<void> {
   const ttlMs = ttlDays * 24 * 60 * 60 * 1000
-  await cacheService.set(key, candles, provider, ttlMs)
+  await cacheService.set(key, candles, ttlMs)
 }
 
-export function getCacheStats(): CacheStats {
+export async function getCacheStats(): Promise<CacheStats> {
   return cacheService.stats()
 }
 
@@ -276,6 +277,6 @@ export async function clearCache(key?: string): Promise<void> {
   }
 }
 
-export function getCacheMetadata(): CacheStats {
+export async function getCacheMetadata(): Promise<CacheStats> {
   return cacheService.stats()
 }

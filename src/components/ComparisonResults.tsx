@@ -1,4 +1,3 @@
-import React from 'react'
 import { FetchResult } from '../services/dataFetchers/types'
 
 interface BacktestMetrics {

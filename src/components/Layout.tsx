@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard, TrendingUp, Bot, History, ShieldAlert,
   FlaskConical, Settings, ChevronLeft, ChevronRight,
@@ -6,6 +7,7 @@ import {
   BarChart2, Clock, Newspaper
 } from 'lucide-react';
 import type { NavPage } from '../types/trading';
+import type { ReactNode } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useUserSettings } from '../hooks/useSupabaseData';
 import { useFeedStatus } from '../hooks/useDataFeed';
@@ -20,7 +22,7 @@ import type { DataFeedConfig, DataProvider, BrokerProvider } from '../types/data
 interface NavItem {
   id: NavPage;
   label: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
   badge?: number;
   group: string;
 }
@@ -54,7 +56,7 @@ const GROUPS = ['main', 'paper', 'system'];
 interface LayoutProps {
   page: NavPage;
   onNavigate: (page: NavPage) => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function Layout({ page, onNavigate, children }: LayoutProps) {

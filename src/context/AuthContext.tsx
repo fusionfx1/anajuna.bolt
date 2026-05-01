@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
@@ -13,9 +14,8 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,14 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // async work is ever needed here.
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
         setSession(newSession);
-        // For development: if sign-up was just called but email not confirmed,
-        // the SDK still provides a user object without a session.
-        // Store the user for display purposes but require session for dashboard access.
-        if (!newSession && _event === 'SIGNED_UP') {
-          supabase.auth.getUser().then(({ data }) => {
-            setUser(data.user ?? null);
-          });
-        }
       });
 
       return () => subscription.unsubscribe();

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { PatternName } from '../../services/patternDetection';
 
 export interface PatternToggles {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { RefreshCw, Wifi, WifiOff, ChevronDown, TrendingUp, TrendingDown } from 'lucide-react';
 import { CandleChart, useStableCrosshairCallback } from './chart/CandleChart';
 import { IndicatorControls, loadToggles, type IndicatorToggles } from './chart/IndicatorControls';

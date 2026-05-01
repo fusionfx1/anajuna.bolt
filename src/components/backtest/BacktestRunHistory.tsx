@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import type { MouseEvent } from 'react';
 import { Clock, Trash2, ChevronRight, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { fetchBacktestRuns, deleteBacktestRun } from '../../services/backtestService';
@@ -29,7 +30,7 @@ export function BacktestRunHistory({ onSelectRun, refreshKey }: Props) {
 
   useEffect(() => { load(); }, [load, refreshKey]);
 
-  const handleDelete = useCallback(async (id: string, e: React.MouseEvent) => {
+  const handleDelete = useCallback(async (id: string, e: MouseEvent) => {
     e.stopPropagation();
     if (!confirm('Delete this backtest run?')) return;
     try {
@@ -88,7 +89,7 @@ export function BacktestRunHistory({ onSelectRun, refreshKey }: Props) {
                   <span className="text-xs font-medium text-slate-300 truncate">{run.strategy_name}</span>
                   <span className="text-[10px] text-slate-600 shrink-0">{run.instrument} / {run.granularity}</span>
                   {run.candle_source === 'synthetic' && (
-                    <AlertCircle size={10} className="text-amber-400 shrink-0" title="Synthetic candles" />
+                    <AlertCircle size={10} className="text-amber-400 shrink-0" aria-label="Synthetic candles" />
                   )}
                 </div>
                 <div className="flex items-center gap-3 text-[10px] text-slate-500">

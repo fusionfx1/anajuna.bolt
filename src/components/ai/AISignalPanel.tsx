@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { TrendingUp, TrendingDown, Minus, Clock, Brain, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import type { AIPrediction } from '../../types/aiProvider';
 

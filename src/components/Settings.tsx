@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
   Globe, Server, Terminal, Database, Bell, Sliders, Radio,
   Save, Loader2, CheckCircle2, AlertTriangle, ExternalLink,
@@ -9,7 +11,7 @@ import { upsertUserSettings } from '../services/tradingService';
 import { DataFeedConfig } from './DataFeedConfig';
 import { DataProvidersSettings } from '../pages/Settings/DataProviders';
 
-function Section({ title, icon: Icon, children }: { title: string; icon: React.ComponentType<{ size?: number; className?: string }>; children: React.ReactNode }) {
+function Section({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: ReactNode }) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
       <div className="flex items-center gap-2 mb-5 pb-4 border-b border-slate-800">
@@ -21,7 +23,7 @@ function Section({ title, icon: Icon, children }: { title: string; icon: React.C
   );
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <div className="grid grid-cols-3 gap-4 items-start py-3 border-b border-slate-800/50 last:border-0">
       <div>

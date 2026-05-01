@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, ChevronRight, ChevronLeft, Plus, Minus, Check } from 'lucide-react';
 import { STRATEGY_TEMPLATES, FOREX_SYMBOLS, STRATEGY_TYPE_LABELS, type StrategyTemplate } from './strategyTemplates';
 import type { Strategy } from '../../types/trading';

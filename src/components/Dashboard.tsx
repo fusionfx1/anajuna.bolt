@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { DollarSign, TrendingUp, Activity, AlertTriangle, Radio, Zap, BookOpen, Shield, AlertCircle } from 'lucide-react';
 import { StatCard } from './ui/StatCard';
 import { useAccountData, useStrategies, usePositions, useEquitySnapshots, useUserSettings } from '../hooks/useSupabaseData';

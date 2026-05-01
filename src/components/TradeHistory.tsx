@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Download, TrendingUp, TrendingDown } from 'lucide-react';
 import { usePositions, useTrades } from '../hooks/useSupabaseData';
 

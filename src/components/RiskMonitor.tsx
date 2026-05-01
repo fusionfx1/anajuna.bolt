@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
   ShieldCheck, ShieldAlert, ShieldX, AlertTriangle,
   TrendingDown, Lock, Unlock, CircleDot, Info
@@ -28,7 +29,7 @@ function GaugeArc({ pct, color }: { pct: number; color: string }) {
 
 function RiskGauge({ label, value, max, unit, color, icon: Icon }: {
   label: string; value: number; max: number; unit: string;
-  color: string; icon: React.ComponentType<{ size?: number; className?: string }>;
+  color: string; icon: LucideIcon;
 }) {
   const pct = (value / max) * 100;
   const statusColor = pct > 80 ? '#ef4444' : pct > 50 ? '#f59e0b' : color;
@@ -54,7 +55,7 @@ function RiskGauge({ label, value, max, unit, color, icon: Icon }: {
 }
 
 function RiskEventRow({ event }: { event: RiskEvent }) {
-  const severityMap: Record<RiskEvent['severity'], { icon: React.ComponentType<{ size?: number; className?: string }>; color: string; bg: string }> = {
+  const severityMap: Record<RiskEvent['severity'], { icon: LucideIcon; color: string; bg: string }> = {
     INFO: { icon: Info, color: 'text-sky-400', bg: 'bg-sky-500/10 border-sky-500/20' },
     WARNING: { icon: AlertTriangle, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
     CRITICAL: { icon: ShieldX, color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' },

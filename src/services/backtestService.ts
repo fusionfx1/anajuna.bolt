@@ -69,10 +69,10 @@ export async function fetchCandleCoverage(): Promise<CandleCoverage[]> {
       return {
         instrument,
         granularity,
-        earliestTime: stats.earliestTime,
-        latestTime: stats.latestTime,
-        candleCount: stats.count,
-      };
+        minTime: stats.earliestTime,
+        maxTime: stats.latestTime,
+        count: stats.count,
+      } as CandleCoverage;
     });
   }
 

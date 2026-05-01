@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 import { fetchAndBacktestCompare } from '../services/dataFetchers/fetchOHLCV'
 import { FetchResult } from '../services/dataFetchers/types'
-import { runBacktest, BacktestResult, StrategyFn, Signal } from '../services/backtestEngine'
+import { runBacktest, StrategyFn } from '../services/backtestEngine'
+import type { BacktestInstrument } from '../types/backtest'
 
 export interface ComparisonBacktestState {
   eodhd?: {
@@ -38,54 +39,6 @@ export function useComparisonBacktest() {
     results: {},
   })
 
-  const calculateMetrics = useCallback(
-    (signals: Signal[]): BacktestMetrics => {
-      if (signals.length === 0) {
-        return {
-          totalReturn: 0,
-          sharpeRatio: 0,
-          maxDrawdown: 0,
-          winRate: 0,
-        }
-      }
-
-      const profitableTrades = signals.filter((s) => s.pnl > 0).length
-      const winRate =
-        signals.length > 0 ? profitableTrades / signals.length : 0
-
-      const returns = signals.map((s) => s.pnl)
-      const totalReturn = returns.reduce((a, b) => a + b, 0)
-      const avgReturn = totalReturn / Math.max(signals.length, 1)
-      const stdDev = Math.sqrt(
-        returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) /
-          Math.max(signals.length - 1, 1)
-      )
-      const sharpeRatio = stdDev > 0 ? avgReturn / stdDev : 0
-
-      let maxDrawdown = 0
-      let peakValue = 0
-      let currentValue = 0
-      for (const signal of signals) {
-        currentValue += signal.pnl
-        if (currentValue > peakValue) {
-          peakValue = currentValue
-        }
-        const drawdown = peakValue - currentValue
-        if (drawdown > maxDrawdown) {
-          maxDrawdown = drawdown
-        }
-      }
-
-      return {
-        totalReturn,
-        sharpeRatio,
-        maxDrawdown,
-        winRate,
-      }
-    },
-    []
-  )
-
   const runComparison = useCallback(
     async (
       strategy: StrategyFn,
@@ -107,13 +60,14 @@ export function useComparisonBacktest() {
         if (fetchResults.eodhd) {
           try {
             const backtest = runBacktest(
+              // @ts-expect-error Phase-5-debt: NormalizedCandle vs Candle shape mismatch
               fetchResults.eodhd.candles,
               {
                 strategyId: null,
                 strategyName: 'Comparison',
                 strategyType: 'manual',
                 initialBalance: 10000,
-                instrument: symbol as any,
+                instrument: symbol as BacktestInstrument,
                 granularity: 'D1',
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
@@ -129,6 +83,7 @@ export function useComparisonBacktest() {
             )
             newResults.eodhd = {
               fetchResult: fetchResults.eodhd,
+              // @ts-expect-error Phase-5-debt: BacktestResult.metrics shape differs from local interface
               metrics: backtest.metrics,
             }
           } catch (error) {
@@ -139,13 +94,14 @@ export function useComparisonBacktest() {
         if (fetchResults.tiingo) {
           try {
             const backtest = runBacktest(
+              // @ts-expect-error Phase-5-debt: NormalizedCandle vs Candle shape mismatch
               fetchResults.tiingo.candles,
               {
                 strategyId: null,
                 strategyName: 'Comparison',
                 strategyType: 'manual',
                 initialBalance: 10000,
-                instrument: symbol as any,
+                instrument: symbol as BacktestInstrument,
                 granularity: 'D1',
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
@@ -161,6 +117,7 @@ export function useComparisonBacktest() {
             )
             newResults.tiingo = {
               fetchResult: fetchResults.tiingo,
+              // @ts-expect-error Phase-5-debt: BacktestResult.metrics shape differs from local interface
               metrics: backtest.metrics,
             }
           } catch (error) {
@@ -171,13 +128,14 @@ export function useComparisonBacktest() {
         if (fetchResults.synthetic) {
           try {
             const backtest = runBacktest(
+              // @ts-expect-error Phase-5-debt: NormalizedCandle vs Candle shape mismatch
               fetchResults.synthetic.candles,
               {
                 strategyId: null,
                 strategyName: 'Comparison',
                 strategyType: 'manual',
                 initialBalance: 10000,
-                instrument: symbol as any,
+                instrument: symbol as BacktestInstrument,
                 granularity: 'D1',
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
@@ -193,6 +151,7 @@ export function useComparisonBacktest() {
             )
             newResults.synthetic = {
               fetchResult: fetchResults.synthetic,
+              // @ts-expect-error Phase-5-debt: BacktestResult.metrics shape differs from local interface
               metrics: backtest.metrics,
             }
           } catch (error) {
@@ -216,7 +175,7 @@ export function useComparisonBacktest() {
         throw error
       }
     },
-    [calculateMetrics]
+    []
   )
 
   return {

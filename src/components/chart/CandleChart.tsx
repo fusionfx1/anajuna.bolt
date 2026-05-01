@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import {
   createChart,
   createSeriesMarkers,
@@ -69,6 +69,7 @@ const CANDLE_OPTIONS: DeepPartial<CandlestickSeriesOptions> = {
 };
 
 function lineOpts(color: string, width = 1): DeepPartial<LineSeriesOptions> {
+  // @ts-expect-error Phase-5-debt: lightweight-charts LineWidth type is narrower than number in v5
   return { color, lineWidth: width, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false };
 }
 
@@ -231,10 +232,12 @@ export function CandleChart({
     if (!series || candles.length === 0) return;
 
     if (candles.length < prevLenRef.current) {
+      // @ts-expect-error Phase-5-debt: OHLCVCandle.time is number, LW v5 expects UTCTimestamp
       series.setData(candles);
       chartRef.current?.timeScale().fitContent();
     } else if (candles.length > prevLenRef.current) {
       const tail = candles.slice(Math.max(0, prevLenRef.current - 1));
+      // @ts-expect-error Phase-5-debt: OHLCVCandle.time is number, LW v5 expects UTCTimestamp
       tail.forEach(c => series.update(c));
     }
     prevLenRef.current = candles.length;

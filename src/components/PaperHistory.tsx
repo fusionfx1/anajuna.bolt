@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, RefreshCw, Filter, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 import { fetchClosedTrades, fetchHistorySummary, resetAccount } from '../services/paperTradingService';
 import type { HistorySummaryData } from '../services/paperTradingService';

@@ -28,7 +28,7 @@ export class EodhdhClient {
     throw lastError || new Error('Failed to fetch EODHD data after max retries')
   }
 
-  private async fetchWithRetry(options: FetchOptions, attempt: number): Promise<NormalizedCandle[]> {
+  private async fetchWithRetry(options: FetchOptions, _attempt: number): Promise<NormalizedCandle[]> {
     const { symbol, startDate, endDate, timeframe = '1d' } = options
 
     const params = {
@@ -49,9 +49,9 @@ export class EodhdhClient {
       }
 
       const candles: NormalizedCandle[] = response.data
-        .filter((candle: any) => candle && typeof candle === 'object')
-        .map((candle: any) => ({
-          timestamp: new Date(candle.date).getTime(),
+        .filter((candle: RawOHLCV & { date?: string }) => candle && typeof candle === 'object')
+        .map((candle: RawOHLCV & { date?: string }) => ({
+          timestamp: new Date(candle.date ?? 0).getTime(),
           open: Number(candle.open),
           high: Number(candle.high),
           low: Number(candle.low),
@@ -60,7 +60,7 @@ export class EodhdhClient {
           symbol,
           provider: 'eodhd' as const,
         }))
-        .sort((a, b) => a.timestamp - b.timestamp)
+        .sort((a: NormalizedCandle, b: NormalizedCandle) => a.timestamp - b.timestamp)
 
       return candles
     } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { RefreshCw, X, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 import { usePaperPositions, usePaperAccount } from '../hooks/usePaperTrading';
 import { useMarketData } from '../hooks/useMarketData';
@@ -140,7 +140,7 @@ function PositionRow({
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export function PaperPositions() {
-  const { quotes, getQuote } = useMarketData(2000);
+  const { getQuote } = useMarketData(2000);
   const { account, refresh: refreshAccount } = usePaperAccount();
 
   const getBidAsk = useCallback((instrument: string) => {

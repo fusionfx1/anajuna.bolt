@@ -1,4 +1,4 @@
-import type { ManagedOrder, OrderStatus, RiskCheckResult } from '../types/dataFeed';
+import type { ManagedOrder, RiskCheckResult } from '../types/dataFeed';
 import { riskManager } from './riskManagerService';
 import { brokerService } from './brokerService';
 import type { AccountState } from './riskManagerService';
@@ -172,7 +172,7 @@ class OrderManagerService {
       }
       this.orders.set(orderId, order);
       this.emitUpdate(order);
-    } catch (err) {
+    } catch {
       // Ignore polling errors - broker may not be configured or order may not exist
       // This is expected when broker is not configured
     }

@@ -1,4 +1,4 @@
-import type { Signal, Candle, StrategyFn } from './backtestEngine';
+import type { Candle, StrategyFn } from './backtestEngine';
 
 // --- Incremental EMA helper ---
 

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-  FlaskConical, Play, Square, Download, Loader2, ChevronDown,
+  FlaskConical, Square, Download, Loader2, ChevronDown,
   Settings2, Database, AlertCircle, Zap,
 } from 'lucide-react';
 import type { Strategy } from '../../types/trading';
