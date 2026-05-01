@@ -35,10 +35,10 @@ Requirements for the v1 milestone. Each maps to exactly one phase in `ROADMAP.md
 
 ### Observability & Health
 
-- [ ] **OBS-01**: `AgentHealthCard` in `src/components/AgentFeed.tsx` derives status from real fields (`contributions[].status`, `error`, last-seen timestamp) instead of `latency_ms % 3` heuristic — or the heuristic is explicitly labeled in UI as "latency-based estimate"
-- [ ] **OBS-02**: `trading_system/agents/persistence.py::save_decision` produces a counter or log signal (loguru ERROR + optional metric) on persistence failure; failures are no longer fully silent
-- [ ] **OBS-03**: `agent_decisions` table has a documented row-threshold for adding the `IVFFlat` vector index, and `match_agent_decisions` includes a query plan / `EXPLAIN` capture in `trading_system/README.md` or a new `OBSERVABILITY.md`
-- [ ] **OBS-04**: `AgentFeed` shows a visible "stale data" indicator when no Realtime push has been received within a documented threshold (so operators don't trust an unchanging feed)
+- [x] **OBS-01**: `AgentHealthCard` in `src/components/AgentFeed.tsx` derives status from real fields (`contributions[].status`, `error`, last-seen timestamp) instead of `latency_ms % 3` heuristic — or the heuristic is explicitly labeled in UI as "latency-based estimate"
+- [x] **OBS-02**: `trading_system/agents/persistence.py::save_decision` produces a counter or log signal (loguru ERROR + optional metric) on persistence failure; failures are no longer fully silent
+- [x] **OBS-03**: `agent_decisions` table has a documented row-threshold for adding the `IVFFlat` vector index, and `match_agent_decisions` includes a query plan / `EXPLAIN` capture in `trading_system/README.md` or a new `OBSERVABILITY.md`
+- [x] **OBS-04**: `AgentFeed` shows a visible "stale data" indicator when no Realtime push has been received within a documented threshold (so operators don't trust an unchanging feed)
 
 ### CI/CD & Test Matrix
 
@@ -105,10 +105,10 @@ Which phase covers which requirement. Updated by `gsd-roadmapper` and during pha
 | AUTH-02 | Phase 3 | Complete |
 | AUTH-03 | Phase 3 | Complete |
 | AUTH-04 | Phase 3 | Complete |
-| OBS-01  | Phase 4 | Pending |
-| OBS-02  | Phase 4 | Pending |
-| OBS-03  | Phase 4 | Pending |
-| OBS-04  | Phase 4 | Pending |
+| OBS-01  | Phase 4 | Complete |
+| OBS-02  | Phase 4 | Complete |
+| OBS-03  | Phase 4 | Complete |
+| OBS-04  | Phase 4 | Complete |
 | CI-01   | Phase 5 | Pending |
 | CI-02   | Phase 5 | Pending |
 | CI-03   | Phase 5 | Pending |
@@ -125,4 +125,4 @@ Which phase covers which requirement. Updated by `gsd-roadmapper` and during pha
 
 ---
 *Requirements defined: 2026-05-01*
-*Last updated: 2026-05-01 after Phase 3 verification — AUTH-01..04 complete*
+*Last updated: 2026-05-01 after Phase 4 verification — OBS-01..04 complete*

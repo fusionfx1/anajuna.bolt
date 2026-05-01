@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Settings & Secrets Unification** — Single trustworthy place for every credential, predictable Save flow, no localStorage secrets (completed 2026-05-01)
 - [x] **Phase 2: RLS Hardening + Empty-Feed Fix** — Explicit `agent_decisions` policy contract + tests so the feed never silently drops rows (completed 2026-05-01)
 - [x] **Phase 3: Auth Bypass + Env Failsafe** — Production-safe auth with no `localStorage` shortcut and fail-fast on missing Supabase env (completed 2026-05-01)
-- [ ] **Phase 4: Observability & Health** — Real agent health signals, non-silent persistence, documented vector index thresholds
+- [x] **Phase 4: Observability & Health** — Real agent health signals, non-silent persistence, documented vector index thresholds (completed 2026-05-01)
 - [ ] **Phase 5: CI/CD + Test Matrix** — Typecheck, lint, unit, E2E, and RLS policy tests gating every PR
 - [ ] **Phase 6: Agent Layer Hardening** — Real agents reach the orchestrator, both orchestration paths covered by tests, vector index applied
 
@@ -78,10 +78,11 @@ Plans:
   2. A failed `save_decision` produces a visible log/metric signal — operators are no longer blind to silent persistence drops
   3. The vector-index decision (`agent_decisions_embedding_idx`) has a documented threshold and `EXPLAIN` capture for `match_agent_decisions`
   4. `AgentFeed` shows a "stale data" indicator when no Realtime push has been received within the documented threshold
-**Plans**: TBD (estimated 2 plans)
+**Plans**: 2 plans completed
 
 Plans:
-- [ ] 04-01: TBD — set during `/gsd-plan-phase 4`
+- [x] 04-01-PLAN.md — `useAgentDecisions` isStale + stale banner + AgentHealthCard (est.) label + persistence ERROR + raise
+- [x] 04-02-PLAN.md — OBSERVABILITY.md: IVFFlat threshold, migration SQL, EXPLAIN capture
 
 ### Phase 5: CI/CD + Test Matrix
 **Goal**: Every PR runs typecheck, lint, unit tests, an Agent Feed E2E happy path, and an RLS policy fixture; merges are blocked when any gate fails. Local artifacts no longer leak into git.
@@ -121,10 +122,10 @@ Sequential — each phase depends on the previous one (1 → 2 → 3 → 4 → 5
 | 1. Settings & Secrets Unification | 4/4 | Complete    | 2026-05-01 |
 | 2. RLS Hardening + Empty-Feed Fix | 2/2   | Complete    | 2026-05-01 |
 | 3. Auth Bypass + Env Failsafe | 2/2   | Complete    | 2026-05-01 |
-| 4. Observability & Health | 0/TBD | Not started | - |
+| 4. Observability & Health | 2/2 | Complete    | 2026-05-01 |
 | 5. CI/CD + Test Matrix | 0/TBD | Not started | - |
 | 6. Agent Layer Hardening | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-05-01*
-*Last updated: 2026-05-01 after Phase 3 verification — Phase 3 complete*
+*Last updated: 2026-05-01 after Phase 4 verification — Phase 4 complete*
