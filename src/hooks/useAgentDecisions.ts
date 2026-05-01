@@ -31,6 +31,8 @@ export interface UseAgentDecisionsResult {
   loading: boolean;
   connected: boolean;
   error: string | null;
+  lastUpdated: Date | null;
+  isStale: boolean;
 }
 
 export function useAgentDecisions(
@@ -42,6 +44,10 @@ export function useAgentDecisions(
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const STALE_THRESHOLD_MS = 60_000;
+  const isStale = lastUpdated !== null && Date.now() - lastUpdated.getTime() > STALE_THRESHOLD_MS;
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +68,7 @@ export function useAgentDecisions(
         if (cancelled) return;
         if (queryError) throw queryError;
         setDecisions((data ?? []).map(row => normalizeRow(row as Record<string, unknown>)));
+        if (!cancelled) setLastUpdated(new Date());
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load agent decisions');
       } finally {
@@ -89,6 +96,7 @@ export function useAgentDecisions(
           const newRow = normalizeRow(payload.new as Record<string, unknown>);
           if (symbolFilter && newRow.symbol !== symbolFilter) return;
           setDecisions(prev => [newRow, ...prev].slice(0, 100));
+          setLastUpdated(new Date());
         }
       )
       .subscribe((status) => {
@@ -100,5 +108,5 @@ export function useAgentDecisions(
     };
   }, [symbolFilter]);
 
-  return { decisions, loading, connected, error };
+  return { decisions, loading, connected, error, lastUpdated, isStale };
 }
