@@ -13,7 +13,7 @@ Production Readiness v1 turns the existing Anjuna FX prototype into a system a s
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Settings & Secrets Unification** — Single trustworthy place for every credential, predictable Save flow, no localStorage secrets (completed 2026-05-01)
-- [ ] **Phase 2: RLS Hardening + Empty-Feed Fix** — Explicit `agent_decisions` policy contract + tests so the feed never silently drops rows
+- [x] **Phase 2: RLS Hardening + Empty-Feed Fix** — Explicit `agent_decisions` policy contract + tests so the feed never silently drops rows (completed 2026-05-01)
 - [ ] **Phase 3: Auth Bypass + Env Failsafe** — Production-safe auth with no `localStorage` shortcut and fail-fast on missing Supabase env
 - [ ] **Phase 4: Observability & Health** — Real agent health signals, non-silent persistence, documented vector index thresholds
 - [ ] **Phase 5: CI/CD + Test Matrix** — Typecheck, lint, unit, E2E, and RLS policy tests gating every PR
@@ -51,8 +51,8 @@ Plans:
 **Plans**: 2 plans across 2 waves
 
 Plans:
-- [ ] 02-01-PLAN.md — RLS SELECT policy formalization + hook cleanup + seed guard (Wave 1)
-- [ ] 02-02-PLAN.md — Vitest RLS contract test for empty-feed behavior (Wave 2)
+- [x] 02-01-PLAN.md — RLS SELECT policy formalization + hook cleanup + seed guard (Wave 1)
+- [x] 02-02-PLAN.md — Vitest RLS contract test for empty-feed behavior (Wave 2)
 
 ### Phase 3: Auth Bypass + Env Failsafe
 **Goal**: Production builds cannot accidentally bypass login or silently talk to a placeholder Supabase host; secrets configuration is explicitly documented per context.
@@ -118,7 +118,7 @@ Sequential — each phase depends on the previous one (1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Settings & Secrets Unification | 4/4 | Complete    | 2026-05-01 |
-| 2. RLS Hardening + Empty-Feed Fix | 0/TBD | Not started | - |
+| 2. RLS Hardening + Empty-Feed Fix | 2/2   | Complete    | 2026-05-01 |
 | 3. Auth Bypass + Env Failsafe | 0/TBD | Not started | - |
 | 4. Observability & Health | 0/TBD | Not started | - |
 | 5. CI/CD + Test Matrix | 0/TBD | Not started | - |
@@ -126,4 +126,4 @@ Sequential — each phase depends on the previous one (1 → 2 → 3 → 4 → 5
 
 ---
 *Roadmap created: 2026-05-01*
-*Last updated: 2026-05-01 after initialization*
+*Last updated: 2026-05-01 after Phase 2 verification — Phase 2 complete*
