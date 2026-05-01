@@ -48,10 +48,11 @@ Plans:
   2. Realtime inserts only stream rows that the SELECT policy would also return on a fresh fetch
   3. Automated test fails when `agent_decisions` SELECT policy diverges from the documented contract
   4. `seed-agent-decisions.mjs` requires service role and refuses to run with anon key, with a clear error message
-**Plans**: TBD (estimated 2 plans)
+**Plans**: 2 plans across 2 waves
 
 Plans:
-- [ ] 02-01: TBD — set during `/gsd-plan-phase 2`
+- [ ] 02-01-PLAN.md — RLS SELECT policy formalization + hook cleanup + seed guard (Wave 1)
+- [ ] 02-02-PLAN.md — Vitest RLS contract test for empty-feed behavior (Wave 2)
 
 ### Phase 3: Auth Bypass + Env Failsafe
 **Goal**: Production builds cannot accidentally bypass login or silently talk to a placeholder Supabase host; secrets configuration is explicitly documented per context.
