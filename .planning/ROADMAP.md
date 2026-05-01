@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Settings & Secrets Unification** — Single trustworthy place for every credential, predictable Save flow, no localStorage secrets (completed 2026-05-01)
 - [x] **Phase 2: RLS Hardening + Empty-Feed Fix** — Explicit `agent_decisions` policy contract + tests so the feed never silently drops rows (completed 2026-05-01)
-- [ ] **Phase 3: Auth Bypass + Env Failsafe** — Production-safe auth with no `localStorage` shortcut and fail-fast on missing Supabase env
+- [x] **Phase 3: Auth Bypass + Env Failsafe** — Production-safe auth with no `localStorage` shortcut and fail-fast on missing Supabase env (completed 2026-05-01)
 - [ ] **Phase 4: Observability & Health** — Real agent health signals, non-silent persistence, documented vector index thresholds
 - [ ] **Phase 5: CI/CD + Test Matrix** — Typecheck, lint, unit, E2E, and RLS policy tests gating every PR
 - [ ] **Phase 6: Agent Layer Hardening** — Real agents reach the orchestrator, both orchestration paths covered by tests, vector index applied
@@ -66,8 +66,8 @@ Plans:
 **Plans**: 2 plans across 2 waves
 
 Plans:
-- [ ] 03-01-PLAN.md — Supabase env fail-fast + devMode DEV guard + gitignore hardening (Wave 1)
-- [ ] 03-02-PLAN.md — SECURITY.md creation + full phase verification (Wave 2)
+- [x] 03-01-PLAN.md — Supabase env fail-fast + devMode DEV guard + gitignore hardening (Wave 1)
+- [x] 03-02-PLAN.md — SECURITY.md creation + full phase verification (Wave 2)
 
 ### Phase 4: Observability & Health
 **Goal**: Operators can tell at a glance whether the agent stack is alive, what failed, and how stale the feed is — without trusting heuristics that look operational but aren't.
@@ -120,11 +120,11 @@ Sequential — each phase depends on the previous one (1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Settings & Secrets Unification | 4/4 | Complete    | 2026-05-01 |
 | 2. RLS Hardening + Empty-Feed Fix | 2/2   | Complete    | 2026-05-01 |
-| 3. Auth Bypass + Env Failsafe | 0/TBD | Not started | - |
+| 3. Auth Bypass + Env Failsafe | 2/2   | Complete    | 2026-05-01 |
 | 4. Observability & Health | 0/TBD | Not started | - |
 | 5. CI/CD + Test Matrix | 0/TBD | Not started | - |
 | 6. Agent Layer Hardening | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-05-01*
-*Last updated: 2026-05-01 after Phase 2 verification — Phase 2 complete*
+*Last updated: 2026-05-01 after Phase 3 verification — Phase 3 complete*

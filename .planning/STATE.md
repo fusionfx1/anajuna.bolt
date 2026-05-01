@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: complete
-stopped_at: Phase 2 complete — verification passed 2026-05-01
-last_updated: "2026-05-01T08:45:00+07:00"
+stopped_at: Phase 3 complete — verification passed 2026-05-01
+last_updated: "2026-05-01T09:25:00+07:00"
 last_activity: 2026-05-01
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 33
+  completed_phases: 3
+  total_plans: 8
+  completed_plans: 8
+  percent: 50
 ---
 
 # Project State
@@ -21,24 +21,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-01)
 
 **Core value:** An operator can configure broker/data/agent credentials once, trust where every secret lives, and see real agent decisions reach the dashboard without empty-feed or silent-failure surprises.
-**Current focus:** Phase 3 — Auth Bypass + Env Failsafe
+**Current focus:** Phase 4 — Observability & Health
 
 ## Current Position
 
-Phase: 3
+Phase: 4
 Plan: Not started
-Status: Phase 2 complete — ready to plan Phase 3
+Status: Phase 3 complete — ready to plan Phase 4
 Last activity: 2026-05-01
 
-Progress: [██░░░░░░░░] 33%
+Progress: [███░░░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 6
+- Total plans completed: 8
 - Average duration: ~10 minutes/plan
-- Total execution time: ~1 hour
+- Total execution time: ~80 minutes
 
 **By Phase:**
 
@@ -46,7 +46,7 @@ Progress: [██░░░░░░░░] 33%
 |-------|-------|-------|----------|
 | 1. Settings & Secrets Unification | 4 | ~40 min | ~10 min |
 | 2. RLS Hardening + Empty-Feed Fix | 2 | ~20 min | ~10 min |
-| 3. Auth Bypass + Env Failsafe | 0 | — | — |
+| 3. Auth Bypass + Env Failsafe | 2 | ~13 min | ~7 min |
 | 4. Observability & Health | 0 | — | — |
 | 5. CI/CD + Test Matrix | 0 | — | — |
 | 6. Agent Layer Hardening | 0 | — | — |
@@ -80,14 +80,14 @@ None.
 Carried in from `.planning/codebase/CONCERNS.md` (audit 2026-05-01):
 
 - ~~Empty Agent Feed for authenticated users (RLS NULL `user_id` mismatch)~~ → **Fixed in Phase 2** ✓
-- `localStorage.devMode=true` bypasses login with no env gate → Phase 3
-- `src/lib/supabase.ts` falls back to placeholder URL/key with only a console warning → Phase 3
+- ~~`localStorage.devMode=true` bypasses login with no env gate~~ → **Fixed in Phase 3** ✓
+- ~~`src/lib/supabase.ts` falls back to placeholder URL/key with only a console warning~~ → **Fixed in Phase 3** ✓
 - `save_decision` swallows exceptions silently → Phase 4
 - `crew_runner.py` imports stubs while real `*_agent.py` modules exist → Phase 6
 
 ## Session Continuity
 
-Last session: 2026-05-01 08:45 UTC+7
-Stopped at: Phase 2 verification passed — all 5 requirements (RLS-01..05) satisfied
-Resume file: [.planning/phases/02-rls-hardening-+-empty-feed-fix/02-VERIFICATION.md](phases/02-rls-hardening-+-empty-feed-fix/02-VERIFICATION.md)
-Next: `/gsd-plan-phase 3` to plan Auth Bypass + Env Failsafe
+Last session: 2026-05-01 09:25 UTC+7
+Stopped at: Phase 3 verification passed — all 4 requirements (AUTH-01..04) satisfied
+Resume file: [.planning/phases/03-auth-bypass-+-env-failsafe/03-VERIFICATION.md](phases/03-auth-bypass-+-env-failsafe/03-VERIFICATION.md)
+Next: `/gsd-plan-phase 4` to plan Observability & Health

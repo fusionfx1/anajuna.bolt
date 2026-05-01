@@ -28,10 +28,10 @@ Requirements for the v1 milestone. Each maps to exactly one phase in `ROADMAP.md
 
 ### Auth & Env Failsafe
 
-- [ ] **AUTH-01**: The `localStorage.devMode=true` login bypass in `src/App.tsx` is gated behind `import.meta.env.DEV` and is impossible in production builds
-- [ ] **AUTH-02**: `src/lib/supabase.ts` fails fast (throws or surfaces a hard-blocking error UI) in production builds when `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` is missing; placeholder fallback only ever runs in dev with a visible banner
-- [ ] **AUTH-03**: A `SECURITY.md` (or expanded `trading_system/README.md` section) explicitly states `SUPABASE_SERVICE_ROLE_KEY` MUST never appear in any `VITE_*` env var, and lists per-context minimum permissions (browser anon vs Python service role)
-- [ ] **AUTH-04**: `.gitignore` covers all env file variants (`.env`, `.env.local`, `.env.*.local`) at root and inside `trading_system/`; a `git ls-files | grep -E '\.env'` audit returns nothing committed
+- [x] **AUTH-01**: The `localStorage.devMode=true` login bypass in `src/App.tsx` is gated behind `import.meta.env.DEV` and is impossible in production builds
+- [x] **AUTH-02**: `src/lib/supabase.ts` fails fast (throws or surfaces a hard-blocking error UI) in production builds when `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` is missing; placeholder fallback only ever runs in dev with a visible banner
+- [x] **AUTH-03**: A `SECURITY.md` (or expanded `trading_system/README.md` section) explicitly states `SUPABASE_SERVICE_ROLE_KEY` MUST never appear in any `VITE_*` env var, and lists per-context minimum permissions (browser anon vs Python service role)
+- [x] **AUTH-04**: `.gitignore` covers all env file variants (`.env`, `.env.local`, `.env.*.local`) at root and inside `trading_system/`; a `git ls-files | grep -E '\.env'` audit returns nothing committed
 
 ### Observability & Health
 
@@ -101,10 +101,10 @@ Which phase covers which requirement. Updated by `gsd-roadmapper` and during pha
 | RLS-03  | Phase 2 | Complete |
 | RLS-04  | Phase 2 | Complete |
 | RLS-05  | Phase 2 | Complete |
-| AUTH-01 | Phase 3 | Pending |
-| AUTH-02 | Phase 3 | Pending |
-| AUTH-03 | Phase 3 | Pending |
-| AUTH-04 | Phase 3 | Pending |
+| AUTH-01 | Phase 3 | Complete |
+| AUTH-02 | Phase 3 | Complete |
+| AUTH-03 | Phase 3 | Complete |
+| AUTH-04 | Phase 3 | Complete |
 | OBS-01  | Phase 4 | Pending |
 | OBS-02  | Phase 4 | Pending |
 | OBS-03  | Phase 4 | Pending |
@@ -125,4 +125,4 @@ Which phase covers which requirement. Updated by `gsd-roadmapper` and during pha
 
 ---
 *Requirements defined: 2026-05-01*
-*Last updated: 2026-05-01 after Phase 2 verification — RLS-01..05 complete*
+*Last updated: 2026-05-01 after Phase 3 verification — AUTH-01..04 complete*
