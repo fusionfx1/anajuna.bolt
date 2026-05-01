@@ -63,10 +63,11 @@ Plans:
   2. Missing `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` in a production build surfaces a hard error before any data fetch — no placeholder fallback
   3. `SECURITY.md` (or expanded README section) is committed and lists per-context env permissions explicitly
   4. `git ls-files | grep -E '\.env'` returns nothing across `/` and `trading_system/`
-**Plans**: TBD (estimated 1-2 plans)
+**Plans**: 2 plans across 2 waves
 
 Plans:
-- [ ] 03-01: TBD — set during `/gsd-plan-phase 3`
+- [ ] 03-01-PLAN.md — Supabase env fail-fast + devMode DEV guard + gitignore hardening (Wave 1)
+- [ ] 03-02-PLAN.md — SECURITY.md creation + full phase verification (Wave 2)
 
 ### Phase 4: Observability & Health
 **Goal**: Operators can tell at a glance whether the agent stack is alive, what failed, and how stale the feed is — without trusting heuristics that look operational but aren't.
