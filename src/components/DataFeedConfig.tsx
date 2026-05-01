@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  WifiOff, Zap, AlertCircle, CheckCircle2, Settings2,
-  Eye, EyeOff, Loader2, Radio,
+  WifiOff, Zap, AlertCircle, CheckCircle2,
+  Eye, EyeOff, Loader2, Radio, Save,
 } from 'lucide-react';
 import type { DataFeedConfig, DataProvider, BrokerProvider, ConnectionStats } from '../types/dataFeed';
 import { dataFeedService } from '../services/dataFeedService';
@@ -10,6 +10,7 @@ import { oandaService } from '../services/oandaService';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { FOREX_SYMBOLS } from '../lib/constants';
+import { SecretInput } from './ui/SecretInput';
 
 const PROVIDER_INFO: Record<DataProvider, { label: string; description: string; cost: string }> = {
   polygon: {
@@ -73,39 +74,6 @@ function StatusBadge({ stats }: StatusBadgeProps) {
       {stats.ticksReceived > 0 && (
         <span className="text-slate-500 ml-1">{stats.ticksReceived.toLocaleString()} ticks</span>
       )}
-    </div>
-  );
-}
-
-interface SecretInputProps {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-}
-
-function SecretInput({ label, value, onChange, placeholder }: SecretInputProps) {
-  const [show, setShow] = useState(false);
-  return (
-    <div>
-      <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">
-        {label}
-      </label>
-      <div className="relative">
-        <input
-          type={show ? 'text' : 'password'}
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 pr-10"
-        />
-        <button
-          onClick={() => setShow(v => !v)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
-        >
-          {show ? <EyeOff size={14} /> : <Eye size={14} />}
-        </button>
-      </div>
     </div>
   );
 }
@@ -289,7 +257,7 @@ export function DataFeedConfig() {
           <button
             key={s}
             onClick={() => setActiveSection(s)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize ${
+            className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-colors capitalize ${
               activeSection === s
                 ? 'bg-slate-700 text-white'
                 : 'text-slate-400 hover:text-slate-200'
@@ -322,9 +290,9 @@ export function DataFeedConfig() {
                     </div>
                     {selected && <CheckCircle2 size={14} className="text-emerald-400 mt-0.5" />}
                   </div>
-                  <p className="font-medium text-sm text-white mb-0.5">{info.label}</p>
+                  <p className="font-semibold text-sm text-white mb-0.5">{info.label}</p>
                   <p className="text-xs text-slate-400 mb-1 leading-relaxed">{info.description}</p>
-                  <p className="text-xs font-medium text-emerald-400">{info.cost}</p>
+                  <p className="text-xs font-semibold text-emerald-400">{info.cost}</p>
                 </button>
               );
             })}
@@ -333,6 +301,7 @@ export function DataFeedConfig() {
           {config.provider !== 'simulation' && (
             <div className="space-y-3">
               <SecretInput
+                id={config.provider === 'polygon' ? 'polygon-api-key' : 'alpaca-data-key'}
                 label={config.provider === 'polygon' ? 'Polygon API Key' : 'Alpaca Data Key'}
                 value={config.apiKey}
                 onChange={v => setConfig(prev => ({ ...prev, apiKey: v }))}
@@ -340,6 +309,7 @@ export function DataFeedConfig() {
               />
               {config.provider === 'alpaca' && (
                 <SecretInput
+                  id="alpaca-data-secret"
                   label="Alpaca Data Secret"
                   value={config.apiSecret ?? ''}
                   onChange={v => setConfig(prev => ({ ...prev, apiSecret: v }))}
@@ -387,7 +357,7 @@ export function DataFeedConfig() {
                     </div>
                     {selected && <CheckCircle2 size={14} className="text-sky-400 mt-0.5" />}
                   </div>
-                  <p className="font-medium text-sm text-white mb-0.5">{info.label}</p>
+                  <p className="font-semibold text-sm text-white mb-0.5">{info.label}</p>
                   <p className="text-xs text-slate-400 leading-relaxed">{info.description}</p>
                 </button>
               );
@@ -397,7 +367,7 @@ export function DataFeedConfig() {
           <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 space-y-1">
             <div className="flex items-center gap-2 mb-3">
               <div className={`w-2 h-2 rounded-full ${config.paperTrading ? 'bg-amber-400' : 'bg-emerald-400'}`} />
-              <span className="text-sm font-medium text-white">
+              <span className="text-sm font-semibold text-white">
                 {config.paperTrading ? 'Paper / Practice Mode' : 'Live Trading Mode'}
               </span>
             </div>
@@ -408,7 +378,7 @@ export function DataFeedConfig() {
             </p>
             <button
               onClick={() => setConfig(prev => ({ ...prev, paperTrading: !prev.paperTrading }))}
-              className={`mt-3 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+              className={`mt-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
                 config.paperTrading
                   ? 'border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/15'
                   : 'border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/15'
@@ -420,26 +390,22 @@ export function DataFeedConfig() {
 
           {activeBroker === 'alpaca' && (
             <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">
-                  Alpaca API Key (Broker)
-                </label>
-                <input
-                  type="text"
-                  value={config.alpacaKeyId ?? ''}
-                  onChange={e => setConfig(prev => ({ ...prev, alpacaKeyId: e.target.value }))}
-                  placeholder="APCA-API-KEY-ID"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
-                />
-              </div>
               <SecretInput
+                id="alpaca-key-id"
+                label="Alpaca API Key ID (Broker)"
+                value={config.alpacaKeyId ?? ''}
+                onChange={v => setConfig(prev => ({ ...prev, alpacaKeyId: v }))}
+                placeholder="APCA-API-KEY-ID"
+              />
+              <SecretInput
+                id="alpaca-secret-key"
                 label="Alpaca Secret Key (Broker)"
                 value={config.alpacaSecretKey ?? ''}
                 onChange={v => setConfig(prev => ({ ...prev, alpacaSecretKey: v }))}
                 placeholder="APCA-API-SECRET-KEY"
               />
               <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700">
-                <p className="text-xs font-medium text-slate-300 mb-1">PDT Rule Reminder</p>
+                <p className="text-xs font-semibold text-slate-300 mb-1">PDT Rule Reminder</p>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   US accounts under $25,000 are limited to 3 round-trip day trades per 5 business days on margin accounts.
                 </p>
@@ -450,7 +416,7 @@ export function DataFeedConfig() {
           {activeBroker === 'oanda' && (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
                   Account Type
                 </label>
                 <div className="flex gap-2">
@@ -458,7 +424,7 @@ export function DataFeedConfig() {
                     <button
                       key={t}
                       onClick={() => setConfig(prev => ({ ...prev, oandaAccountType: t }))}
-                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-all capitalize ${
+                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold border transition-all capitalize ${
                         config.oandaAccountType === t
                           ? t === 'live'
                             ? 'border-red-500/40 bg-red-500/10 text-red-400'
@@ -472,7 +438,7 @@ export function DataFeedConfig() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
                   Account ID
                 </label>
                 <input
@@ -484,13 +450,14 @@ export function DataFeedConfig() {
                 />
               </div>
               <SecretInput
+                id="oanda-api-token"
                 label="API Token"
                 value={config.oandaApiToken ?? ''}
                 onChange={v => setConfig(prev => ({ ...prev, oandaApiToken: v }))}
                 placeholder="OANDA Personal Access Token"
               />
               <div className="p-3 rounded-lg bg-sky-500/8 border border-sky-500/20">
-                <p className="text-xs font-medium text-sky-300 mb-1">How to get your OANDA token</p>
+                <p className="text-xs font-semibold text-sky-300 mb-1">How to get your OANDA token</p>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Login to OANDA fxTrade → My Account → Manage API Access → Generate Personal Access Token.
                   Use practice credentials for the Practice environment.
@@ -519,7 +486,7 @@ export function DataFeedConfig() {
                 <button
                   key={sym}
                   onClick={() => toggleSymbol(sym)}
-                  className={`py-2.5 px-3 rounded-lg text-sm font-mono font-medium transition-all border ${
+                  className={`py-2.5 px-3 rounded-lg text-sm font-mono font-semibold transition-all border ${
                     active
                       ? 'bg-emerald-500/12 border-emerald-500/30 text-emerald-400'
                       : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-600'
@@ -535,19 +502,10 @@ export function DataFeedConfig() {
       )}
 
       <div className="flex items-center gap-3 pt-2 border-t border-slate-800">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
-        >
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Settings2 size={14} />}
-          {saved ? 'Saved!' : 'Save Config'}
-        </button>
-
         {isConnected ? (
           <button
             onClick={handleDisconnect}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-sm font-medium rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-sm font-semibold rounded-lg transition-colors"
           >
             <WifiOff size={14} />
             Disconnect
@@ -584,6 +542,21 @@ export function DataFeedConfig() {
             <span className="text-red-400">Max reconnection attempts reached</span>
           </div>
         )}
+      </div>
+
+      <div className="flex justify-end pt-4 border-t border-slate-800/50">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            saved
+              ? 'bg-emerald-500/15 border border-emerald-500/20 text-emerald-400'
+              : 'bg-emerald-500 hover:bg-emerald-400 text-slate-900 disabled:opacity-70'
+          }`}
+        >
+          {saving ? <Loader2 size={16} className="animate-spin" /> : saved ? <CheckCircle2 size={16} /> : <Save size={16} />}
+          {saving ? 'Saving…' : saved ? 'Saved' : 'Save Feed Config'}
+        </button>
       </div>
     </div>
   );
