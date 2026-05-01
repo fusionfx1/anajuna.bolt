@@ -15,10 +15,12 @@ export function DataProvidersSettings() {
   const {
     primaryProvider,
     setPrimaryProvider,
-    eodhd_api_key,
-    setEodhd_api_key,
-    tiingo_api_key,
-    setTiingo_api_key,
+    hasEodhdKey,
+    hasTiingoKey,
+    saveEodhdKey,
+    saveTiingoKey,
+    deleteEodhdKey,
+    deleteTiingoKey,
     cacheTTLDays,
     setCacheTTLDays,
     enableCache,
@@ -26,6 +28,8 @@ export function DataProvidersSettings() {
     testConnection,
   } = useDataProvider()
 
+  const [localEodhdKey, setLocalEodhdKey] = useState('')
+  const [localTiingoKey, setLocalTiingoKey] = useState('')
   const [testingProvider, setTestingProvider] = useState<string | null>(null)
   const [testResults, setTestResults] = useState<Record<string, boolean>>({})
   const [cacheStats, setCacheStats] = useState<CacheStats | null>(null)
@@ -36,12 +40,13 @@ export function DataProvidersSettings() {
   const handleTestConnection = async (provider: string) => {
     setTestingProvider(provider)
     try {
+      const key = provider === 'eodhd' ? localEodhdKey : localTiingoKey
       const success = await testConnection(
-        provider as 'eodhd' | 'tiingo' | 'synthetic'
+        provider as 'eodhd' | 'tiingo' | 'synthetic',
+        key
       )
       setTestResults(prev => ({ ...prev, [provider]: success }))
-    } catch (error) {
-      console.error(`Test connection failed for ${provider}:`, error)
+    } catch {
       setTestResults(prev => ({ ...prev, [provider]: false }))
     } finally {
       setTestingProvider(null)
@@ -75,18 +80,22 @@ export function DataProvidersSettings() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      setEodhd_api_key(eodhd_api_key)
-      setTiingo_api_key(tiingo_api_key)
+      if (localEodhdKey) await saveEodhdKey(localEodhdKey)
+      if (localTiingoKey) await saveTiingoKey(localTiingoKey)
+      setLocalEodhdKey('')
+      setLocalTiingoKey('')
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
+    } catch (e) {
+      console.error('[DataProviders] Save failed:', e)
     } finally {
       setSaving(false)
     }
   }
 
   const canUseProvider = (provider: string): boolean => {
-    if (provider === 'eodhd') return !!eodhd_api_key
-    if (provider === 'tiingo') return !!tiingo_api_key
+    if (provider === 'eodhd') return hasEodhdKey
+    if (provider === 'tiingo') return hasTiingoKey
     return true
   }
 
@@ -126,7 +135,7 @@ export function DataProvidersSettings() {
       </div>
 
       {/* No-keys warning */}
-      {!eodhd_api_key && !tiingo_api_key && (
+      {!hasEodhdKey && !hasTiingoKey && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/8 border border-amber-500/20 text-amber-300 text-xs">
           <AlertCircle size={13} className="shrink-0" />
           No backtest API keys configured — backtests will use synthetic data.
@@ -139,15 +148,24 @@ export function DataProvidersSettings() {
         <SecretInput
           id="eodhd-api-key"
           label="EODHD API Key"
-          value={eodhd_api_key}
-          onChange={setEodhd_api_key}
+          value={localEodhdKey}
+          onChange={setLocalEodhdKey}
           placeholder="Enter your EODHD API key"
-          hint={!eodhd_api_key ? 'Not configured — save a key to enable this provider' : undefined}
+          hint={hasEodhdKey ? 'Key saved — enter a new key to rotate' : 'Not configured — save a key to enable this provider'}
         />
+        {hasEodhdKey && (
+          <button
+            type="button"
+            onClick={deleteEodhdKey}
+            className="text-xs text-red-400/70 hover:text-red-400 transition-colors mt-1"
+          >
+            Remove saved key
+          </button>
+        )}
         <div className="flex items-center gap-3 pt-1">
           <button
             onClick={() => handleTestConnection('eodhd')}
-            disabled={testingProvider === 'eodhd' || !eodhd_api_key}
+            disabled={testingProvider === 'eodhd' || (!localEodhdKey && !hasEodhdKey)}
             className="flex items-center gap-2 px-3 py-2 bg-sky-500/10 border border-sky-500/20 text-sky-400 rounded-lg text-xs font-semibold hover:bg-sky-500/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {testingProvider === 'eodhd' ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
@@ -172,15 +190,24 @@ export function DataProvidersSettings() {
         <SecretInput
           id="tiingo-api-key"
           label="Tiingo API Key"
-          value={tiingo_api_key}
-          onChange={setTiingo_api_key}
+          value={localTiingoKey}
+          onChange={setLocalTiingoKey}
           placeholder="Enter your Tiingo API key"
-          hint={!tiingo_api_key ? 'Not configured — save a key to enable this provider' : undefined}
+          hint={hasTiingoKey ? 'Key saved — enter a new key to rotate' : 'Not configured — save a key to enable this provider'}
         />
+        {hasTiingoKey && (
+          <button
+            type="button"
+            onClick={deleteTiingoKey}
+            className="text-xs text-red-400/70 hover:text-red-400 transition-colors mt-1"
+          >
+            Remove saved key
+          </button>
+        )}
         <div className="flex items-center gap-3 pt-1">
           <button
             onClick={() => handleTestConnection('tiingo')}
-            disabled={testingProvider === 'tiingo' || !tiingo_api_key}
+            disabled={testingProvider === 'tiingo' || (!localTiingoKey && !hasTiingoKey)}
             className="flex items-center gap-2 px-3 py-2 bg-sky-500/10 border border-sky-500/20 text-sky-400 rounded-lg text-xs font-semibold hover:bg-sky-500/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {testingProvider === 'tiingo' ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
