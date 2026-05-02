@@ -10,6 +10,10 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "test": "vitest run",
+    "e2e": "playwright test",
+    "e2e:report": "playwright show-report",
+    "e2e": "playwright test",
+    "e2e:report": "playwright show-report",
     "graphify:ast": "python scripts/graphify_ast_update.py",
     "graphify:install-python": "python -m pip install -r requirements-graphify.txt"
   },

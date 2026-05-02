@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import {
   Play, Pause, Square, Settings2, Plus,
-  TrendingUp, BarChart3, Target, Zap, ChevronDown, ChevronUp
+  TrendingUp, BarChart3, Target, Zap, ChevronDown, ChevronUp, Sparkles
 } from 'lucide-react';
 import { useStrategies } from '../hooks/useSupabaseData';
 import { useAuth } from '../context/AuthContext';
 import { NewStrategyModal } from './strategies/NewStrategyModal';
 import { ConfigEditorModal } from './strategies/ConfigEditorModal';
+import { STRATEGY_SEEDS, SEED_NAMES } from '../services/strategySeeds';
 import type { Strategy } from '../types/trading';
 
 function StatusBadge({ status }: { status: Strategy['status'] }) {
@@ -58,6 +59,7 @@ function StrategyCard({
     trend_following: 'bg-emerald-500/10 text-emerald-400',
     mean_reversion: 'bg-rose-500/10 text-rose-400',
     arbitrage: 'bg-teal-500/10 text-teal-400',
+    agent_fused: 'bg-fuchsia-500/10 text-fuchsia-400',
   };
 
   async function handleToggle(newStatus: Strategy['status']) {
@@ -196,6 +198,52 @@ export function Strategies() {
   const { strategies, loading, toggleStatus, addStrategy, saveConfig } = useStrategies();
   const [showNew, setShowNew] = useState(false);
   const [editTarget, setEditTarget] = useState<Strategy | null>(null);
+  const [seedingState, setSeedingState] = useState<'idle' | 'seeding' | 'done' | 'error'>('idle');
+  const [seedError, setSeedError] = useState<string | null>(null);
+
+  async function handleRestoreSeeds() {
+    if (!user) {
+      setSeedingState('error');
+      setSeedError('You must be signed in to restore seeds.');
+      setTimeout(() => setSeedingState('idle'), 4000);
+      return;
+    }
+    setSeedingState('seeding');
+    setSeedError(null);
+    let currentSeed = '';
+    try {
+      const existingNames = new Set(strategies.map((s) => s.name));
+      const toCreate = STRATEGY_SEEDS.filter((seed) => !existingNames.has(seed.name));
+      if (toCreate.length === 0) {
+        setSeedingState('done');
+        setTimeout(() => setSeedingState('idle'), 2000);
+        return;
+      }
+      for (const seed of toCreate) {
+        currentSeed = seed.name;
+        await addStrategy(user.id, seed);
+      }
+      setSeedingState('done');
+      setTimeout(() => setSeedingState('idle'), 2000);
+    } catch (e) {
+      // Supabase / Postgrest errors are plain objects, not Error instances.
+      // Extract every useful field so the user sees the real cause.
+      console.error('[restoreSeeds] failed at seed:', currentSeed, e);
+      const err = e as { message?: string; details?: string; hint?: string; code?: string };
+      const parts = [
+        err?.message,
+        err?.details,
+        err?.hint && `(hint: ${err.hint})`,
+        err?.code && `[${err.code}]`,
+      ].filter(Boolean);
+      const detail = parts.length > 0 ? parts.join(' ') : String(e);
+      setSeedingState('error');
+      setSeedError(`Seed "${currentSeed}" failed: ${detail}`);
+      setTimeout(() => setSeedingState('idle'), 8000);
+    }
+  }
+
+  const allSeedsPresent = SEED_NAMES.every((name) => strategies.some((s) => s.name === name));
 
   const filtered = filter === 'all' ? strategies : strategies.filter(s => s.status === filter);
   const counts = {
@@ -227,13 +275,31 @@ export function Strategies() {
             </button>
           ))}
         </div>
-        <button
-          onClick={() => setShowNew(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-900 rounded-lg text-sm font-semibold transition-colors"
-        >
-          <Plus size={16} /> New Strategy
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRestoreSeeds}
+            disabled={seedingState === 'seeding' || allSeedsPresent}
+            title={allSeedsPresent ? 'All 5 starter strategies already exist' : 'Add the 5 curated experiment strategies'}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:text-slate-600 disabled:cursor-not-allowed text-slate-200 rounded-lg text-sm font-semibold transition-colors border border-slate-700"
+          >
+            <Sparkles size={16} className="text-fuchsia-400" />
+            {seedingState === 'seeding' ? 'Restoring…'
+              : seedingState === 'done' ? 'Restored ✓'
+              : seedingState === 'error' ? 'Failed'
+              : allSeedsPresent ? 'Seeds installed'
+              : 'Restore 5 starter strategies'}
+          </button>
+          <button
+            onClick={() => setShowNew(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-900 rounded-lg text-sm font-semibold transition-colors"
+          >
+            <Plus size={16} /> New Strategy
+          </button>
+        </div>
       </div>
+      {seedError && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 text-xs text-red-400">{seedError}</div>
+      )}
 
       {loading ? (
         <div className="text-center py-12 text-slate-600 text-sm">Loading strategies...</div>

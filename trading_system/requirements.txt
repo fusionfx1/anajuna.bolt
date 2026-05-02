@@ -7,3 +7,8 @@ requests>=2.31.0
 loguru>=0.7.2
 pytest>=7.4.0
 crewai>=0.86,<2
+# Wave 1+: agent team dependencies
+httpx>=0.27.0
+tenacity>=8.2.0
+langgraph>=0.2.0
+openai>=1.30.0

@@ -31,6 +31,7 @@ const BADGE_COLOR: Record<string, string> = {
   Session: 'bg-violet-500/15 text-violet-400',
   Fast: 'bg-rose-500/15 text-rose-400',
   Quant: 'bg-cyan-500/15 text-cyan-400',
+  AI: 'bg-fuchsia-500/15 text-fuchsia-400',
   Custom: 'bg-slate-700 text-slate-400',
 };
 

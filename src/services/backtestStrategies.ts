@@ -300,6 +300,116 @@ export const swingStrategy: StrategyFn = (candles, index, config, state) => {
   return { side: null };
 };
 
+// --- Agent Fused: Multi-indicator council vote (backtest proxy) ---
+//
+// In LIVE paper trading the AI Council strategy reads the real `agent_decisions`
+// feed (news_agent + fred_agent + sentiment_agent + technical_agent fusion).
+//
+// In BACKTEST we have no historical agent decisions, so we simulate the council
+// with four deterministic technical proxies and trade only when ≥ min_agreement
+// of them vote the same direction. This keeps the council semantics intact:
+// a fused signal that requires concurrence, not a single noisy indicator.
+
+export const agentFusedStrategy: StrategyFn = (candles, index, config, state) => {
+  const minAgreement = (config.min_agreement as number) || 3;
+  const tpPips       = (config.tp_pips as number) || 50;
+  const slPips       = (config.sl_pips as number) || 30;
+  const rsiPeriod    = 14;
+  const bbPeriod     = 20;
+  const emaFastP     = 50;
+  const emaSlowP     = 200;
+
+  const pip = candles[0] && (candles[0].close > 50 ? 0.1 : candles[0].close > 10 ? 0.01 : 0.0001);
+  const warmup = Math.max(emaSlowP, bbPeriod, rsiPeriod + 1, 26 + 9);
+  if (index < warmup) return { side: null };
+
+  if (!state.emaFast) {
+    state.emaFast    = smaInit(candles, warmup - 1, emaFastP);
+    state.emaSlow    = smaInit(candles, warmup - 1, emaSlowP);
+    state.emaMACD12  = smaInit(candles, warmup - 1, 12);
+    state.emaMACD26  = smaInit(candles, warmup - 1, 26);
+    state.emaSignal  = 0;
+    state.macdReady  = false;
+    state.macdCount  = 0;
+    state.rsiAvgGain = 0;
+    state.rsiAvgLoss = 0;
+    for (let i = 1; i <= rsiPeriod; i++) {
+      const d = candles[i].close - candles[i - 1].close;
+      if (d > 0) (state.rsiAvgGain as number) += d;
+      else (state.rsiAvgLoss as number) -= d;
+    }
+    state.rsiAvgGain = (state.rsiAvgGain as number) / rsiPeriod;
+    state.rsiAvgLoss = (state.rsiAvgLoss as number) / rsiPeriod;
+    state.lastRsiIdx = rsiPeriod;
+  }
+
+  // Update EMAs
+  state.emaFast   = emaStep(state.emaFast as number, candles[index].close, emaFastP);
+  state.emaSlow   = emaStep(state.emaSlow as number, candles[index].close, emaSlowP);
+  state.emaMACD12 = emaStep(state.emaMACD12 as number, candles[index].close, 12);
+  state.emaMACD26 = emaStep(state.emaMACD26 as number, candles[index].close, 26);
+  const macdLine = (state.emaMACD12 as number) - (state.emaMACD26 as number);
+
+  if (!(state.macdReady as boolean)) {
+    state.macdCount = (state.macdCount as number) + 1;
+    if ((state.macdCount as number) >= 9) {
+      state.emaSignal = macdLine;
+      state.macdReady = true;
+    }
+  } else {
+    state.emaSignal = emaStep(state.emaSignal as number, macdLine, 9);
+  }
+  const macdHist = macdLine - (state.emaSignal as number);
+
+  // RSI incremental
+  let avgGain = state.rsiAvgGain as number;
+  let avgLoss = state.rsiAvgLoss as number;
+  for (let j = (state.lastRsiIdx as number) + 1; j <= index; j++) {
+    const d = candles[j].close - candles[j - 1].close;
+    avgGain = (avgGain * (rsiPeriod - 1) + (d > 0 ? d : 0)) / rsiPeriod;
+    avgLoss = (avgLoss * (rsiPeriod - 1) + (d < 0 ? -d : 0)) / rsiPeriod;
+  }
+  state.rsiAvgGain = avgGain;
+  state.rsiAvgLoss = avgLoss;
+  state.lastRsiIdx = index;
+  const rsi = avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss);
+
+  // Bollinger position (z-score against 20-bar mean)
+  let sum = 0;
+  for (let j = index - bbPeriod + 1; j <= index; j++) sum += candles[j].close;
+  const mean = sum / bbPeriod;
+  let variance = 0;
+  for (let j = index - bbPeriod + 1; j <= index; j++) {
+    const d = candles[j].close - mean;
+    variance += d * d;
+  }
+  const sd = Math.sqrt(variance / bbPeriod) || 1e-9;
+  const z = (candles[index].close - mean) / sd;
+
+  // Council votes: each ∈ {+1 BUY, -1 SELL, 0 abstain}
+  const trendVote = (state.emaFast as number) > (state.emaSlow as number) ? 1
+                  : (state.emaFast as number) < (state.emaSlow as number) ? -1 : 0;
+  const macdVote  = macdHist > 0 ? 1 : macdHist < 0 ? -1 : 0;
+  // Mean-reversion vote: oversold → BUY, overbought → SELL
+  const rsiVote   = rsi < 35 ? 1 : rsi > 65 ? -1 : 0;
+  // Volatility vote: deeply below band → BUY, deeply above → SELL
+  const bbVote    = z < -1.5 ? 1 : z > 1.5 ? -1 : 0;
+
+  const buyVotes  = [trendVote, macdVote, rsiVote, bbVote].filter((v) => v === 1).length;
+  const sellVotes = [trendVote, macdVote, rsiVote, bbVote].filter((v) => v === -1).length;
+
+  const price = candles[index].close;
+
+  if (buyVotes >= minAgreement) {
+    return { side: 'BUY', tp: price + tpPips * pip, sl: price - slPips * pip };
+  }
+  if (sellVotes >= minAgreement) {
+    return { side: 'SELL', tp: price - tpPips * pip, sl: price + slPips * pip };
+  }
+
+  return { side: null };
+};
+
 // --- Strategy resolver ---
 
 export function getStrategyFn(strategyType: string): StrategyFn {
@@ -308,6 +418,7 @@ export function getStrategyFn(strategyType: string): StrategyFn {
     case 'trend_following': return trendFollowingStrategy;
     case 'mean_reversion':  return meanReversionStrategy;
     case 'swing':           return swingStrategy;
+    case 'agent_fused':     return agentFusedStrategy;
     default:                return scalpingStrategy;
   }
 }
@@ -325,6 +436,8 @@ export function getDefaultStrategyConfig(strategyType: string): Record<string, u
       return { atr_period: 14, tp_pips: 30, sl_pips: 20 };
     case 'arbitrage':
       return {};
+    case 'agent_fused':
+      return { min_confidence: 0.7, min_agreement: 3, tp_pips: 50, sl_pips: 30, max_decision_age_sec: 300 };
     default:
       return { ema_fast: 9, ema_slow: 21, tp_pips: 15, sl_pips: 10 };
   }

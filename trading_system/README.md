@@ -240,3 +240,106 @@ python -m trading_system.main \
 ```bash
 pytest trading_system/tests/ -v
 ```
+
+---
+
+## Agent Layer (Phase 1 + Phase 2)
+
+ทีมเอเจนต์ที่ทำงานแบบ parallel เพื่อสร้าง signal ที่ rich context กว่า rule engine เดิม
+
+### สถาปัตยกรรม
+
+```
+run_live()
+    └─ AgentSignalProvider
+          ├─ USE_LANGGRAPH=0 → KronosOrchestrator (parallel)
+          │      ├─ NewsAgent         httpx + LLM bias
+          │      ├─ FredAgent         FRED macro series
+          │      ├─ SentimentAgent    Social / Finnhub sentiment
+          │      └─ TechnicalAgent    ← rule engine wrapped
+          │
+          └─ USE_LANGGRAPH=1 → LangGraph Supervisor
+                 gather → memory(pgvector) → fuse → guard → decide
+```
+
+### Behavior contracts
+
+| สถานการณ์ | ผลลัพธ์ |
+|----------|---------|
+| Agent timeout (>1500ms) | HOLD, status=warning |
+| Network error | retry 1 ครั้ง + jitter 100–300ms → HOLD ถ้ายังล้มเหลว |
+| Agent ส่ง status=error | ถูก skip ใน fusion |
+| ทุก agent error | HOLD + blockers=[all_agents_errored] |
+| CircuitBreaker tripped | HOLD + blockers=[CIRCUIT_BREAKER] |
+| Budget เกิน AGENT_BUDGET_MS | HOLD + blockers=[budget_exceeded] |
+
+### Environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SIGNAL_MODE` | `rules` | `rules` = rule engine, `agent` = agent team |
+| `USE_LANGGRAPH` | `0` | `1` = ใช้ LangGraph supervisor |
+| `AGENT_TIMEOUT_MS_PER_CALL` | `1500` | deadline ต่อ agent call (ms) |
+| `AGENT_BUDGET_MS` | `4000` | budget รวมของ gather cycle (ms) |
+| `USE_PGVECTOR` | `1` | `0` = ปิด vector memory |
+| `MEMORY_TOP_K` | `5` | จำนวน similar decisions ที่ retrieve |
+| `OPENAI_API_KEY` | — | สำหรับ LLM bias + embeddings |
+| `NEWS_API_KEY` | — | NewsAPI.org |
+| `FINNHUB_API_KEY` | — | Finnhub news + sentiment |
+| `ALPHA_VANTAGE_API_KEY` | — | Alpha Vantage news sentiment |
+| `FRED_API_KEY` | — | FRED macro series |
+| `SENTIMENT_API_KEY` | — | Generic sentiment (Finnhub endpoint) |
+| `TWITTER_BEARER_TOKEN` | — | Twitter v2 recent search |
+
+### ตั้งค่า
+
+```bash
+cp trading_system/.env.example .env
+# แก้ไขค่าตามต้องการ
+```
+
+### เปิดใช้ agent mode
+
+```python
+import os
+os.environ["SIGNAL_MODE"] = "agent"
+
+from trading_system import generate_trading_system, run_live
+system = generate_trading_system(prompt="...", user_id="...")
+run_live(system=system, poll_interval_seconds=60)
+```
+
+### เปิดใช้ LangGraph supervisor (Phase 2)
+
+```python
+os.environ["SIGNAL_MODE"] = "agent"
+os.environ["USE_LANGGRAPH"] = "1"
+os.environ["USE_PGVECTOR"] = "1"  # ต้อง deploy migration ก่อน
+```
+
+### ไฟล์ใหม่ใน agents/
+
+| ไฟล์ | หน้าที่ |
+|------|--------|
+| `runtime.py` | `evaluate_with_deadline()` — timeout/retry/fallback |
+| `tech_agent.py` | TechnicalSignalAgent wrapping rule engine |
+| `news_agent.py` | NewsAPI / Finnhub / Alpha Vantage + LLM bias |
+| `fred_agent.py` | FRED macro series → macro surprise heuristic |
+| `sentiment_agent.py` | Twitter / Finnhub sentiment → bias |
+| `fusion.py` | (upgraded) error filtering + decision_id + blockers |
+| `schemas.py` | (upgraded) status/latency/agent_id/decision_id fields |
+| `supervisor.py` | LangGraph pipeline (Phase 2) |
+| `persistence.py` | append-only write to `agent_decisions` table |
+| `embedding.py` | OpenAI embeddings + Supabase RPC top-k retrieval |
+
+### Supabase migration
+
+```bash
+# Run from Supabase CLI
+supabase db push
+# หรือ apply manually:
+# supabase/migrations/20260430120000_create_agent_decisions.sql
+```
+
+สร้างตาราง `agent_decisions` (RLS, jsonb contributions, vector 1536-dim) และ
+เพิ่มคอลัมน์ `decision_id` ใน `managed_orders`

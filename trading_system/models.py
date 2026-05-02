@@ -131,6 +131,7 @@ class Signal:
     indicator_value: float
     price: float
     reason: str = ""
+    decision_id: str = ""  # populated by AgentSignalProvider; empty for rule-based path
 
 
 @dataclass

@@ -1,4 +1,4 @@
-export type StrategyType = 'scalping' | 'swing' | 'trend_following' | 'mean_reversion' | 'arbitrage';
+export type StrategyType = 'scalping' | 'swing' | 'trend_following' | 'mean_reversion' | 'arbitrage' | 'agent_fused';
 export type StrategyStatus = 'active' | 'paused' | 'stopped' | 'backtesting' | 'error';
 export type PositionDirection = 'BUY' | 'SELL';
 export type PositionStatus = 'open' | 'closed' | 'cancelled';

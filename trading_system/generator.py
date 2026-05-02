@@ -226,7 +226,7 @@ def run_live(
             logger.warning(f"Supabase unavailable for live logging: {exc}")
 
     settings = db.get_user_settings() if db else None
-    signal_provider = signal_provider_from_env()
+    signal_provider = signal_provider_from_env(user_id=user_id)
 
     circuit = CircuitBreaker(
         max_daily_loss_pct=float(settings.get("max_daily_loss_pct", 3.0)) / 100
@@ -312,6 +312,11 @@ def run_live(
                         else price * (1 - config.take_profit_pct)
                     )
 
+                    # Encode decision_id in client_id for broker-side traceability
+                    # Format: "d:{8-char-uuid-prefix}:{strategy_name[:16]}:{iter}"
+                    decision_tag = ""
+                    if hasattr(signal, "decision_id") and signal.decision_id:
+                        decision_tag = f"d:{signal.decision_id[:8]}:"
                     order = OrderRequest(
                         symbol=symbol,
                         side=side,
@@ -319,7 +324,7 @@ def run_live(
                         quantity=config.lot_size,
                         stop_loss=sl,
                         take_profit=tp,
-                        client_id=f"{config.name[:20]}-{iteration}",
+                        client_id=f"{decision_tag}{config.name[:16]}-{iteration}",
                     )
 
                     result = active_broker.submit_order(order)

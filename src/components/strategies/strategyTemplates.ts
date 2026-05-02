@@ -107,6 +107,19 @@ export const STRATEGY_TEMPLATES: StrategyTemplate[] = [
     difficulty: 'Advanced',
   },
   {
+    id: 'ai_council',
+    label: 'AI Council (Agent Fused)',
+    description: 'Trades only when ≥3 agents (news / FRED / sentiment / technical) agree with confidence ≥0.7. Reads from agent_decisions feed.',
+    strategy_type: 'agent_fused',
+    symbols: ['EURUSD'],
+    config: { min_confidence: 0.7, min_agreement: 3, tp_pips: 50, sl_pips: 30, max_decision_age_sec: 300 },
+    max_drawdown_pct: 3.0,
+    lot_size: 0.01,
+    max_concurrent_trades: 1,
+    badge: 'AI',
+    difficulty: 'Advanced',
+  },
+  {
     id: 'custom',
     label: 'Custom Strategy',
     description: 'Start from a blank slate and configure every parameter manually.',
@@ -133,4 +146,5 @@ export const STRATEGY_TYPE_LABELS: Record<string, string> = {
   trend_following: 'Trend Following',
   mean_reversion: 'Mean Reversion',
   arbitrage: 'Arbitrage',
+  agent_fused: 'Agent Fused',
 };
