@@ -24,7 +24,7 @@ function ImpactBadge({ impact }: { impact: ImpactLevel }) {
 // ── News row ──────────────────────────────────────────────────────────────────
 
 function NewsRow({ event }: { event: NewsEvent }) {
-  const mins       = event.utcMs !== null ? minsUntil(event.utcMs) : null;
+  const mins       = event.utcMs != null ? minsUntil(event.utcMs) : null;
   const isImminent = mins !== null && mins >= 0 && mins <= 30;
   const isLive     = mins !== null && mins < 0 && mins > -60;
 
@@ -34,7 +34,7 @@ function NewsRow({ event }: { event: NewsEvent }) {
     ? 'bg-amber-500/8 border-l-2 border-amber-500/40'
     : 'border-l-2 border-transparent';
 
-  const timeStr = event.utcMs !== null ? fmtTimeBangkok(event.utcMs) : 'All Day';
+  const timeStr = event.utcMs != null ? fmtTimeBangkok(event.utcMs) : 'All Day';
 
   return (
     <tr className={`border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors ${rowBg}`}>
@@ -90,14 +90,14 @@ function DayHeader({ label }: { label: string }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export function NewsCalendar() {
-  const { events, loading, error, refresh } = useNewsData();
+  const { events, loading, error, source, refresh } = useNewsData();
   const [highOnly, setHighOnly] = useState(false);
 
   const grouped = useMemo(() => {
     const filtered = highOnly ? events.filter(e => e.impact === 'high') : events;
     const days = new Map<string, NewsEvent[]>();
     for (const ev of filtered) {
-      const key = ev.utcMs !== null ? fmtDateBangkok(ev.utcMs) : 'All Day / TBD';
+      const key = ev.utcMs != null ? fmtDateBangkok(ev.utcMs) : 'All Day / TBD';
       if (!days.has(key)) days.set(key, []);
       days.get(key)!.push(ev);
     }
@@ -106,7 +106,7 @@ export function NewsCalendar() {
 
   const totalHigh = events.filter(e => e.impact === 'high').length;
   const now = Date.now();
-  const nextImminent = events.find(e => e.impact === 'high' && e.utcMs !== null && e.utcMs > now);
+  const nextImminent = events.find(e => e.impact === 'high' && e.utcMs != null && e.utcMs > now);
 
   return (
     <div className="p-6 space-y-5">
@@ -120,6 +120,15 @@ export function NewsCalendar() {
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
             Asia/Bangkok (UTC+7) · This week · {totalHigh} high-impact events
+            {source && (
+              <span className={`ml-2 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                source === 'finnhub'
+                  ? 'bg-emerald-500/15 text-emerald-400'
+                  : 'bg-slate-700/60 text-slate-500'
+              }`}>
+                {source === 'finnhub' ? '● Live' : '● Demo'}
+              </span>
+            )}
           </p>
         </div>
 
@@ -158,7 +167,7 @@ export function NewsCalendar() {
       </div>
 
       {/* Next high-impact callout */}
-      {nextImminent && nextImminent.utcMs !== null && (
+      {nextImminent && nextImminent.utcMs != null && (
         <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/25 rounded-xl px-4 py-3">
           <span className="text-lg">{nextImminent.flag}</span>
           <div className="flex-1 min-w-0">
