@@ -7,6 +7,8 @@ import {
 } from '../services/tradingService';
 import type { Strategy, Position, Trade, EquitySnapshot, RiskEvent, AccountSummary, PerformanceMetrics } from '../types/trading';
 
+const isDemo = (userId: string | undefined) => userId === 'demo-user';
+
 export function useStrategies() {
   const { user } = useAuth();
   const [strategies, setStrategies] = useState<Strategy[]>([]);
@@ -15,6 +17,7 @@ export function useStrategies() {
 
   const load = useCallback(async () => {
     if (!user) { setLoading(false); return; }
+    if (isDemo(user.id)) { setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {
@@ -30,19 +33,43 @@ export function useStrategies() {
   useEffect(() => { load(); }, [load]);
 
   const toggleStatus = useCallback(async (id: string, newStatus: Strategy['status']) => {
+    if (isDemo(user?.id)) {
+      setStrategies(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
+      return;
+    }
     await updateStrategyStatus(id, newStatus);
     setStrategies(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
-  }, []);
+  }, [user]);
 
-  const addStrategy = useCallback(async (userId: string, payload: Parameters<typeof createStrategy>[1]) => {
+  const addStrategy = useCallback(async (userId: string, payload: Parameters<typeof createStrategy>[1]): Promise<void> => {
+    if (isDemo(userId)) {
+      const mock = {
+        total_trades: 0,
+        win_rate: 0,
+        total_pnl_usd: 0,
+        sharpe_ratio: 0,
+        updated_at: new Date().toISOString(),
+        ...payload,
+        id: `demo-${Date.now()}`,
+        user_id: userId,
+        status: 'active' as const,
+        created_at: new Date().toISOString(),
+      } as unknown as Strategy;
+      setStrategies(prev => [mock, ...prev]);
+      return;
+    }
     const created = await createStrategy(userId, payload);
     setStrategies(prev => [created, ...prev]);
   }, []);
 
   const saveConfig = useCallback(async (id: string, updates: Parameters<typeof updateStrategyConfig>[1]) => {
+    if (isDemo(user?.id)) {
+      setStrategies(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+      return;
+    }
     await updateStrategyConfig(id, updates);
     setStrategies(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
-  }, []);
+  }, [user]);
 
   return { strategies, loading, error, refresh: load, toggleStatus, addStrategy, saveConfig };
 }
