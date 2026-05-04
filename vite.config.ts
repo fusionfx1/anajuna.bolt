@@ -25,14 +25,14 @@ export default defineConfig({
             'src/components/backtest/BacktestDataSource.tsx',
             'src/components/backtest/ComparisonResults.tsx',
             'src/hooks/useComparisonBacktest.ts',
-            'src/context/DataProviderContext.tsx',
           ],
-          
+
           // Data fetching & normalization
           'data-layer': [
             'src/services/dataFetchers/fetchOHLCV.ts',
             'src/services/dataFetchers/eodhd.ts',
             'src/services/dataFetchers/tiingo.ts',
+            'src/services/dataFetchers/massive.ts',
             'src/services/dataFetchers/synthetic.ts',
             'src/services/normalize.ts',
             'src/services/cache.ts',
