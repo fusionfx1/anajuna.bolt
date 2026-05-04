@@ -90,7 +90,143 @@ export async function updateStrategyConfig(id: string, updates: {
   if (error) throw error;
 }
 
+const DEMO = 'demo-user';
+
+// ─── Demo mock data ───────────────────────────────────────────────────────────
+function demoTrades(): Trade[] {
+  const now = Date.now();
+  const pairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
+  const sides: Trade['side'][] = ['BUY', 'SELL'];
+  return Array.from({ length: 20 }, (_, i) => {
+    const side = sides[i % 2];
+    const fill = 1.08 + (i * 0.0031);
+    const pnl = parseFloat(((Math.random() - 0.38) * 120).toFixed(2));
+    return {
+      id: `demo-trade-${i}`,
+      position_id: `demo-pos-${i}`,
+      strategy_id: 'demo-strat-1',
+      strategy_name: 'RSI Scalper',
+      symbol: pairs[i % pairs.length],
+      order_type: 'MARKET',
+      side,
+      quantity: 0.1,
+      requested_price: fill,
+      fill_price: fill + 0.0001,
+      slippage_pips: 0.1,
+      commission_usd: 0.07,
+      swap_usd: 0,
+      pnl_usd: pnl,
+      broker_order_id: `ORD-${1000 + i}`,
+      execution_latency_ms: 12 + i,
+      executed_at: new Date(now - (i + 1) * 3_600_000).toISOString(),
+    };
+  });
+}
+
+function demoPositions(): Position[] {
+  return [
+    {
+      id: 'demo-pos-open-1',
+      strategy_id: 'demo-strat-1',
+      strategy_name: 'RSI Scalper',
+      symbol: 'EURUSD',
+      direction: 'BUY',
+      lot_size: 0.1,
+      entry_price: 1.0842,
+      exit_price: null,
+      stop_loss: 1.0812,
+      take_profit: 1.0902,
+      pnl_usd: 14.5,
+      pnl_pips: 14.5,
+      current_price: 1.0856,
+      unrealized_pnl: 14.5,
+      status: 'open',
+      opened_at: new Date(Date.now() - 7_200_000).toISOString(),
+      closed_at: null,
+      broker_ticket_id: 'TKT-8801',
+    },
+    {
+      id: 'demo-pos-open-2',
+      strategy_id: 'demo-strat-1',
+      strategy_name: 'RSI Scalper',
+      symbol: 'GBPUSD',
+      direction: 'SELL',
+      lot_size: 0.05,
+      entry_price: 1.2715,
+      exit_price: null,
+      stop_loss: 1.2755,
+      take_profit: 1.2635,
+      pnl_usd: -8.2,
+      pnl_pips: -8.2,
+      current_price: 1.2731,
+      unrealized_pnl: -8.2,
+      status: 'open',
+      opened_at: new Date(Date.now() - 3_600_000).toISOString(),
+      closed_at: null,
+      broker_ticket_id: 'TKT-8802',
+    },
+  ];
+}
+
+function demoEquity(): EquitySnapshot[] {
+  const base = Date.now() - 72 * 3_600_000;
+  let bal = 10_000;
+  return Array.from({ length: 72 }, (_, i) => {
+    bal += (Math.random() - 0.46) * 45;
+    return {
+      id: `demo-eq-${i}`,
+      balance: parseFloat(bal.toFixed(2)),
+      equity: parseFloat((bal + (Math.random() - 0.5) * 20).toFixed(2)),
+      margin_used: 120,
+      free_margin: parseFloat((bal - 120).toFixed(2)),
+      drawdown_pct: parseFloat((Math.random() * 2.5).toFixed(3)),
+      open_positions_count: i % 7 === 0 ? 0 : 2,
+      snapshot_at: new Date(base + i * 3_600_000).toISOString(),
+    };
+  });
+}
+
+function demoRiskEvents(): RiskEvent[] {
+  return [
+    {
+      id: 'demo-risk-1',
+      severity: 'INFO',
+      event_type: 'DAILY_SUMMARY',
+      message: 'Daily PnL: +$142.30 | Trades: 8 | Win rate: 62.5%',
+      strategy_id: 'demo-strat-1',
+      action_taken: 'NONE',
+      occurred_at: new Date(Date.now() - 86_400_000).toISOString(),
+    },
+    {
+      id: 'demo-risk-2',
+      severity: 'WARNING',
+      event_type: 'DRAWDOWN_ALERT',
+      message: 'Drawdown reached 2.1% — approaching daily limit of 3%',
+      strategy_id: 'demo-strat-1',
+      action_taken: 'NONE',
+      occurred_at: new Date(Date.now() - 43_200_000).toISOString(),
+    },
+  ];
+}
+
+function demoAccount(): AccountSummary {
+  return {
+    balance: 10_284.50,
+    equity: 10_290.80,
+    margin_used: 240,
+    free_margin: 10_050.80,
+    margin_level_pct: 4287.0,
+    open_pnl: 6.30,
+    daily_pnl: 142.30,
+    daily_pnl_pct: 1.40,
+    drawdown_pct: 0.72,
+    peak_balance: 10_380.00,
+  };
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export async function fetchPositions(userId: string): Promise<Position[]> {
+  if (userId === DEMO) return demoPositions();
   const { data, error } = await supabase
     .from('positions')
     .select('*, strategies(name)')
@@ -118,6 +254,7 @@ export async function fetchPositions(userId: string): Promise<Position[]> {
 }
 
 export async function fetchTrades(userId: string): Promise<Trade[]> {
+  if (userId === DEMO) return demoTrades();
   const { data, error } = await supabase
     .from('trades')
     .select('*, strategies(name)')
@@ -147,6 +284,7 @@ export async function fetchTrades(userId: string): Promise<Trade[]> {
 }
 
 export async function fetchEquitySnapshots(userId: string, limit = 720): Promise<EquitySnapshot[]> {
+  if (userId === DEMO) return demoEquity();
   const { data, error } = await supabase
     .from('equity_snapshots')
     .select('*')
@@ -167,6 +305,7 @@ export async function fetchEquitySnapshots(userId: string, limit = 720): Promise
 }
 
 export async function fetchRiskEvents(userId: string): Promise<RiskEvent[]> {
+  if (userId === DEMO) return demoRiskEvents();
   const { data, error } = await supabase
     .from('risk_events')
     .select('*, strategies(name)')
@@ -187,6 +326,7 @@ export async function fetchRiskEvents(userId: string): Promise<RiskEvent[]> {
 }
 
 export async function fetchAccountSnapshot(userId: string): Promise<AccountSummary | null> {
+  if (userId === DEMO) return demoAccount();
   const { data, error } = await supabase
     .from('account_snapshots')
     .select('*')
@@ -208,7 +348,47 @@ export async function fetchAccountSnapshot(userId: string): Promise<AccountSumma
   };
 }
 
+const USER_SETTINGS_LS_PREFIX = 'anjuna_user_settings:';
+
+/** Demo session uses id "demo-user" — not a valid UUID for auth.users FK; persist locally instead. */
+function isLocalStoredUserSettings(userId: string): boolean {
+  return userId === 'demo-user';
+}
+
+function readUserSettingsLocal(userId: string): Record<string, unknown> | null {
+  try {
+    if (typeof globalThis.localStorage === 'undefined') return null;
+    const raw = globalThis.localStorage.getItem(USER_SETTINGS_LS_PREFIX + userId);
+    if (!raw) return null;
+    const o = JSON.parse(raw) as unknown;
+    return typeof o === 'object' && o !== null && !Array.isArray(o) ? (o as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
+function upsertUserSettingsLocal(userId: string, settings: Record<string, unknown>): void {
+  if (typeof globalThis.localStorage === 'undefined') {
+    throw new Error('Cannot persist settings in this environment');
+  }
+  const prev = readUserSettingsLocal(userId) ?? {};
+  const merged = {
+    ...prev,
+    ...settings,
+    user_id: userId,
+    updated_at: new Date().toISOString(),
+  };
+  globalThis.localStorage.setItem(USER_SETTINGS_LS_PREFIX + userId, JSON.stringify(merged));
+}
+
 export async function fetchUserSettings(userId: string) {
+  if (isLocalStoredUserSettings(userId)) {
+    return readUserSettingsLocal(userId);
+  }
+  if (!supabase) {
+    return readUserSettingsLocal(userId);
+  }
+
   const { data, error } = await supabase
     .from('user_settings')
     .select('*')
@@ -219,9 +399,22 @@ export async function fetchUserSettings(userId: string) {
 }
 
 export async function upsertUserSettings(userId: string, settings: Record<string, unknown>) {
+  const row = {
+    ...settings,
+    updated_at: new Date().toISOString(),
+  };
+  if (isLocalStoredUserSettings(userId)) {
+    upsertUserSettingsLocal(userId, row);
+    return;
+  }
+  if (!supabase) {
+    upsertUserSettingsLocal(userId, row);
+    return;
+  }
+
   const { error } = await supabase
     .from('user_settings')
-    .upsert({ user_id: userId, ...settings, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+    .upsert({ user_id: userId, ...row }, { onConflict: 'user_id' });
   if (error) throw error;
 }
 
