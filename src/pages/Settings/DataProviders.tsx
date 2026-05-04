@@ -8,6 +8,7 @@ import { SecretInput } from '../../components/ui/SecretInput'
 const PROVIDER_DESCRIPTIONS: Record<string, string> = {
   eodhd: 'Historical OHLCV + fundamentals. Requires API key.',
   tiingo: 'End-of-day prices and news. Requires API key.',
+  massive: 'Forex, stocks, crypto, futures. REST + WebSocket.',
   synthetic: 'Generated data. No API key needed.',
 }
 
@@ -17,10 +18,13 @@ export function DataProvidersSettings() {
     setPrimaryProvider,
     hasEodhdKey,
     hasTiingoKey,
+    hasMassiveKey,
     saveEodhdKey,
     saveTiingoKey,
+    saveMassiveKey,
     deleteEodhdKey,
     deleteTiingoKey,
+    deleteMassiveKey,
     cacheTTLDays,
     setCacheTTLDays,
     enableCache,
@@ -30,6 +34,7 @@ export function DataProvidersSettings() {
 
   const [localEodhdKey, setLocalEodhdKey] = useState('')
   const [localTiingoKey, setLocalTiingoKey] = useState('')
+  const [localMassiveKey, setLocalMassiveKey] = useState('')
   const [testingProvider, setTestingProvider] = useState<string | null>(null)
   const [testResults, setTestResults] = useState<Record<string, boolean>>({})
   const [cacheStats, setCacheStats] = useState<CacheStats | null>(null)
@@ -82,8 +87,10 @@ export function DataProvidersSettings() {
     try {
       if (localEodhdKey) await saveEodhdKey(localEodhdKey)
       if (localTiingoKey) await saveTiingoKey(localTiingoKey)
+      if (localMassiveKey) await saveMassiveKey(localMassiveKey)
       setLocalEodhdKey('')
       setLocalTiingoKey('')
+      setLocalMassiveKey('')
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (e) {
@@ -96,14 +103,15 @@ export function DataProvidersSettings() {
   const canUseProvider = (provider: string): boolean => {
     if (provider === 'eodhd') return hasEodhdKey
     if (provider === 'tiingo') return hasTiingoKey
+    if (provider === 'massive') return hasMassiveKey
     return true
   }
 
   return (
     <div className="space-y-6">
       {/* Provider selection cards */}
-      <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-label="Primary data provider">
-        {(['eodhd', 'tiingo', 'synthetic'] as const).map(provider => {
+      <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Primary data provider">
+        {(['eodhd', 'tiingo', 'massive', 'synthetic'] as const).map(provider => {
           const selected = primaryProvider === provider
           const disabled = provider !== 'synthetic' && !canUseProvider(provider)
           return (
@@ -135,7 +143,7 @@ export function DataProvidersSettings() {
       </div>
 
       {/* No-keys warning */}
-      {!hasEodhdKey && !hasTiingoKey && (
+      {!hasEodhdKey && !hasTiingoKey && !hasMassiveKey && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/8 border border-amber-500/20 text-amber-300 text-xs">
           <AlertCircle size={13} className="shrink-0" />
           No backtest API keys configured — backtests will use synthetic data.
@@ -219,6 +227,48 @@ export function DataProvidersSettings() {
             </span>
           )}
           {testResults['tiingo'] === false && (
+            <span className="flex items-center gap-2 text-xs text-red-400" role="alert">
+              <AlertCircle size={12} /> Connection failed — check your API key
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Massive Panel */}
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Massive Configuration</p>
+        <SecretInput
+          id="massive-api-key"
+          label="Massive API Key"
+          value={localMassiveKey}
+          onChange={setLocalMassiveKey}
+          placeholder="Enter your Massive API key"
+          hint={hasMassiveKey ? 'Key saved — enter a new key to rotate' : 'Not configured — get your key at massive.com'}
+        />
+        {hasMassiveKey && (
+          <button
+            type="button"
+            onClick={deleteMassiveKey}
+            className="text-xs text-red-400/70 hover:text-red-400 transition-colors mt-1"
+          >
+            Remove saved key
+          </button>
+        )}
+        <div className="flex items-center gap-3 pt-1">
+          <button
+            onClick={() => handleTestConnection('massive')}
+            disabled={testingProvider === 'massive' || (!localMassiveKey && !hasMassiveKey)}
+            className="flex items-center gap-2 px-3 py-2 bg-sky-500/10 border border-sky-500/20 text-sky-400 rounded-lg text-xs font-semibold hover:bg-sky-500/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {testingProvider === 'massive' ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+            {testingProvider === 'massive' ? 'Testing…' : 'Test Connection'}
+          </button>
+          {testResults['massive'] === true && (
+            <span className="flex items-center gap-2 text-xs text-emerald-400">
+              <CheckCircle2 size={12} /> Connected
+            </span>
+          )}
+          {testResults['massive'] === false && (
             <span className="flex items-center gap-2 text-xs text-red-400" role="alert">
               <AlertCircle size={12} /> Connection failed — check your API key
             </span>

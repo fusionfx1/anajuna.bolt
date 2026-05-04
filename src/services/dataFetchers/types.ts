@@ -1,6 +1,6 @@
 // Shared types for data fetcher services
 
-export type Provider = 'eodhd' | 'tiingo' | 'synthetic' | 'polygon' | 'alpaca' | 'simulation'
+export type Provider = 'eodhd' | 'tiingo' | 'massive' | 'synthetic' | 'polygon' | 'alpaca' | 'simulation'
 export type ProviderType = Provider // Alias for compatibility
 
 export interface RawOHLCV {

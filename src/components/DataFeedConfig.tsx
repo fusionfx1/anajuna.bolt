@@ -107,8 +107,21 @@ export function DataFeedConfig() {
     return unsub;
   }, []);
 
+  const DEV_FEED_KEY = 'anjuna_datafeed_config';
+
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      // devMode: restore from localStorage
+      const raw = localStorage.getItem(DEV_FEED_KEY);
+      if (raw) {
+        try {
+          const data = JSON.parse(raw) as Partial<DataFeedConfig>;
+          setConfig(prev => ({ ...prev, ...data }));
+          if (data.brokerProvider === 'oanda') setActiveBroker('oanda');
+        } catch { /* ignore corrupt data */ }
+      }
+      return;
+    }
     supabase
       .from('data_feed_configs')
       .select('*')
@@ -135,9 +148,15 @@ export function DataFeedConfig() {
   }, [user?.id]);
 
   const handleSave = async () => {
-    if (!user?.id) return;
     setSaving(true);
     try {
+      if (!user?.id) {
+        // devMode: persist to localStorage
+        localStorage.setItem(DEV_FEED_KEY, JSON.stringify(config));
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+        return;
+      }
       await supabase.from('data_feed_configs').upsert({
         user_id: user.id,
         provider: config.provider,

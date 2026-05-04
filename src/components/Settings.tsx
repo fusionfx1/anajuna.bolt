@@ -10,6 +10,7 @@ import { useUserSettings, useAccountData } from '../hooks/useSupabaseData';
 import { upsertUserSettings } from '../services/tradingService';
 import { DataFeedConfig } from './DataFeedConfig';
 import { DataProvidersSettings } from '../pages/Settings/DataProviders';
+import { ConnectionHealthPanel } from './settings/ConnectionHealthPanel';
 
 function Section({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: ReactNode }) {
   return (
@@ -289,6 +290,10 @@ export function Settings() {
       <Section title="Backtest Data Providers" icon={Database}>
         <DataProvidersSettings />
       </Section>
+
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <ConnectionHealthPanel />
+      </div>
 
       {/* ── Python Agents group header ── */}
       <div className="flex items-center gap-3 pt-1">

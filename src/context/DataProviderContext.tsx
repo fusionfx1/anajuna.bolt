@@ -10,10 +10,13 @@ interface DataProviderContextType {
   setPrimaryProvider: (provider: ProviderType) => void
   hasEodhdKey: boolean
   hasTiingoKey: boolean
+  hasMassiveKey: boolean
   saveEodhdKey: (key: string) => Promise<void>
   saveTiingoKey: (key: string) => Promise<void>
+  saveMassiveKey: (key: string) => Promise<void>
   deleteEodhdKey: () => Promise<void>
   deleteTiingoKey: () => Promise<void>
+  deleteMassiveKey: () => Promise<void>
   cacheTTLDays: number
   setCacheTTLDays: (days: number) => void
   enableCache: boolean
@@ -37,6 +40,7 @@ export function DataProviderProvider({
   })
   const [hasEodhdKey, setHasEodhdKey] = useState(false)
   const [hasTiingoKey, setHasTiingoKey] = useState(false)
+  const [hasMassiveKey, setHasMassiveKey] = useState(false)
   const [cacheTTLDays, setCacheTTLDays] = useState(() => {
     return parseInt(localStorage.getItem('anjuna_cache_ttl') || '30', 10)
   })
@@ -59,8 +63,14 @@ export function DataProviderProvider({
     localStorage.setItem('anjuna_enable_cache', enableCache.toString())
   }, [enableCache])
 
-  async function saveKeyToSupabase(providerId: 'eodhd' | 'tiingo', key: string) {
-    if (!user?.id) throw new Error('Not authenticated')
+  const DEV_KEY_PREFIX = 'anjuna_devkey_'
+
+  async function saveKeyToSupabase(providerId: 'eodhd' | 'tiingo' | 'massive', key: string) {
+    if (!user?.id) {
+      // devMode: persist to localStorage
+      localStorage.setItem(`${DEV_KEY_PREFIX}${providerId}`, key)
+      return
+    }
     // Rotate: delete existing, then insert new (D-01: no UPDATE policy)
     await supabase
       .from('data_provider_api_keys')
@@ -74,8 +84,13 @@ export function DataProviderProvider({
   }
 
   async function refreshKeyFlags() {
-    if (!user?.id) return
-    const [eodhdResult, tiingoResult] = await Promise.all([
+    if (!user?.id) {
+      setHasEodhdKey(!!localStorage.getItem(`${DEV_KEY_PREFIX}eodhd`))
+      setHasTiingoKey(!!localStorage.getItem(`${DEV_KEY_PREFIX}tiingo`))
+      setHasMassiveKey(!!localStorage.getItem(`${DEV_KEY_PREFIX}massive`))
+      return
+    }
+    const [eodhdResult, tiingoResult, massiveResult] = await Promise.all([
       supabase
         .from('data_provider_api_keys')
         .select('*', { count: 'exact', head: true })
@@ -86,16 +101,25 @@ export function DataProviderProvider({
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .eq('provider_id', 'tiingo'),
+      supabase
+        .from('data_provider_api_keys')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('provider_id', 'massive'),
     ])
     setHasEodhdKey((eodhdResult.count ?? 0) > 0)
     setHasTiingoKey((tiingoResult.count ?? 0) > 0)
+    setHasMassiveKey((massiveResult.count ?? 0) > 0)
   }
 
   // One-shot localStorage migration (D-03) + fetch key flags on user change
+  // Also runs in devMode (no user) to read devKey localStorage flags
   useEffect(() => {
-    if (!user?.id) return
-
     async function initKeys() {
+      if (!user?.id) {
+        await refreshKeyFlags()
+        return
+      }
       const oldEodhd = localStorage.getItem('anjuna_eodhd_key')
       const oldTiingo = localStorage.getItem('anjuna_tiingo_key')
 
@@ -133,8 +157,31 @@ export function DataProviderProvider({
     setHasTiingoKey(true)
   }
 
+  async function saveMassiveKey(key: string) {
+    await saveKeyToSupabase('massive', key)
+    setHasMassiveKey(true)
+  }
+
+  async function deleteMassiveKey() {
+    if (!user?.id) {
+      localStorage.removeItem(`${DEV_KEY_PREFIX}massive`)
+      setHasMassiveKey(false)
+      return
+    }
+    await supabase
+      .from('data_provider_api_keys')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('provider_id', 'massive')
+    setHasMassiveKey(false)
+  }
+
   async function deleteEodhdKey() {
-    if (!user?.id) return
+    if (!user?.id) {
+      localStorage.removeItem(`${DEV_KEY_PREFIX}eodhd`)
+      setHasEodhdKey(false)
+      return
+    }
     await supabase
       .from('data_provider_api_keys')
       .delete()
@@ -144,7 +191,11 @@ export function DataProviderProvider({
   }
 
   async function deleteTiingoKey() {
-    if (!user?.id) return
+    if (!user?.id) {
+      localStorage.removeItem(`${DEV_KEY_PREFIX}tiingo`)
+      setHasTiingoKey(false)
+      return
+    }
     await supabase
       .from('data_provider_api_keys')
       .delete()
@@ -155,14 +206,22 @@ export function DataProviderProvider({
 
   async function testConnection(provider: ProviderType, apiKey: string): Promise<boolean> {
     try {
+      // Massive: test directly via REST (no proxy needed)
+      if (provider === 'massive') {
+        const { createMassiveClient } = await import('../services/dataFetchers/massive')
+        const key = apiKey || localStorage.getItem(`${DEV_KEY_PREFIX}massive`) || ''
+        if (!key) return false
+        return createMassiveClient(key).testConnection()
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return false
+      const token = session?.access_token ?? (import.meta.env.VITE_SUPABASE_ANON_KEY as string)
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
       const res = await fetch(`${supabaseUrl}/functions/v1/data-provider-proxy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ provider, action: 'test', apiKey }),
       })
@@ -179,10 +238,13 @@ export function DataProviderProvider({
     setPrimaryProvider,
     hasEodhdKey,
     hasTiingoKey,
+    hasMassiveKey,
     saveEodhdKey,
     saveTiingoKey,
+    saveMassiveKey,
     deleteEodhdKey,
     deleteTiingoKey,
+    deleteMassiveKey,
     cacheTTLDays,
     setCacheTTLDays,
     enableCache,

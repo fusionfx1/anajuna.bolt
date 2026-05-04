@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from .backtester import run_backtest
-from .broker import BrokerConnector, CircuitBreaker, OandaConnector, OrderRequest, PaperConnector
+from .broker import BrokerConnector, CircuitBreaker, MT5Connector, OandaConnector, OrderRequest, PaperConnector
 from .models import BacktestResult, OrderSide, SignalType, StrategyConfig, TradingSystem
 from .prompt_parser import parse_prompt
 from .signal_providers import signal_provider_from_env
@@ -26,6 +26,19 @@ load_dotenv()
 
 
 def _build_broker(config: StrategyConfig) -> BrokerConnector:
+    broker_env = os.environ.get("BROKER", "").lower()
+
+    # MT5 connector (Windows VPS with MT5 terminal running)
+    if broker_env == "mt5":
+        login = os.environ.get("MT5_LOGIN", "")
+        password = os.environ.get("MT5_PASSWORD", "")
+        server = os.environ.get("MT5_SERVER", "")
+        if login and password and server:
+            logger.info(f"Using MT5 broker connector (login={login}, server={server})")
+            return MT5Connector(int(login), password, server)
+        logger.warning("BROKER=mt5 but MT5_LOGIN/MT5_PASSWORD/MT5_SERVER not set — falling through")
+
+    # OANDA connector
     account_id = os.environ.get("OANDA_ACCOUNT_ID", "")
     api_token = os.environ.get("OANDA_API_TOKEN", "")
     account_type = os.environ.get("OANDA_ACCOUNT_TYPE", "practice")
@@ -34,7 +47,7 @@ def _build_broker(config: StrategyConfig) -> BrokerConnector:
         logger.info("Using OANDA broker connector")
         return OandaConnector(account_id, api_token, account_type)
 
-    logger.info("OANDA credentials not found — using Paper Trading connector")
+    logger.info("No broker credentials found — using Paper Trading connector")
     return PaperConnector(initial_balance=10_000.0)
 
 

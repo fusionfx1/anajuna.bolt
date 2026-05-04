@@ -2,6 +2,7 @@ import { FetchOptions, FetchResult, ProviderType } from './types'
 import { readCache, writeCache } from '../cache'
 import { normalizeCandles, dedupAndSortCandles } from '../normalize'
 import { getSyntheticCandles } from './synthetic'
+import { createMassiveClient } from './massive'
 import { supabase } from '../../lib/supabase'
 
 export interface FetchOHLCVConfig {
@@ -47,7 +48,7 @@ export async function fetchOHLCV(options: FetchOptions): Promise<FetchResult> {
   // Step 2: Try to fetch from primary provider
   try {
     const rawCandles = await fetchFromProvider(provider, symbol, startDate, endDate)
-    const normalized = normalizeCandles(rawCandles, symbol, (provider === 'polygon' || provider === 'alpaca' ? 'eodhd' : provider === 'simulation' ? 'synthetic' : provider) as 'eodhd' | 'tiingo' | 'synthetic')
+    const normalized = normalizeCandles(rawCandles, symbol, resolveNormalizeProvider(provider))
     const deduped = dedupAndSortCandles(normalized)
 
     // Cache the result
@@ -120,11 +121,18 @@ async function fetchFromProvider(
     return fetchViaEdgeFunction(provider, symbol, startDate, endDate)
   }
 
+  if (provider === 'massive') {
+    const apiKey = localStorage.getItem('anjuna_devkey_massive') ?? ''
+    if (!apiKey) throw new Error('No Massive API key configured')
+    const client = createMassiveClient(apiKey)
+    return (await client.getCandles({ symbol, startDate, endDate })) as never[]
+  }
+
   if (provider === 'synthetic' || provider === 'simulation') {
     return (await getSyntheticCandles(symbol, startDate, endDate)) as never[]
   }
 
-  // polygon, alpaca — treat as synthetic fallback for now (no direct client)
+  // polygon, alpaca — treat as synthetic fallback for now
   console.warn(`[fetchOHLCV] Provider ${provider} not yet implemented, falling back to synthetic`)
   return (await getSyntheticCandles(symbol, startDate, endDate)) as never[]
 }
@@ -162,14 +170,21 @@ async function fetchViaEdgeFunction(
   return (data.candles ?? []) as never[]
 }
 
+function resolveNormalizeProvider(p: ProviderType): 'eodhd' | 'tiingo' | 'synthetic' {
+  if (p === 'eodhd' || p === 'tiingo' || p === 'synthetic') return p
+  if (p === 'massive') return 'eodhd' // same OHLC shape
+  return 'synthetic'
+}
+
 function getFallbackProviders(primary: ProviderType): ProviderType[] {
   // Fallback order: if primary fails, try others, finally synthetic
   const order: Record<ProviderType, ProviderType[]> = {
-    eodhd: ['tiingo', 'synthetic'],
-    tiingo: ['eodhd', 'synthetic'],
+    eodhd: ['tiingo', 'massive', 'synthetic'],
+    tiingo: ['eodhd', 'massive', 'synthetic'],
+    massive: ['eodhd', 'tiingo', 'synthetic'],
     synthetic: [],
     simulation: ['synthetic'],
-    polygon: ['eodhd', 'tiingo', 'synthetic'],
+    polygon: ['massive', 'eodhd', 'tiingo', 'synthetic'],
     alpaca: ['eodhd', 'tiingo', 'synthetic'],
   }
 

@@ -29,25 +29,17 @@ Deno.serve(async (req: Request) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
-    // Verify JWT via anon client
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Resolve user if auth header present (optional — test+inlineKey works without user)
+    let user: { id: string } | null = null;
+    if (authHeader) {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      const { data } = await supabase.auth.getUser();
+      user = data.user;
     }
 
     const body = await req.json() as ProxyRequest;
@@ -60,33 +52,43 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    // Test action with inline key: validate the key directly — no DB lookup needed, no user required
+    if (action === "test" && inlineKey) {
+      const ok = await testProviderKey(provider, inlineKey);
+      return new Response(JSON.stringify({ ok }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // All other actions require an authenticated user
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Read stored key via service role (bypasses RLS — key not readable by authenticated users)
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    let apiKey: string;
+    const { data: storedKey, error: keyError } = await supabaseAdmin
+      .from("data_provider_api_keys")
+      .select("api_key")
+      .eq("provider_id", provider)
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-    if (action === "test" && inlineKey) {
-      // Test call with unsaved key: use the provided key directly (pre-save testing)
-      apiKey = inlineKey;
-    } else {
-      const { data: storedKey, error: keyError } = await supabaseAdmin
-        .from("data_provider_api_keys")
-        .select("api_key")
-        .eq("provider_id", provider)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (keyError || !storedKey) {
-        return new Response(JSON.stringify({ error: `No ${provider} API key configured.` }), {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      apiKey = storedKey.api_key;
+    if (keyError || !storedKey) {
+      return new Response(JSON.stringify({ error: `No ${provider} API key configured.` }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
+
+    const apiKey = storedKey.api_key;
 
     // Test action: verify key works with a minimal API call
     if (action === "test") {

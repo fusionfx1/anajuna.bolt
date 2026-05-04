@@ -1,9 +1,10 @@
 """
 Broker Integration Layer
 
-Provides an abstract BrokerConnector interface with two concrete implementations:
+Provides an abstract BrokerConnector interface with three concrete implementations:
   1. OandaConnector  - connects to OANDA v20 REST API (practice or live)
-  2. PaperConnector  - simulates order execution locally, no network calls
+  2. MT5Connector    - connects to MetaTrader 5 via local Python library (Windows VPS)
+  3. PaperConnector  - simulates order execution locally, no network calls
 
 Both connectors return a unified OrderResult so the live trading loop
 does not need to know which broker is in use.
@@ -406,6 +407,179 @@ class PaperConnector(BrokerConnector):
         self._equity += pnl
         if self._open_trades > 0:
             self._open_trades -= 1
+
+
+# ---------------------------------------------------------------------------
+# MT5 Connector
+# ---------------------------------------------------------------------------
+
+_MT5_TF_MAP = {
+    "M1": 1, "M5": 5, "M15": 15, "M30": 30,
+    "H1": 16385, "H4": 16388, "D1": 16408, "W1": 32769,
+}
+
+
+class MT5Connector(BrokerConnector):
+    """
+    Connects to MetaTrader 5 via the local MetaTrader5 Python library.
+
+    Requirements:
+    - Windows VPS with MT5 terminal installed and running
+    - MT5 terminal must have "Algo Trading" enabled (green button)
+    - pip install MetaTrader5
+
+    Parameters
+    ----------
+    login : int
+        MT5 account login number (e.g. 52644104)
+    password : str
+        MT5 account password
+    server : str
+        MT5 server name (visible in MT5 top bar, e.g. "ICMarketsSC-Demo")
+    """
+
+    def __init__(self, login: int, password: str, server: str) -> None:
+        self._login = login
+        self._password = password
+        self._server = server
+        self._mt5 = self._init_mt5()
+
+    def _init_mt5(self):
+        try:
+            import MetaTrader5 as mt5  # type: ignore[import]
+        except ImportError:
+            raise RuntimeError(
+                "MetaTrader5 package not installed. Run: pip install MetaTrader5\n"
+                "Note: MT5 connector requires Windows with MT5 terminal running."
+            )
+
+        if not mt5.initialize():
+            raise RuntimeError(
+                f"Failed to connect to MT5 terminal. "
+                "Make sure MT5 is open and 'Algo Trading' is enabled. "
+                f"Error: {mt5.last_error()}"
+            )
+
+        if not mt5.login(self._login, password=self._password, server=self._server):
+            mt5.shutdown()
+            raise RuntimeError(
+                f"MT5 login failed for account {self._login} on {self._server}. "
+                f"Error: {mt5.last_error()}"
+            )
+
+        logger.info(
+            f"MT5Connector initialised — account {self._login} on {self._server}"
+        )
+        return mt5
+
+    def get_account(self) -> AccountInfo:
+        info = self._mt5.account_info()
+        if info is None:
+            raise RuntimeError(f"MT5 get_account failed: {self._mt5.last_error()}")
+        return AccountInfo(
+            balance=float(info.balance),
+            equity=float(info.equity),
+            margin_used=float(info.margin),
+            free_margin=float(info.margin_free),
+            open_trade_count=int(info.positions_total),
+            currency=info.currency,
+        )
+
+    def submit_order(self, order: OrderRequest) -> OrderResult:
+        import MetaTrader5 as mt5  # type: ignore[import]
+
+        symbol = order.symbol.replace("/", "")
+        action = mt5.TRADE_ACTION_DEAL
+        order_type = (
+            mt5.ORDER_TYPE_BUY if order.side == "BUY" else mt5.ORDER_TYPE_SELL
+        )
+
+        price = self._mt5.symbol_info_tick(symbol)
+        if price is None:
+            raise RuntimeError(f"MT5: symbol {symbol} not found or not subscribed")
+
+        fill_price = price.ask if order.side == "BUY" else price.bid
+
+        request: dict = {
+            "action": action,
+            "symbol": symbol,
+            "volume": float(order.quantity),
+            "type": order_type,
+            "price": fill_price,
+            "deviation": 20,
+            "magic": 20250504,
+            "comment": order.client_id[:31] if order.client_id else "kronos",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_IOC,
+        }
+
+        if order.stop_loss:
+            request["sl"] = float(order.stop_loss)
+        if order.take_profit:
+            request["tp"] = float(order.take_profit)
+
+        result = self._mt5.order_send(request)
+        now = datetime.now(timezone.utc).isoformat()
+
+        if result is None or result.retcode != mt5.TRADE_RETCODE_DONE:
+            retcode = result.retcode if result else -1
+            comment = result.comment if result else "no result"
+            logger.error(f"MT5 order_send failed: retcode={retcode} comment={comment}")
+            return OrderResult(
+                broker_order_id=str(retcode),
+                status="rejected",
+                filled_qty=0.0,
+                filled_avg_price=None,
+                submitted_at=now,
+                rejection_reason=comment,
+            )
+
+        return OrderResult(
+            broker_order_id=str(result.order),
+            status="filled",
+            filled_qty=float(order.quantity),
+            filled_avg_price=float(result.price),
+            submitted_at=now,
+        )
+
+    def cancel_order(self, broker_order_id: str) -> None:
+        import MetaTrader5 as mt5  # type: ignore[import]
+
+        request = {
+            "action": mt5.TRADE_ACTION_REMOVE,
+            "order": int(broker_order_id),
+        }
+        result = self._mt5.order_send(request)
+        if result is None or result.retcode != mt5.TRADE_RETCODE_DONE:
+            retcode = result.retcode if result else -1
+            raise RuntimeError(f"MT5 cancel_order failed: retcode={retcode}")
+
+    def get_candles(self, symbol: str, timeframe: str, count: int = 500) -> pd.DataFrame:
+        sym = symbol.replace("/", "")
+        tf = _MT5_TF_MAP.get(timeframe, _MT5_TF_MAP["H1"])
+
+        rates = self._mt5.copy_rates_from_pos(sym, tf, 0, count)
+        if rates is None or len(rates) == 0:
+            logger.warning(f"MT5: no candles for {sym} tf={timeframe}")
+            return pd.DataFrame()
+
+        df = pd.DataFrame(rates)
+        df["timestamp"] = pd.to_datetime(df["time"], unit="s", utc=True)
+        df = df.rename(columns={"tick_volume": "volume"})
+        df = df[["timestamp", "open", "high", "low", "close", "volume"]]
+        df = df.set_index("timestamp").sort_index()
+        return df
+
+    def get_latest_price(self, symbol: str) -> float:
+        sym = symbol.replace("/", "")
+        tick = self._mt5.symbol_info_tick(sym)
+        if tick is None:
+            raise RuntimeError(f"MT5: no tick for {sym}")
+        return (tick.bid + tick.ask) / 2
+
+    def shutdown(self) -> None:
+        self._mt5.shutdown()
+        logger.info("MT5Connector shutdown")
 
 
 # ---------------------------------------------------------------------------
