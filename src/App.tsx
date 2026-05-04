@@ -25,12 +25,10 @@ function AppContent() {
   const { session, loading } = useAuth();
   const [page, setPage] = useState<NavPage>('dashboard');
   const [devMode] = useState(() => {
-    // Only read devMode in development builds — Vite eliminates this block in production
-    // via dead-code elimination on import.meta.env.DEV (per D-01)
+    // VITE_BYPASS_AUTH=true in Vercel env vars bypasses login (set in project settings, remove when ready)
+    if (import.meta.env.VITE_BYPASS_AUTH === 'true') return true;
     if (import.meta.env.DEV && typeof window !== 'undefined') {
-      const dev = localStorage.getItem('devMode') === 'true';
-      if (dev) console.log('[Dev Mode] Auth bypass enabled');
-      return dev;
+      return localStorage.getItem('devMode') === 'true';
     }
     return false;
   });
