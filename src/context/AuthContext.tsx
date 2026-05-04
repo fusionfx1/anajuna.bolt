@@ -50,6 +50,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function signIn(email: string, password: string) {
+    // Demo account — bypasses Supabase, works without internet
+    if (email === 'anjuna' && password === 'uplift') {
+      const demoSession = {
+        access_token: 'demo',
+        refresh_token: 'demo',
+        expires_in: 86400,
+        expires_at: Date.now() / 1000 + 86400,
+        token_type: 'bearer',
+        user: {
+          id: 'demo-user',
+          email: 'anjuna@demo',
+          aud: 'authenticated',
+          role: 'authenticated',
+          created_at: new Date().toISOString(),
+          app_metadata: {},
+          user_metadata: {},
+        },
+      } as unknown as Session;
+      setSession(demoSession);
+      return { error: null };
+    }
+
     try {
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Login request timed out. Please check your internet connection.')), 15000)
